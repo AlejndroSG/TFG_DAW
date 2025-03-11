@@ -8,7 +8,7 @@ const Navbar = () => {
 
   let [comprobar, setComprobar] = useState(false);
   let [comprobar2, setComprobar2] = useState(false);
-  let [datos, setDatos] = useState([]);
+  let [datos, setDatos] = useState({});
   let [error, setError] = useState("");
 
   let verificar = () => {
@@ -18,27 +18,52 @@ const Navbar = () => {
 
   let dates = (dats) => {
     setDatos(dats);
-    console.log(...datos+" estos son los datos")
+    console.log(dats)
   }
 
   return (
-    <ul className='flex gap-5 justify-center'>
+    <ul className='flex gap-5 justify-space-around'>
       {
         comprobar2 == false ? 
           <button onClick={() => setComprobar2(true)}>Iniciar Sesión</button>
           :
           comprobar == false ?
-            <Login verificar={() => verificar()} dates={() => dates()} error={() => setError()} >Iniciar Sesión</Login>
+            <div className='flex-col'>
+              {
+                <Login verificar={() => verificar()} dates={(dats) => dates(dats)} error={(err) => setError(err)} >Iniciar Sesión</Login>
+              }
+            {
+              error != "" ?
+                <p style={{color: "red"}}>{error}</p>
+                :
+                <p></p>
+            }
+            </div>
+            
             :
           <>
+          <div className='flex gap-5'>
             <Link to="/"><li>LearnIA</li></Link>
             <Link to="/"><li>Cursos</li></Link>
             <Link to="/"><li>IA CHAT</li></Link>
-            <li></li>
             <Link to="/" onClick={() => {
               setComprobar(false),
-              setDatos([])
+              setDatos([]),
+              setComprobar2(false),
+              sessionStorage.clear()
             }}><li>Cerrar Sesión</li></Link>
+          </div>
+          <div>
+            {
+              datos != null ?
+                <div className='flex gap-5 ml-10'>
+                  <p className='highlight'>{datos.nombre}</p>
+                  <p className='font-bold'>{datos.tipo_usuario}</p>
+                </div>
+                :
+                <p>{error}</p>
+            }
+          </div>
           </>
       }
     </ul>

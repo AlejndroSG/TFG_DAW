@@ -5,6 +5,9 @@
     header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
 
     function iniciarSesion(){
+        if(session_status() == PHP_SESSION_NONE){
+            session_start();
+        }
         require_once("../modelo/bd.php");
         $modelo = new db();
         $msg = "<p style='color:red'>Credenciales incorrectas</p>";
@@ -13,7 +16,6 @@
         if(count($comprobar) == 0){
             echo json_encode($msg);
         }else{
-            session_start();
             $_SESSION["username"] = $comprobar["nombre"];
             $_SESSION["tipo_usuario"] = $comprobar["tipo_usuario"];
             echo json_encode($comprobar);

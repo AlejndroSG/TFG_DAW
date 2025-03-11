@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import axios from 'axios';
 
 const Login = (props) => {
+  let [respuesta, setRespuesta] = useState('');
+
   const [formData, setFormData] = useState({
     username: '',
     password: '',
@@ -14,19 +16,19 @@ const Login = (props) => {
     datos.append('username', formData.username);
     datos.append('password', formData.password);
 
-    const respuesta = await axios.post('http://localhost/TFG_DAW/backend/controlador/controlador.php?action=iniciarSesion', datos,
+    respuesta = await axios.post('http://localhost/TFG_DAW/backend/controlador/controlador.php?action=iniciarSesion', datos,
         {
             headers: { 'Content-Type': 'multipart/form-data' },
         }
     );
-    console.log(respuesta.data);
+    setRespuesta(respuesta.data);
+    console.log(respuesta.data)
     if (respuesta.data.nombre != null) {
-        console.log("PUTA")
-        console.log(respuesta.data);
+        // console.log(respuesta.data);
         props.verificar(true);
         props.dates(respuesta.data);
     }else{
-        props.error();
+        props.error("Usuario o contraseña incorrectos");
     }
   };
 
@@ -38,15 +40,13 @@ const Login = (props) => {
     <form onSubmit={handleSubmit}>
       <label>
         Username:
-        <input type="text" name="username" value={formData.username} onChange={handleChange} />
+        <input type="text" name="username" className='ml-2' value={formData.username} onChange={handleChange} />
       </label>
-      <br />
-      <label>
+      <label className='mx-5'>
         Password:
-        <input type="password" name="password" value={formData.password} onChange={handleChange} />
+        <input type="password" name="password" className='ml-2' value={formData.password} onChange={handleChange} />
       </label>
-      <br />
-      <button type="submit" className='cursor-pointer'>Iniciar sesión</button>
+      <button type="submit" className='cursor-pointer bg-amber-300 border-2 p-3'>Iniciar sesión</button>
     </form>
   );
 };
