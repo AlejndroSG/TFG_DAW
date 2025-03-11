@@ -1,10 +1,8 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import './App.css'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import Plantilla from './layout/Plantilla'
 import Banner from './Pages/Banner'
+import Login from './Pages/Login'
 
 function App() {
 
@@ -14,6 +12,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Plantilla/>}>
             <Route index element={<Banner/>}/>
+            <Route path="/login" element={<Login/>}/>
           </Route>
         </Routes>
       </BrowserRouter>
