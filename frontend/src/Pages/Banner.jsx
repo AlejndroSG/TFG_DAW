@@ -1,9 +1,10 @@
 import { motion } from "framer-motion";
 import { TypeAnimation } from "react-type-animation";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const Banner = () => {
   const canvasRef = useRef(null);
+  const particlesRef = useRef([]); // Referencia para evitar re-renders
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -22,9 +23,9 @@ const Banner = () => {
           length: Math.random() * 120 + 50,
           speed: Math.random() * 4 + 1,
           opacity: Math.random() * 0.5 + 0.5,
-          thicknessStart: Math.random() * 0.5 + 0.2, // Empieza fina
-          thicknessEnd: Math.random() * 2.5 + 1, // Termina más gruesa
-          color: "rgba(193, 96, 255, 0.7)", // Color del meteoro
+          thicknessStart: Math.random() * 0.5 + 0.2,
+          thicknessEnd: Math.random() * 2.5 + 1,
+          color: "rgba(193, 96, 255, 0.7)",
         });
       }
     };
@@ -39,10 +40,9 @@ const Banner = () => {
         const endX = m.x - m.length * Math.cos(Math.PI / 4);
         const endY = m.y + m.length * Math.sin(Math.PI / 4);
 
-        // Gradiente para hacer el efecto de línea que se hace más gruesa
         const gradient = ctx.createLinearGradient(m.x, m.y, endX, endY);
-        gradient.addColorStop(0, "rgba(193, 96, 255, 0)"); // Inicio invisible
-        gradient.addColorStop(1, m.color); // Fin visible
+        gradient.addColorStop(0, "rgba(193, 96, 255, 0)");
+        gradient.addColorStop(1, m.color);
 
         ctx.strokeStyle = gradient;
         ctx.lineWidth = m.thicknessEnd;
@@ -53,10 +53,9 @@ const Banner = () => {
         ctx.lineTo(endX, endY);
         ctx.stroke();
 
-        // Efecto de brillo en la cola del meteoro (la parte más gruesa)
         ctx.globalAlpha = 0.8;
         ctx.beginPath();
-        ctx.arc(endX, endY, m.thicknessEnd * 1.2, 0, Math.PI * 2); // Brillo más sutil
+        ctx.arc(endX, endY, m.thicknessEnd * 1.2, 0, Math.PI * 2);
         ctx.fillStyle = "rgba(255, 150, 255, 0.5)";
         ctx.shadowBlur = 8;
         ctx.shadowColor = "rgba(255, 150, 255, 0.6)";
@@ -77,9 +76,27 @@ const Banner = () => {
       });
     };
 
+    const drawParticles = () => {
+      particlesRef.current.forEach((p, index) => {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255, ${p.color}, ${255 - p.color}, ${p.opacity})`;
+        ctx.fill();
+
+        p.x += p.velocityX;
+        p.y += p.velocityY;
+        p.opacity -= 0.02;
+
+        if (p.opacity <= 0) {
+          particlesRef.current.splice(index, 1);
+        }
+      });
+    };
+
     const animate = () => {
       drawMeteors();
       updateMeteors();
+      drawParticles();
       requestAnimationFrame(animate);
     };
 
@@ -90,8 +107,32 @@ const Banner = () => {
     };
   }, []);
 
+  const handleClick = (e) => {
+    const rect = canvasRef.current.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * canvasRef.current.width;
+    const y = ((e.clientY - rect.top) / rect.height) * canvasRef.current.height;
+  
+    let newParticles = [];
+    for (let i = 0; i < 20; i++) {
+      newParticles.push({
+        x,
+        y,
+        size: Math.random() * 3 + 1,
+        velocityX: (Math.random() - 0.5) * 4,
+        velocityY: (Math.random() - 0.5) * 4,
+        opacity: 1,
+        color: Math.random() * 255,
+      });
+    }
+    particlesRef.current.push(...newParticles);
+  };
+  
+
   return (
-    <div className="relative w-full h-screen flex items-center justify-center bg-black overflow-hidden">
+    <div
+      className="relative w-full h-screen flex items-center justify-center bg-black overflow-hidden"
+      onClick={handleClick}
+    >
       {/* Fondo de lluvia de meteoros */}
       <div className="contenedorBanner absolute inset-0">
         <canvas ref={canvasRef} className="w-full h-full"></canvas>
