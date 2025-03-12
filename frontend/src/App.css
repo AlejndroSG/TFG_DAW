@@ -14,6 +14,25 @@ body{
 }
 
 header{
-  background-color: #06D6A0;
+  position: fixed;
+  top: 0;
+  z-index: 999;
+  width: 100%;
+  background: rgb(0,0,0);
+  background: linear-gradient(180deg, rgba(0,0,0,1) 0%, rgba(0,0,0,0.07559520390187324) 100%);
   color: #F8FFE5;
+}
+
+div.contenedorBanner{
+  aspect-ratio: 1.712682379349046 / 1;
+    background: radial-gradient(50% 49.99999999999999% at 50% 49.99999999999999%, rgba(193, 96, 255, .3) 5.4435845464468%, rgba(2, 2, 3, .3) 100%);
+    border-radius: 100%;
+    flex: none;
+    /* height: var(--framer-aspect-ratio-supported, 950px); */
+    left: -213px;
+    position: absolute;
+    right: -213px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 1;
 }
