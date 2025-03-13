@@ -1,10 +1,12 @@
 import { motion } from "framer-motion";
 import { TypeAnimation } from "react-type-animation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 
 const Banner = () => {
   const canvasRef = useRef(null);
-  const particlesRef = useRef([]); // Referencia para evitar re-renders
+  const particlesRef = useRef([]);
+  const floatingParticlesRef = useRef([]);
+  let meteors = [];
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -12,8 +14,6 @@ const Banner = () => {
 
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
-
-    let meteors = [];
 
     const createMeteors = (count) => {
       for (let i = 0; i < count; i++) {
@@ -30,7 +30,21 @@ const Banner = () => {
       }
     };
 
+    const createFloatingParticles = (count) => {
+      for (let i = 0; i < count; i++) {
+        floatingParticlesRef.current.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          size: Math.random() * 2 + 1,
+          speedX: (Math.random() - 0.5) * 0.2,
+          speedY: (Math.random() - 0.5) * 0.2,
+          opacity: Math.random() * 0.2 + 0.1,
+        });
+      }
+    };
+
     createMeteors(50);
+    createFloatingParticles(80);
 
     const drawMeteors = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -61,11 +75,7 @@ const Banner = () => {
         ctx.shadowColor = "rgba(255, 150, 255, 0.6)";
         ctx.fill();
         ctx.shadowBlur = 0;
-      });
-    };
 
-    const updateMeteors = () => {
-      meteors.forEach((m) => {
         m.x -= m.speed * Math.cos(Math.PI / 4);
         m.y += m.speed * Math.sin(Math.PI / 4);
 
@@ -79,7 +89,7 @@ const Banner = () => {
     const drawParticles = () => {
       particlesRef.current.forEach((p, index) => {
         ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 1);
         ctx.fillStyle = `rgba(255, ${p.color}, ${255 - p.color}, ${p.opacity})`;
         ctx.fill();
 
@@ -93,10 +103,27 @@ const Banner = () => {
       });
     };
 
+    const drawFloatingParticles = () => {
+      floatingParticlesRef.current.forEach((p) => {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 1);
+        ctx.fillStyle = `rgba(255, 255, 255, ${p.opacity})`;
+        ctx.fill();
+
+        p.x += p.speedX;
+        p.y += p.speedY;
+
+        if (p.x < 0 || p.x > canvas.width || p.y < 0 || p.y > canvas.height) {
+          p.x = Math.random() * canvas.width;
+          p.y = Math.random() * canvas.height;
+        }
+      });
+    };
+
     const animate = () => {
       drawMeteors();
-      updateMeteors();
       drawParticles();
+      drawFloatingParticles();
       requestAnimationFrame(animate);
     };
 
@@ -126,43 +153,18 @@ const Banner = () => {
     }
     particlesRef.current.push(...newParticles);
   };
-  
 
   return (
-    <div
-      className="relative w-full h-screen flex items-center justify-center bg-black overflow-hidden"
-      onClick={handleClick}
-    >
-      {/* Fondo de lluvia de meteoros */}
+    <div className="relative w-full h-screen flex items-center justify-center bg-black overflow-hidden" onClick={handleClick}>
       <div className="contenedorBanner absolute inset-0">
         <canvas ref={canvasRef} className="w-full h-full"></canvas>
       </div>
 
-      {/* Contenido del banner */}
-      <motion.div
-        initial={{ opacity: 0, y: 50 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 1.5 }}
-        className="relative z-10 text-center text-white drop-shadow-[0_10px_10px_rgba(0,0,0,.7)]"
-      >
+      <motion.div initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1.5 }} className="relative z-10 text-center text-white drop-shadow-[0_10px_10px_rgba(0,0,0,.7)]">
         <h1 className="text-5xl md:text-7xl font-bold">
-          <TypeAnimation
-            sequence={[
-              "Aprendizaje Inteligente",
-              2000,
-              "Educación sin Límites",
-              2000,
-              "LearnIA Revoluciona la Formación",
-              2000,
-            ]}
-            wrapper="span"
-            speed={50}
-            repeat={Infinity}
-          />
+          <TypeAnimation sequence={["Aprendizaje Inteligente", 2000, "Educación sin Límites", 2000, "LearnIA Revoluciona la Formación", 2000]} wrapper="span" speed={50} repeat={Infinity} />
         </h1>
-        <p className="mt-4 text-lg md:text-2xl opacity-80">
-          Descubre el poder de la IA en la educación
-        </p>
+        <p className="mt-4 text-lg md:text-2xl opacity-80">Descubre el poder de la IA en la educación</p>
       </motion.div>
     </div>
   );
