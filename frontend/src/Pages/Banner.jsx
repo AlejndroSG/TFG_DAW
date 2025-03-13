@@ -1,6 +1,11 @@
 import { motion } from "framer-motion";
 import { TypeAnimation } from "react-type-animation";
 import { useEffect, useRef } from "react";
+import Features from "../components/Features";
+import Technologies from "../components/Technologies";
+import HowItWorks from '../components/HowItWorks';
+import Testimonials from '../components/Testimonials';
+import Pricing from '../components/Pricing';
 
 const Banner = () => {
   const canvasRef = useRef(null);
@@ -18,10 +23,10 @@ const Banner = () => {
     const createMeteors = (count) => {
       for (let i = 0; i < count; i++) {
         meteors.push({
-          x: Math.random() * canvas.width,
-          y: Math.random() * canvas.height,
-          length: Math.random() * 120 + 50,
-          speed: Math.random() * 4 + 1,
+          x: Math.random() * (canvas.width + 400) - 200,
+          y: Math.random() * canvas.height - canvas.height / 2,
+          length: Math.random() * 180 + 80,
+          speed: Math.random() * 5 + 2,
           opacity: Math.random() * 0.5 + 0.5,
           thicknessStart: Math.random() * 0.5 + 0.2,
           thicknessEnd: Math.random() * 2.5 + 1,
@@ -79,9 +84,9 @@ const Banner = () => {
         m.x -= m.speed * Math.cos(Math.PI / 4);
         m.y += m.speed * Math.sin(Math.PI / 4);
 
-        if (m.y > canvas.height || m.x < 0) {
-          m.x = Math.random() * canvas.width + 200;
-          m.y = -50;
+        if (m.y > canvas.height || m.x < -200) {
+          m.x = Math.random() * (canvas.width + 400) + 200;
+          m.y = Math.random() * -canvas.height;
         }
       });
     };
@@ -155,18 +160,51 @@ const Banner = () => {
   };
 
   return (
-    <div className="relative w-full h-screen flex items-center justify-center bg-black overflow-hidden" onClick={handleClick}>
-      <div className="contenedorBanner absolute inset-0">
-        <canvas ref={canvasRef} className="w-full h-full"></canvas>
-      </div>
+    <>
+      <div className="relative w-full h-screen flex items-center justify-center bg-black overflow-hidden" onClick={handleClick}>
+        <div className="contenedorBanner absolute inset-0">
+          <canvas ref={canvasRef} className="w-full h-full"></canvas>
+        </div>
 
-      <motion.div initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1.5 }} className="relative z-10 text-center text-white drop-shadow-[0_10px_10px_rgba(0,0,0,.7)]">
-        <h1 className="text-5xl md:text-7xl font-bold">
-          <TypeAnimation sequence={["Aprendizaje Inteligente", 2000, "Educación sin Límites", 2000, "LearnIA Revoluciona la Formación", 2000]} wrapper="span" speed={50} repeat={Infinity} />
-        </h1>
-        <p className="mt-4 text-lg md:text-2xl opacity-80">Descubre el poder de la IA en la educación</p>
-      </motion.div>
-    </div>
+        <motion.div 
+          initial={{ opacity: 0, y: 50 }} 
+          animate={{ opacity: 1, y: 0 }} 
+          transition={{ duration: 1.5 }} 
+          className="relative z-10 text-center text-white drop-shadow-[0_10px_10px_rgba(0,0,0,.7)]"
+        >
+          <h1 className="text-5xl md:text-7xl font-bold mb-6">
+            <TypeAnimation 
+              sequence={[
+                "Aprendizaje Inteligente", 
+                2000, 
+                "Educación sin Límites", 
+                2000, 
+                "LearnIA Revoluciona la Formación", 
+                2000
+              ]} 
+              wrapper="span" 
+              speed={50} 
+              repeat={Infinity} 
+            />
+          </h1>
+          <p className="mt-4 text-lg md:text-2xl opacity-80">
+            Descubre el poder de la IA en la educación
+          </p>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="mt-8 px-8 py-3 bg-purple-600 text-white rounded-full font-semibold hover:bg-purple-700 transition-colors duration-300"
+          >
+            Comienza Ahora
+          </motion.button>
+        </motion.div>
+      </div>
+      <Features />
+      <Technologies />
+      <HowItWorks />
+      <Testimonials />
+      <Pricing />
+    </>
   );
 };
 
