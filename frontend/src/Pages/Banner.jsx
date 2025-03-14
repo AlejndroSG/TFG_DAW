@@ -1,17 +1,17 @@
 import { motion } from "framer-motion";
 import { TypeAnimation } from "react-type-animation";
 import { useEffect, useRef } from "react";
-import Features from "../components/Features";
-import Technologies from "../components/Technologies";
-import HowItWorks from '../components/HowItWorks';
-import Testimonials from '../components/Testimonials';
-import Pricing from '../components/Pricing';
+import Caracteristicas from "../components/Caracteristicas";
+import Tecnologias from "../components/Tecnologias";
+import ComoFunciona from '../components/ComoFunciona';
+import Testimonios from '../components/Testimonios';
+import Precios from '../components/Precios';
 
 const Banner = () => {
   const canvasRef = useRef(null);
-  const particlesRef = useRef([]);
-  const floatingParticlesRef = useRef([]);
-  let meteors = [];
+  const particulasRef = useRef([]);
+  const particulasFlotantesRef = useRef([]);
+  let meteoros = [];
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -20,69 +20,69 @@ const Banner = () => {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
-    const createMeteors = (count) => {
-      for (let i = 0; i < count; i++) {
-        meteors.push({
+    const crearMeteoros = (cantidad) => {
+      for (let i = 0; i < cantidad; i++) {
+        meteoros.push({
           x: Math.random() * (canvas.width + 400) - 200,
           y: Math.random() * canvas.height - canvas.height / 2,
-          length: Math.random() * 180 + 80,
-          speed: Math.random() * 5 + 2,
-          opacity: Math.random() * 0.5 + 0.5,
-          thicknessStart: Math.random() * 0.5 + 0.2,
-          thicknessEnd: Math.random() * 2.5 + 1,
+          longitud: Math.random() * 180 + 80,
+          velocidad: Math.random() * 5 + 2,
+          opacidad: Math.random() * 0.5 + 0.5,
+          grosorInicio: Math.random() * 0.5 + 0.2,
+          grosorFin: Math.random() * 2.5 + 1,
           color: "rgba(193, 96, 255, 0.7)",
         });
       }
     };
 
-    const createFloatingParticles = (count) => {
-      for (let i = 0; i < count; i++) {
-        floatingParticlesRef.current.push({
+    const crearParticulasFlotantes = (cantidad) => {
+      for (let i = 0; i < cantidad; i++) {
+        particulasFlotantesRef.current.push({
           x: Math.random() * canvas.width,
           y: Math.random() * canvas.height,
-          size: Math.random() * 2 + 1,
-          speedX: (Math.random() - 0.5) * 0.2,
-          speedY: (Math.random() - 0.5) * 0.2,
-          opacity: Math.random() * 0.2 + 0.1,
+          tamaño: Math.random() * 2 + 1,
+          velocidadX: (Math.random() - 0.5) * 0.2,
+          velocidadY: (Math.random() - 0.5) * 0.2,
+          opacidad: Math.random() * 0.2 + 0.1,
         });
       }
     };
 
-    createMeteors(50);
-    createFloatingParticles(80);
+    crearMeteoros(50);
+    crearParticulasFlotantes(80);
 
-    const drawMeteors = () => {
+    const dibujarMeteoros = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.globalCompositeOperation = "lighter";
 
-      meteors.forEach((m) => {
-        const endX = m.x - m.length * Math.cos(Math.PI / 4);
-        const endY = m.y + m.length * Math.sin(Math.PI / 4);
+      meteoros.forEach((m) => {
+        const finX = m.x - m.longitud * Math.cos(Math.PI / 4);
+        const finY = m.y + m.longitud * Math.sin(Math.PI / 4);
 
-        const gradient = ctx.createLinearGradient(m.x, m.y, endX, endY);
-        gradient.addColorStop(0, "rgba(193, 96, 255, 0)");
-        gradient.addColorStop(1, m.color);
+        const gradiente = ctx.createLinearGradient(m.x, m.y, finX, finY);
+        gradiente.addColorStop(0, "rgba(193, 96, 255, 0)");
+        gradiente.addColorStop(1, m.color);
 
-        ctx.strokeStyle = gradient;
-        ctx.lineWidth = m.thicknessEnd;
+        ctx.strokeStyle = gradiente;
+        ctx.lineWidth = m.grosorFin;
         ctx.lineCap = "round";
-        ctx.globalAlpha = m.opacity;
+        ctx.globalAlpha = m.opacidad;
         ctx.beginPath();
         ctx.moveTo(m.x, m.y);
-        ctx.lineTo(endX, endY);
+        ctx.lineTo(finX, finY);
         ctx.stroke();
 
         ctx.globalAlpha = 0.8;
         ctx.beginPath();
-        ctx.arc(endX, endY, m.thicknessEnd * 1.2, 0, Math.PI * 2);
+        ctx.arc(finX, finY, m.grosorFin * 1.2, 0, Math.PI * 2);
         ctx.fillStyle = "rgba(255, 150, 255, 0.5)";
         ctx.shadowBlur = 8;
         ctx.shadowColor = "rgba(255, 150, 255, 0.6)";
         ctx.fill();
         ctx.shadowBlur = 0;
 
-        m.x -= m.speed * Math.cos(Math.PI / 4);
-        m.y += m.speed * Math.sin(Math.PI / 4);
+        m.x -= m.velocidad * Math.cos(Math.PI / 4);
+        m.y += m.velocidad * Math.sin(Math.PI / 4);
 
         if (m.y > canvas.height || m.x < -200) {
           m.x = Math.random() * (canvas.width + 400) + 200;
@@ -91,32 +91,32 @@ const Banner = () => {
       });
     };
 
-    const drawParticles = () => {
-      particlesRef.current.forEach((p, index) => {
+    const dibujarParticulas = () => {
+      particulasRef.current.forEach((p, indice) => {
         ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 1);
-        ctx.fillStyle = `rgba(255, ${p.color}, ${255 - p.color}, ${p.opacity})`;
+        ctx.arc(p.x, p.y, p.tamaño, 0, Math.PI * 1);
+        ctx.fillStyle = `rgba(255, ${p.color}, ${255 - p.color}, ${p.opacidad})`;
         ctx.fill();
 
-        p.x += p.velocityX;
-        p.y += p.velocityY;
-        p.opacity -= 0.02;
+        p.x += p.velocidadX;
+        p.y += p.velocidadY;
+        p.opacidad -= 0.02;
 
-        if (p.opacity <= 0) {
-          particlesRef.current.splice(index, 1);
+        if (p.opacidad <= 0) {
+          particulasRef.current.splice(indice, 1);
         }
       });
     };
 
-    const drawFloatingParticles = () => {
-      floatingParticlesRef.current.forEach((p) => {
+    const dibujarParticulasFlotantes = () => {
+      particulasFlotantesRef.current.forEach((p) => {
         ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 1);
-        ctx.fillStyle = `rgba(255, 255, 255, ${p.opacity})`;
+        ctx.arc(p.x, p.y, p.tamaño, 0, Math.PI * 1);
+        ctx.fillStyle = `rgba(255, 255, 255, ${p.opacidad})`;
         ctx.fill();
 
-        p.x += p.speedX;
-        p.y += p.speedY;
+        p.x += p.velocidadX;
+        p.y += p.velocidadY;
 
         if (p.x < 0 || p.x > canvas.width || p.y < 0 || p.y > canvas.height) {
           p.x = Math.random() * canvas.width;
@@ -125,43 +125,43 @@ const Banner = () => {
       });
     };
 
-    const animate = () => {
-      drawMeteors();
-      drawParticles();
-      drawFloatingParticles();
-      requestAnimationFrame(animate);
+    const animar = () => {
+      dibujarMeteoros();
+      dibujarParticulas();
+      dibujarParticulasFlotantes();
+      requestAnimationFrame(animar);
     };
 
-    animate();
+    animar();
 
     return () => {
-      cancelAnimationFrame(animate);
+      cancelAnimationFrame(animar);
     };
   }, []);
 
-  const handleClick = (e) => {
+  const manejarClic = (e) => {
     const rect = canvasRef.current.getBoundingClientRect();
     const x = ((e.clientX - rect.left) / rect.width) * canvasRef.current.width;
     const y = ((e.clientY - rect.top) / rect.height) * canvasRef.current.height;
   
-    let newParticles = [];
+    let nuevasParticulas = [];
     for (let i = 0; i < 20; i++) {
-      newParticles.push({
+      nuevasParticulas.push({
         x,
         y,
-        size: Math.random() * 3 + 1,
-        velocityX: (Math.random() - 0.5) * 4,
-        velocityY: (Math.random() - 0.5) * 4,
-        opacity: 1,
+        tamaño: Math.random() * 3 + 1,
+        velocidadX: (Math.random() - 0.5) * 4,
+        velocidadY: (Math.random() - 0.5) * 4,
+        opacidad: 1,
         color: Math.random() * 255,
       });
     }
-    particlesRef.current.push(...newParticles);
+    particulasRef.current.push(...nuevasParticulas);
   };
 
   return (
     <>
-      <div className="relative w-full h-screen flex items-center justify-center bg-black overflow-hidden" onClick={handleClick}>
+      <div className="relative w-full h-screen flex items-center justify-center bg-black overflow-hidden" onClick={manejarClic}>
         <div className="contenedorBanner absolute inset-0">
           <canvas ref={canvasRef} className="w-full h-full"></canvas>
         </div>
@@ -199,11 +199,11 @@ const Banner = () => {
           </motion.button>
         </motion.div>
       </div>
-      <Features />
-      <Technologies />
-      <HowItWorks />
-      <Testimonials />
-      <Pricing />
+      <Caracteristicas />
+      <Tecnologias />
+      <ComoFunciona />
+      <Testimonios />
+      <Precios />
     </>
   );
 };

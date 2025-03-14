@@ -2,70 +2,70 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaQuoteLeft, FaLinkedin, FaGithub } from 'react-icons/fa';
 
-const Testimonials = () => {
-  const [currentIndex, setCurrentIndex] = useState(0);
+const Testimonios = () => {
+  const [indiceActual, setIndiceActual] = useState(0);
 
-  const testimonials = [
+  const testimonios = [
     {
-      name: "Carlos Rodríguez",
-      role: "Frontend Developer en Google",
-      image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Carlos",
-      company: "google.svg",
-      text: "Gracias a LearnIA, pasé de no saber nada de programación a conseguir mi primer trabajo como desarrollador en menos de un año. La IA personalizada realmente hace la diferencia.",
-      links: {
+      nombre: "Carlos Rodríguez",
+      rol: "Frontend Developer en Google",
+      imagen: "https://api.dicebear.com/7.x/avataaars/svg?seed=Carlos",
+      empresa: "google.svg",
+      texto: "Gracias a LearnIA, pasé de no saber nada de programación a conseguir mi primer trabajo como desarrollador en menos de un año. La IA personalizada realmente hace la diferencia.",
+      enlaces: {
         linkedin: "https://linkedin.com/in/carlos-rodriguez",
         github: "https://github.com/carlos-dev"
       }
     },
     {
-      name: "Ana Martínez",
-      role: "Full Stack Developer en Meta",
-      image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Ana",
-      company: "meta.svg",
-      text: "La mentoría en vivo fue clave para mi desarrollo. Los expertos no solo resuelven dudas, sino que te guían hacia las mejores prácticas de la industria.",
-      links: {
+      nombre: "Ana Martínez",
+      rol: "Full Stack Developer en Meta",
+      imagen: "https://api.dicebear.com/7.x/avataaars/svg?seed=Ana",
+      empresa: "meta.svg",
+      texto: "La mentoría en vivo fue clave para mi desarrollo. Los expertos no solo resuelven dudas, sino que te guían hacia las mejores prácticas de la industria.",
+      enlaces: {
         linkedin: "https://linkedin.com/in/ana-martinez",
         github: "https://github.com/ana-dev"
       }
     },
     {
-      name: "David García",
-      role: "Backend Developer en Amazon",
-      image: "https://api.dicebear.com/7.x/avataaars/svg?seed=David",
-      company: "amazon.svg",
-      text: "Los proyectos prácticos son muy realistas. Cuando llegué a mi primera entrevista, ya tenía experiencia con las tecnologías que usaban en producción.",
-      links: {
+      nombre: "David García",
+      rol: "Backend Developer en Amazon",
+      imagen: "https://api.dicebear.com/7.x/avataaars/svg?seed=David",
+      empresa: "amazon.svg",
+      texto: "Los proyectos prácticos son muy realistas. Cuando llegué a mi primera entrevista, ya tenía experiencia con las tecnologías que usaban en producción.",
+      enlaces: {
         linkedin: "https://linkedin.com/in/david-garcia",
         github: "https://github.com/david-dev"
       }
     }
   ];
 
-  const handleNext = () => {
-    setCurrentIndex((prevIndex) => 
-      prevIndex === testimonials.length - 1 ? 0 : prevIndex + 1
+  const siguienteTestimonio = () => {
+    setIndiceActual((indiceAnterior) => 
+      indiceAnterior === testimonios.length - 1 ? 0 : indiceAnterior + 1
     );
   };
 
-  const handlePrev = () => {
-    setCurrentIndex((prevIndex) => 
-      prevIndex === 0 ? testimonials.length - 1 : prevIndex - 1
+  const testimonioAnterior = () => {
+    setIndiceActual((indiceAnterior) => 
+      indiceAnterior === 0 ? testimonios.length - 1 : indiceAnterior - 1
     );
   };
 
-  const slideVariants = {
-    enter: (direction) => ({
-      x: direction > 0 ? '100%' : '-100%',
+  const variantesSlide = {
+    entrar: (direccion) => ({
+      x: direccion > 0 ? '100%' : '-100%',
       opacity: 0
     }),
-    center: {
+    centro: {
       zIndex: 1,
       x: 0,
       opacity: 1
     },
-    exit: (direction) => ({
+    salir: (direccion) => ({
       zIndex: 0,
-      x: direction < 0 ? '100%' : '-100%',
+      x: direccion < 0 ? '100%' : '-100%',
       opacity: 0,
       position: 'absolute'
     })
@@ -91,12 +91,12 @@ const Testimonials = () => {
         <div className="relative max-w-4xl mx-auto h-[500px] md:h-[300px]">
           <AnimatePresence mode="wait" initial={false}>
             <motion.div
-              key={currentIndex}
-              custom={currentIndex}
-              variants={slideVariants}
-              initial="enter"
-              animate="center"
-              exit="exit"
+              key={indiceActual}
+              custom={indiceActual}
+              variants={variantesSlide}
+              initial="entrar"
+              animate="centro"
+              exit="salir"
               transition={{
                 x: { type: "spring", stiffness: 300, damping: 30 },
                 opacity: { duration: 0.2 }
@@ -108,8 +108,8 @@ const Testimonials = () => {
                   <div className="relative mb-4">
                     <div className="w-32 h-32 overflow-hidden rounded-full border-4 border-purple-500 bg-purple-100">
                       <img
-                        src={testimonials[currentIndex].image}
-                        alt={testimonials[currentIndex].name}
+                        src={testimonios[indiceActual].imagen}
+                        alt={testimonios[indiceActual].nombre}
                         className="w-full h-full object-cover"
                       />
                     </div>
@@ -124,14 +124,14 @@ const Testimonials = () => {
                   </div>
                   <div className="text-center">
                     <h3 className="text-xl font-semibold text-white">
-                      {testimonials[currentIndex].name}
+                      {testimonios[indiceActual].nombre}
                     </h3>
                     <p className="text-purple-400 mt-1">
-                      {testimonials[currentIndex].role}
+                      {testimonios[indiceActual].rol}
                     </p>
                     <div className="flex justify-center gap-4 mt-4">
                       <a
-                        href={testimonials[currentIndex].links.linkedin}
+                        href={testimonios[indiceActual].enlaces.linkedin}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-gray-400 hover:text-purple-500 transition-colors"
@@ -139,7 +139,7 @@ const Testimonials = () => {
                         <FaLinkedin className="w-5 h-5" />
                       </a>
                       <a
-                        href={testimonials[currentIndex].links.github}
+                        href={testimonios[indiceActual].enlaces.github}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-gray-400 hover:text-purple-500 transition-colors"
@@ -153,7 +153,7 @@ const Testimonials = () => {
                 <div className="w-full md:w-2/3 flex items-center">
                   <blockquote>
                     <p className="text-gray-300 text-lg leading-relaxed italic">
-                      "{testimonials[currentIndex].text}"
+                      "{testimonios[indiceActual].texto}"
                     </p>
                   </blockquote>
                 </div>
@@ -163,9 +163,10 @@ const Testimonials = () => {
 
           <div className="absolute -bottom-16 left-0 right-0 flex justify-center items-center gap-4">
             <motion.button
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              onClick={handlePrev}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              transition={{ type: "tween", duration: 0.2 }}
+              onClick={testimonioAnterior}
               className="p-3 rounded-full bg-gray-800 text-white hover:bg-gray-700 transition-colors"
             >
               <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -174,12 +175,12 @@ const Testimonials = () => {
             </motion.button>
 
             <div className="flex gap-2">
-              {testimonials.map((_, index) => (
+              {testimonios.map((_, indice) => (
                 <button
-                  key={index}
-                  onClick={() => setCurrentIndex(index)}
+                  key={indice}
+                  onClick={() => setIndiceActual(indice)}
                   className={`w-3 h-3 rounded-full transition-colors duration-300 ${
-                    index === currentIndex 
+                    indice === indiceActual 
                       ? 'bg-purple-500' 
                       : 'bg-gray-700 hover:bg-gray-600'
                   }`}
@@ -188,9 +189,10 @@ const Testimonials = () => {
             </div>
 
             <motion.button
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              onClick={handleNext}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              transition={{ type: "tween", duration: 0.2 }}
+              onClick={siguienteTestimonio}
               className="p-3 rounded-full bg-gray-800 text-white hover:bg-gray-700 transition-colors"
             >
               <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -204,4 +206,4 @@ const Testimonials = () => {
   );
 };
 
-export default Testimonials;
+export default Testimonios;

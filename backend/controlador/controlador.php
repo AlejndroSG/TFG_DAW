@@ -21,6 +21,13 @@
             echo json_encode($comprobar);
         }
     }
+
+    function obtenerCursos(){
+        require_once("../modelo/cursos.php");
+        $modelo = new Cursos();
+        $cursos = $modelo->obtenerCursos();
+        echo json_encode($cursos);
+    }
     
     
     

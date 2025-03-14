@@ -57,18 +57,19 @@ const Header = () => {
       <motion.header
         initial={{ y: -100 }}
         animate={{ y: 0 }}
-        transition={{ type: "spring", stiffness: 100 }}
-        className={`fixed w-full z-40 transition-all duration-300 ${
+        transition={{ type: "spring", stiffness: 50, damping: 15 }}
+        className={`fixed w-full z-40 ${
           scrolled 
-            ? 'bg-gray-900/95 backdrop-blur-sm shadow-lg'
+            ? 'bg-gray-900 bg-opacity-98'
             : 'bg-transparent'
         }`}
       >
         <div className="container mx-auto px-4">
           <div className="flex justify-between items-center py-4">
             <motion.div
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              transition={{ type: "tween", duration: 0.2 }}
               className="flex items-center"
             >
               <Link to="/" className="flex items-center gap-3">
@@ -77,7 +78,11 @@ const Header = () => {
                   src="/src/assets/react.svg" 
                   alt="LearnIA Logo" 
                 />
-                <span className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-pink-600 text-transparent bg-clip-text">
+                <span className="text-2xl font-bold text-transparent" style={{
+                  background: 'linear-gradient(to right, #a78bfa, #db2777)',
+                  WebkitBackgroundClip: 'text',
+                  backgroundClip: 'text'
+                }}>
                   LearnIA
                 </span>
               </Link>
@@ -87,8 +92,8 @@ const Header = () => {
               {navItems.map((item, index) => (
                 <motion.div
                   key={index}
-                  whileHover={{ y: -2 }}
-                  whileTap={{ y: 0 }}
+                  whileHover={{ y: -1 }}
+                  transition={{ type: "tween", duration: 0.2 }}
                 >
                   <Link
                     to={item.path}
@@ -104,7 +109,8 @@ const Header = () => {
               {isLoggedIn ? (
                 <div className="flex items-center gap-4">
                   <motion.div
-                    whileHover={{ scale: 1.05 }}
+                    whileHover={{ scale: 1.02 }}
+                    transition={{ type: "tween", duration: 0.2 }}
                     className="flex items-center gap-2"
                   >
                     <img 
@@ -115,8 +121,9 @@ const Header = () => {
                     <span className="text-white">{userData.nombre}</span>
                   </motion.div>
                   <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    transition={{ type: "tween", duration: 0.2 }}
                     onClick={handleLogout}
                     className="text-gray-300 hover:text-white transition-colors duration-300"
                   >
@@ -126,8 +133,9 @@ const Header = () => {
               ) : (
                 <>
                   <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    transition={{ type: "tween", duration: 0.2 }}
                     onClick={handleLoginClick}
                     className="hidden md:block px-4 py-2 text-gray-300 hover:text-white transition-colors duration-300"
                   >
@@ -135,9 +143,13 @@ const Header = () => {
                   </motion.button>
                   
                   <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="px-6 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-full font-medium hover:from-purple-700 hover:to-pink-700 transition-all duration-300 shadow-lg hover:shadow-purple-500/25"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    transition={{ type: "tween", duration: 0.2 }}
+                    className="px-6 py-2 text-white rounded-full font-medium shadow-lg hover:shadow-purple-500/25"
+                    style={{
+                      background: 'linear-gradient(to right, #7c3aed, #db2777)'
+                    }}
                   >
                     Empezar Gratis
                   </motion.button>
