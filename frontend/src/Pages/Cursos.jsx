@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import axios from 'axios';
-import { FaGraduationCap, FaClock, FaChalkboardTeacher, FaBookReader } from 'react-icons/fa';
+import {FaClock, FaChalkboardTeacher, FaBookReader } from 'react-icons/fa';
 
 const Cursos = () => {
   const [cursos, setCursos] = useState([]);
@@ -62,6 +62,12 @@ const Cursos = () => {
           >
             Descubre nuestra selección de cursos diseñados para impulsar tu carrera en tecnología
           </motion.p>
+          {/* Mostrar el botón solo si ha iniciado sesión */}
+          {localStorage.getItem('username') && (
+            <button className="mt-5 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-2 rounded-xl font-semibold hover:shadow-lg hover:shadow-purple-500/20 transition-all duration-300">
+              Ver Mis Cursos
+            </button>
+          )}
         </div>
 
         {error ? (

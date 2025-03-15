@@ -47,6 +47,7 @@ const Header = () => {
   };
 
   const handleLogout = () => {
+    localStorage.clear();
     setIsLoggedIn(false);
     setUserData(null);
     toast.success('Has cerrado sesión correctamente');
@@ -106,7 +107,7 @@ const Header = () => {
             </nav>
 
             <div className="flex items-center gap-4">
-              {isLoggedIn ? (
+              {localStorage.getItem('username') ? (
                 <div className="flex items-center gap-4">
                   <motion.div
                     whileHover={{ scale: 1.02 }}
@@ -114,11 +115,11 @@ const Header = () => {
                     className="flex items-center gap-2"
                   >
                     <img 
-                      src={`https://api.dicebear.com/7.x/initials/svg?seed=${userData.nombre}`}
+                      src={`https://api.dicebear.com/7.x/initials/svg?seed=${localStorage.getItem('username')}`}
                       alt="Avatar" 
                       className="w-8 h-8 rounded-full bg-purple-500"
                     />
-                    <span className="text-white">{userData.nombre}</span>
+                    <span className="text-white">{localStorage.getItem('username')}</span>
                   </motion.div>
                   <motion.button
                     whileHover={{ scale: 1.02 }}
