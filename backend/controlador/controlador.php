@@ -25,6 +25,7 @@
     function obtenerCursos(){
         require_once("../modelo/cursos.php");
         $modelo = new Cursos();
+        $cursos = array();
         $cursos = $modelo->obtenerCursos();
         echo json_encode($cursos);
     }
