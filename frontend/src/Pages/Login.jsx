@@ -22,6 +22,9 @@ const Login = ({ isOpen, onClose, onSuccess, onError }) => {
         datos,
         {
           headers: { 'Content-Type': 'multipart/form-data' },
+        },
+        {
+          withCredentials: true
         }
       );
 

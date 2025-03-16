@@ -1,11 +1,18 @@
 <?php
-
-    header('Access-Control-Allow-Origin: *');
-    header('Access-Control-Allow-Credentials: true');
+    header('Access-Control-Allow-Origin: http://localhost:5173');
+    header('Access-Control-Allow-Credentials: true'); 
     header('Access-Control-Allow-Headers: Content-Type, Authorization');
     header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
+    
 
     session_start();
+
+    function comprobarSesion(){
+        $comprobar = array();
+        $comprobar = $_SESSION;
+        session_write_close();
+        echo json_encode($comprobar);
+    }
     
     function iniciarSesion(){
         require_once("../modelo/bd.php");
@@ -44,6 +51,11 @@
         $misCursos = $cursos->obtenerMisCursos($_POST["id"]);
         session_write_close();
         echo json_encode($misCursos);
+    }
+
+    function desconectar(){
+        session_write_close();
+        session_destroy();
     }
     
     

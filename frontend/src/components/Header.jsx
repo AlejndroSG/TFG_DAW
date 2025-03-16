@@ -3,12 +3,39 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import Login from '../Pages/Login';
 import { toast } from 'react-hot-toast';
+import axios from 'axios';
 
 const Header = () => {
   const [scrolled, setScrolled] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userData, setUserData] = useState(null);
+
+  // Añadir funcionalidad del menu hamburguesa
+  const [menuOpen, setMenuOpen] = useState(false);
+  const toggleMenu = () => setMenuOpen(!menuOpen);
+  const handleMenuClose = () => setMenuOpen(false);
+
+  // useEffect(() => {
+  //   const comprobarSesion = async () => {
+  //     const respuesta = await axios.get(
+  //       'http://localhost/TFG_DAW/backend/controlador/controlador.php?action=comprobarSesion',
+  //       {
+  //         headers: { 'Content-Type': 'multipart/form-data' },
+  //         withCredentials: true
+  //       }
+  //     );
+  //     console.log(respuesta.data.nombre);
+  //     if (respuesta.data.nombre != null) {
+  //       setIsLoggedIn(true);
+  //       setUserData(respuesta.data);
+  //       toast.success(`¡Bienvenido ${respuesta.data.nombre}!`);
+  //     }else{
+  //       console.log(respuesta.data);
+  //     }
+  //   };
+  //   comprobarSesion();
+  // }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -46,10 +73,13 @@ const Header = () => {
     toast.error(message);
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     localStorage.clear();
     setIsLoggedIn(false);
     setUserData(null);
+    await axios.post(
+      'http://localhost/TFG_DAW/backend/controlador/controlador.php?action=desconectar'
+    );
     toast.success('Has cerrado sesión correctamente');
   };
 

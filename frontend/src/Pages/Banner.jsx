@@ -48,8 +48,8 @@ const Banner = () => {
       }
     };
 
-    crearMeteoros(50);
-    crearParticulasFlotantes(80);
+    crearMeteoros(20);
+    crearParticulasFlotantes(40);
 
     const dibujarMeteoros = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);

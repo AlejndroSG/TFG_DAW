@@ -7,25 +7,30 @@ const Cursos = () => {
   const [cursos, setCursos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [mios, setMios] = useState(false);
 
+  const obtenerCursos = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get(
+        "http://localhost/TFG_DAW/backend/controlador/controlador.php?action=obtenerCursos"
+      );
+      // Agregamos un delay artificial de 1 segundo
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      setCursos(response.data);
+      setError(null);
+      setMios(false);
+    } catch (error) {
+      console.error("Error al obtener los cursos:", error);
+      setError("No se pudieron cargar los cursos. Por favor, intenta más tarde.");
+      setCursos([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Llamar a la función cuando el componente se monte
   useEffect(() => {
-    const obtenerCursos = async () => {
-      try {
-        setLoading(true);
-        const response = await axios.get('http://localhost/TFG_DAW/backend/controlador/controlador.php?action=obtenerCursos');
-        // Agregamos un delay artificial de 1 segundo
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        setCursos(response.data);
-        setError(null);
-      } catch (error) {
-        console.error('Error al obtener los cursos:', error);
-        setError('No se pudieron cargar los cursos. Por favor, intenta más tarde.');
-        setCursos([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     obtenerCursos();
   }, []);
   
@@ -34,7 +39,6 @@ const Cursos = () => {
       const obtenerMisCursos = async () => {
         try {
           setLoading(true);
-
           const datos = new FormData();
           datos.append('id', localStorage.getItem('id'));
           // console.log("Buenas, "+localStorage.getItem('id'));
@@ -45,6 +49,7 @@ const Cursos = () => {
           console.log(response.data);
           setCursos(response.data);
           setError(null);
+          setMios(true);
         } catch (error) {
           console.error('Error al obtener los cursos:', error);
           setError('No se pudieron cargar los cursos. Por favor, intenta más tarde.');
@@ -60,7 +65,7 @@ const Cursos = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-        <div className="text-center">
+        <div className="text-center flex flex-col items-center">
           <div className="w-16 h-16 border-4 border-t-purple-600 border-r-pink-600 border-b-purple-600 border-l-pink-600 border-solid rounded-full animate-spin"></div>
           <p className="mt-4 text-gray-300">Cargando cursos...</p>
         </div>
@@ -92,9 +97,14 @@ const Cursos = () => {
           </motion.p>
           {/* Mostrar el botón solo si ha iniciado sesión */}
           {/* {localStorage.getItem('username') && ( */}
+          {/* { console.log(localStorage.getItem('username'))} */}
+          { mios ?  (
+            <button onClick={() => obtenerCursos()} className='flex items-center justify-center mt-5 text-white px-6 py-2 rounded-xl font-semibold hover:shadow-lg hover:shadow-purple-500/20 transition-all duration-300'>Volver Atrás ⬅️</button>
+          ) : (
             <button onClick={() => misCursos()} className="mt-5 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-2 rounded-xl font-semibold hover:shadow-lg hover:shadow-purple-500/20 transition-all duration-300">
               Ver Mis Cursos
             </button>
+          )}
           {/* )} */}
         </div>
 
@@ -107,61 +117,66 @@ const Cursos = () => {
             {error}
           </motion.div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {cursos.map((curso, index) => (
-              <motion.div
-                key={curso.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1, duration: 0.5 }}
-                className="group relative bg-gray-800/50 backdrop-blur-sm rounded-2xl p-8 border border-gray-700/50 hover:border-purple-500/50 transition-all duration-300"
-              >
-                {/* Icono decorativo */}
-                <div className="absolute -top-6 right-6">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-600/20 to-pink-600/20 flex items-center justify-center transform group-hover:scale-110 transition-transform duration-300">
-                    <FaBookReader className="w-6 h-6 text-purple-400" />
-                  </div>
-                </div>
-
-                {/* Contenido del curso */}
-                <div className="mb-6">
-                  <h2 className="text-2xl font-bold text-white mb-3 group-hover:text-purple-400 transition-colors">
-                    {curso.titulo}
-                  </h2>
-                  <p className="text-gray-300 leading-relaxed line-clamp-3">
-                    {curso.descripcion}
-                  </p>
-                </div>
-
-                {/* Detalles del curso */}
-                <div className="grid grid-cols-2 gap-4 mb-6">
-                  <div className="flex items-center">
-                    <FaClock className="w-5 h-5 text-purple-400 mr-2" />
-                    <span className="text-gray-300">{curso.duracion} horas</span>
-                  </div>
-                  <div className="flex items-center">
-                    <FaChalkboardTeacher className="w-5 h-5 text-pink-400 mr-2" />
-                    <span className="text-gray-300">{curso.profesor}</span>
-                  </div>
-                </div>
-
-                {/* Precio y botón */}
-                <div className="flex items-center justify-between pt-6 border-t border-gray-700/50">
-                  <div className="text-2xl font-bold text-white">
-                    {curso.precio}€
-                  </div>
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="px-6 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-purple-500/20 transition-all duration-300"
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">            
+            {
+            cursos.length > 0 ? 
+                cursos.map((curso, index) => (
+                  <motion.div
+                    key={curso.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.1, duration: 0.5 }}
+                    className="group relative bg-gray-800/50 backdrop-blur-sm rounded-2xl p-8 border border-gray-700/50 hover:border-purple-500/50 transition-all duration-300"
                   >
-                    Inscribirse
-                  </motion.button>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        )}
+                    {/* Icono decorativo */}
+                    <div className="absolute -top-6 right-6">
+                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-600/20 to-pink-600/20 flex items-center justify-center transform group-hover:scale-110 transition-transform duration-300">
+                        <FaBookReader className="w-6 h-6 text-purple-400" />
+                      </div>
+                    </div>
+
+                    {/* Contenido del curso */}
+                    <div className="mb-6">
+                      <h2 className="text-2xl font-bold text-white mb-3 group-hover:text-purple-400 transition-colors">
+                        {curso.titulo}
+                      </h2>
+                      <p className="text-gray-300 leading-relaxed line-clamp-3">
+                        {curso.descripcion}
+                      </p>
+                    </div>
+
+                    {/* Detalles del curso */}
+                    <div className="grid grid-cols-2 gap-4 mb-6">
+                      <div className="flex items-center">
+                        <FaClock className="w-5 h-5 text-purple-400 mr-2" />
+                        <span className="text-gray-300">{curso.duracion} horas</span>
+                      </div>
+                      <div className="flex items-center">
+                        <FaChalkboardTeacher className="w-5 h-5 text-pink-400 mr-2" />
+                        <span className="text-gray-300">{curso.profesor}</span>
+                      </div>
+                    </div>
+
+                    {/* Precio y botón */}
+                    <div className="flex items-center justify-between pt-6 border-t border-gray-700/50">
+                      <div className="text-2xl font-bold text-white">
+                        {curso.precio}€
+                      </div>
+                      <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        className="px-6 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-purple-500/20 transition-all duration-300"
+                      >
+                        Inscribirse
+                      </motion.button>
+                    </div>
+                  </motion.div>
+                ))
+                :
+                  <p className="text-gray-300">No hay cursos disponibles</p>
+              }
+            </div>
+          )}
       </div>
     </div>
   );
