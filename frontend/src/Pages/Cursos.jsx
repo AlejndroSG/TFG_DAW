@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { use, useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import axios from 'axios';
 import {FaClock, FaChalkboardTeacher, FaBookReader } from 'react-icons/fa';
@@ -28,6 +28,34 @@ const Cursos = () => {
 
     obtenerCursos();
   }, []);
+  
+  let misCursos = () =>{
+    console.log("hola");
+      const obtenerMisCursos = async () => {
+        try {
+          setLoading(true);
+
+          const datos = new FormData();
+          datos.append('id', localStorage.getItem('id'));
+          // console.log("Buenas, "+localStorage.getItem('id'));
+          const response = await axios.post('http://localhost/TFG_DAW/backend/controlador/controlador.php?action=obtenerMisCursos', datos, {
+          }, {
+            withCredentials: true
+          });
+          console.log(response.data);
+          setCursos(response.data);
+          setError(null);
+        } catch (error) {
+          console.error('Error al obtener los cursos:', error);
+          setError('No se pudieron cargar los cursos. Por favor, intenta más tarde.');
+          setCursos([]);
+        } finally {
+          setLoading(false);
+        }
+      };
+  
+      obtenerMisCursos();
+  }
 
   if (loading) {
     return (
@@ -63,11 +91,11 @@ const Cursos = () => {
             Descubre nuestra selección de cursos diseñados para impulsar tu carrera en tecnología
           </motion.p>
           {/* Mostrar el botón solo si ha iniciado sesión */}
-          {localStorage.getItem('username') && (
-            <button className="mt-5 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-2 rounded-xl font-semibold hover:shadow-lg hover:shadow-purple-500/20 transition-all duration-300">
+          {/* {localStorage.getItem('username') && ( */}
+            <button onClick={() => misCursos()} className="mt-5 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-2 rounded-xl font-semibold hover:shadow-lg hover:shadow-purple-500/20 transition-all duration-300">
               Ver Mis Cursos
             </button>
-          )}
+          {/* )} */}
         </div>
 
         {error ? (

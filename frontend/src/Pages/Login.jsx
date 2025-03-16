@@ -28,10 +28,11 @@ const Login = ({ isOpen, onClose, onSuccess, onError }) => {
       if (respuesta.data.nombre != null) {
         onSuccess(respuesta.data);
         setFormData({ username: '', password: '' }); // Limpiar el formulario
-        localStorage.setItem('username', respuesta.data.nombre);
-        localStorage.setItem('tipo_usuario', respuesta.data.tipo_usuario);
+        // localStorage.setItem('username', respuesta.data.nombre);
+        // localStorage.setItem('tipo_usuario', respuesta.data.tipo_usuario);
         localStorage.setItem('id', respuesta.data.id);
       } else {
+        console.log(respuesta.data);
         onError("Usuario o contraseña incorrectos");
       }
     } catch (error) {

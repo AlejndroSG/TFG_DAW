@@ -14,13 +14,13 @@
         
         // Comprobamos si las credenciales son correctas
         public function compCredenciales(String $nom, String $psw){
-            $sentencia = "SELECT nombre, tipo_usuario FROM usuarios WHERE nombre = ? AND contraseña = ?"; 
+            $sentencia = "SELECT id_usuario, nombre, tipo_usuario FROM usuarios WHERE nombre = ? AND contraseña = ?"; 
             $consulta = $this->conn->prepare($sentencia);
             $consulta->bind_param("ss", $nom, $psw);
-            $consulta->bind_result($nombre, $tipo_usuario);
+            $consulta->bind_result($id, $nombre, $tipo_usuario);
             $consulta->execute();
             $consulta->fetch();
-            $comprobar = array("nombre" => $nombre, "tipo_usuario" => $tipo_usuario);
+            $comprobar = array("id" => $id, "nombre" => $nombre, "tipo_usuario" => $tipo_usuario);
             $consulta->close();
             return $comprobar;
         }

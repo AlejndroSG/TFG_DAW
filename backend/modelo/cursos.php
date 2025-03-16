@@ -21,5 +21,20 @@ class Cursos {
         $consulta->close();
         return $cursos;
     }
+
+    public function obtenerMisCursos($id) {
+        // var_dump($id);
+        $sentencia = "SELECT cursos.id_curso, cursos.titulo, cursos.descripcion, cursos.precio, cursos.duracion, usuarios.nombre FROM cursos, usuarios WHERE cursos.id_profesor = usuarios.id_usuario AND cursos.id_curso = (select id_curso from inscripciones where id_usuario = ?)";
+        $consulta = $this->conn->prepare($sentencia);
+        $consulta->bind_param("i", $id);
+        $consulta->bind_result($id, $titulo, $descripcion, $precio, $duracion, $profesor);
+        $consulta->execute();
+        $cursos = array();
+        while($consulta->fetch()){
+            $cursos[] = array("id" => $id, "titulo" => $titulo, "descripcion" => $descripcion, "precio" => $precio, "duracion" => $duracion , "profesor" => $profesor);
+        }
+        $consulta->close();
+        return $cursos;
+    }
 }
 ?>

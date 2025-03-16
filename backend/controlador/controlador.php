@@ -1,13 +1,13 @@
 <?php
+
     header('Access-Control-Allow-Origin: *');
     header('Access-Control-Allow-Credentials: true');
     header('Access-Control-Allow-Headers: Content-Type, Authorization');
     header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
 
+    session_start();
+    
     function iniciarSesion(){
-        if(session_status() == PHP_SESSION_NONE){
-            session_start();
-        }
         require_once("../modelo/bd.php");
         $modelo = new db();
         $msg = "<p style='color:red'>Credenciales incorrectas</p>";
@@ -16,8 +16,12 @@
         if(count($comprobar) == 0){
             echo json_encode($msg);
         }else{
+            // var_dump($comprobar);
+            // die();
+            $_SESSION["id"] = $comprobar["id"];
             $_SESSION["username"] = $comprobar["nombre"];
             $_SESSION["tipo_usuario"] = $comprobar["tipo_usuario"];
+            session_write_close();
             echo json_encode($comprobar);
         }
     }
@@ -28,6 +32,18 @@
         $cursos = array();
         $cursos = $modelo->obtenerCursos();
         echo json_encode($cursos);
+    }
+
+    function obtenerMisCursos(){
+        if(session_status() == PHP_SESSION_NONE){
+            session_start();
+        }
+        require_once("../modelo/cursos.php");
+        $cursos = new Cursos();
+        $misCursos = array();
+        $misCursos = $cursos->obtenerMisCursos($_POST["id"]);
+        session_write_close();
+        echo json_encode($misCursos);
     }
     
     
