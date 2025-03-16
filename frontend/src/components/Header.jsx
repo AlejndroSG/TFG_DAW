@@ -11,31 +11,42 @@ const Header = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userData, setUserData] = useState(null);
 
-  // Añadir funcionalidad del menu hamburguesa
-  const [menuOpen, setMenuOpen] = useState(false);
-  const toggleMenu = () => setMenuOpen(!menuOpen);
-  const handleMenuClose = () => setMenuOpen(false);
+  useEffect(() => {
+    const comprobarSesion = async () => {
+      try {
+        const respuesta = await axios.get(
+          'http://localhost/TFG_DAW/backend/controlador/controlador.php?action=comprobarSesion',
+          {
+            headers: { 
+              'Content-Type': 'application/json',
+              'Accept': 'application/json'
+            },
+            withCredentials: true
+          }
+        );
 
-  // useEffect(() => {
-  //   const comprobarSesion = async () => {
-  //     const respuesta = await axios.get(
-  //       'http://localhost/TFG_DAW/backend/controlador/controlador.php?action=comprobarSesion',
-  //       {
-  //         headers: { 'Content-Type': 'multipart/form-data' },
-  //         withCredentials: true
-  //       }
-  //     );
-  //     console.log(respuesta.data.nombre);
-  //     if (respuesta.data.nombre != null) {
-  //       setIsLoggedIn(true);
-  //       setUserData(respuesta.data);
-  //       toast.success(`¡Bienvenido ${respuesta.data.nombre}!`);
-  //     }else{
-  //       console.log(respuesta.data);
-  //     }
-  //   };
-  //   comprobarSesion();
-  // }, []);
+        if (respuesta.data && respuesta.data.username) {
+          setIsLoggedIn(true);
+          setUserData({
+            nombre: respuesta.data.username,
+            id: respuesta.data.id,
+            tipo_usuario: respuesta.data.tipo_usuario
+          });
+          
+          toast.success(`¡Bienvenido ${respuesta.data.username}!`);
+        } else {
+          setIsLoggedIn(false);
+          setUserData(null);
+        }
+      } catch (error) {
+        console.error('Error al comprobar sesión:', error);
+        setIsLoggedIn(false);
+        setUserData(null);
+      }
+    };
+
+    comprobarSesion();
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -74,13 +85,20 @@ const Header = () => {
   };
 
   const handleLogout = async () => {
-    localStorage.clear();
-    setIsLoggedIn(false);
-    setUserData(null);
-    await axios.post(
-      'http://localhost/TFG_DAW/backend/controlador/controlador.php?action=desconectar'
-    );
-    toast.success('Has cerrado sesión correctamente');
+    try {
+      await axios.post(
+        'http://localhost/TFG_DAW/backend/controlador/controlador.php?action=desconectar',
+        {},
+        { withCredentials: true }
+      );
+      
+      setIsLoggedIn(false);
+      setUserData(null);
+      toast.success('Has cerrado sesión correctamente');
+    } catch (error) {
+      console.error('Error al cerrar sesión:', error);
+      toast.error('Error al cerrar sesión');
+    }
   };
 
   return (

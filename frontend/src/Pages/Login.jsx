@@ -22,24 +22,35 @@ const Login = ({ isOpen, onClose, onSuccess, onError }) => {
         datos,
         {
           headers: { 'Content-Type': 'multipart/form-data' },
-        },
-        {
           withCredentials: true
         }
       );
 
-      if (respuesta.data.nombre != null) {
-        onSuccess(respuesta.data);
-        setFormData({ username: '', password: '' }); // Limpiar el formulario
-        // localStorage.setItem('username', respuesta.data.nombre);
-        // localStorage.setItem('tipo_usuario', respuesta.data.tipo_usuario);
-        localStorage.setItem('id', respuesta.data.id);
+      console.log('Respuesta login:', respuesta.data);
+
+      if (respuesta.data && (respuesta.data.username || respuesta.data.nombre)) {
+        // Limpiar el formulario
+        setFormData({ username: '', password: '' });
+        
+        // Llamar a onSuccess con los datos correctos
+        onSuccess({
+          nombre: respuesta.data.username || respuesta.data.nombre,
+          id: respuesta.data.id,
+          tipo_usuario: respuesta.data.tipo_usuario
+        });
+        
+        // No usar localStorage para datos sensibles de sesión
+        // La sesión se maneja con cookies httpOnly
+      } else if (respuesta.data.error) {
+        console.log('Error de login:', respuesta.data.error);
+        onError(respuesta.data.error);
       } else {
-        console.log(respuesta.data);
+        console.log('Respuesta inesperada:', respuesta.data);
         onError("Usuario o contraseña incorrectos");
       }
     } catch (error) {
-      onError("Error al conectar con el servidor");
+      console.error('Error completo:', error);
+      onError(error.response?.data?.error || "Error al conectar con el servidor");
     }
   };
 
