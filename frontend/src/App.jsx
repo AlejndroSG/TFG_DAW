@@ -5,8 +5,10 @@ import Plantilla from './layout/Plantilla'
 import Banner from './Pages/Banner'
 import Login from './Pages/Login'
 import Cursos from './Pages/Cursos'
-import Recursos from './Pages/Recursos'
 import Blog from './Pages/Blog'
+import SobreNosotros from './Pages/SobreNosotros'
+import Contacto from './Pages/Contacto'
+import Curso from './Pages/Curso'
 
 function App() {
   return (
@@ -17,8 +19,10 @@ function App() {
             <Route index element={<Banner/>}/>
             <Route path="/login" element={<Login/>}/>
             <Route path="/cursos" element={<Cursos/>}/>
-            <Route path="/recursos" element={<Recursos/>}/>
             <Route path="/blog" element={<Blog/>}/>
+            <Route path="/sobre-nosotros" element={<SobreNosotros/>}/>
+            <Route path="/contacto" element={<Contacto/>}/>
+            <Route path="/curso/:id" element={<Curso/>}/>
           </Route>
         </Routes>
       </BrowserRouter>

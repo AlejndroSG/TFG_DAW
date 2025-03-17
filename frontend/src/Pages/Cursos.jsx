@@ -1,14 +1,25 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import axios from 'axios';
-import {FaClock, FaChalkboardTeacher, FaBookReader } from 'react-icons/fa';
+import { Link } from 'react-router-dom';
+import {FaClock, FaChalkboardTeacher, FaBookReader, FaStar } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom';
 
 const Cursos = () => {
+  const navigate = useNavigate();
   const [cursos, setCursos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [mios, setMios] = useState(false);
   const [userData, setUserData] = useState(null);
+
+  const tecnologiaImagenes = {
+    'React': 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/React-icon.svg/1200px-React-icon.svg.png',
+    'Python': 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c3/Python-logo-notext.svg/1869px-Python-logo-notext.svg.png',
+    'JavaScript': 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6a/JavaScript-logo.png/800px-JavaScript-logo.png',
+    'Node.js': 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d9/Node.js_logo.svg/1280px-Node.js_logo.svg.png',
+    'default': 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?q=80&w=1000&auto=format&fit=crop'
+  };
 
   useEffect(() => {
     const comprobarSesion = async () => {
@@ -51,7 +62,7 @@ const Cursos = () => {
   useEffect(() => {
     obtenerCursos();
   }, []);
-  
+
   const misCursos = async () => {
     try {
       setLoading(true);
@@ -138,46 +149,55 @@ const Cursos = () => {
                   key={curso.id}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
+                  onClick={() => navigate(`/curso/${curso.id}`)}
                   transition={{ delay: index * 0.1, duration: 0.5 }}
-                  className="group relative bg-gray-800/50 backdrop-blur-sm rounded-2xl p-8 border border-gray-700/50 hover:border-purple-500/50 transition-all duration-300"
+                  className="group relative bg-gray-800/50 backdrop-blur-sm rounded-2xl overflow-hidden border border-gray-700/50 hover:border-purple-500/50 transition-all duration-300"
                 >
-                  <div className="absolute -top-6 right-6">
-                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-600/20 to-pink-600/20 flex items-center justify-center transform group-hover:scale-110 transition-transform duration-300">
-                      <FaBookReader className="w-6 h-6 text-purple-400" />
+                  {/* Imagen del curso */}
+                  <div className="relative h-48 overflow-hidden">
+                    <img
+                      src={tecnologiaImagenes[curso.tecnologia] || tecnologiaImagenes.default}
+                      alt={curso.titulo}
+                      className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-gray-900 to-transparent opacity-60"></div>
+                    <div className="absolute top-4 right-4 bg-purple-500/90 px-3 py-1 rounded-full text-white text-sm font-semibold">
+                      {curso.tipo_curso || 'Todos los niveles'}
                     </div>
                   </div>
 
-                  <div className="mb-6">
-                    <h2 className="text-2xl font-bold text-white mb-3 group-hover:text-purple-400 transition-colors">
+                  <div className="p-6">
+                    <h2 className="text-2xl font-bold text-white mb-3 group-hover:text-purple-400 transition-colors line-clamp-2">
                       {curso.titulo}
                     </h2>
-                    <p className="text-gray-300 leading-relaxed line-clamp-3">
+                    
+                    <p className="text-gray-300 leading-relaxed line-clamp-3 mb-4">
                       {curso.descripcion}
                     </p>
-                  </div>
 
-                  <div className="grid grid-cols-2 gap-4 mb-6">
-                    <div className="flex items-center">
-                      <FaClock className="w-5 h-5 text-purple-400 mr-2" />
-                      <span className="text-gray-300">{curso.duracion} horas</span>
+                    <div className="grid grid-cols-2 gap-4 mb-6">
+                      <div className="flex items-center">
+                        <FaClock className="w-5 h-5 text-purple-400 mr-2" />
+                        <span className="text-gray-300">{curso.duracion} horas</span>
+                      </div>
+                      <div className="flex items-center">
+                        <FaChalkboardTeacher className="w-5 h-5 text-pink-400 mr-2" />
+                        <span className="text-gray-300 truncate">{curso.profesor}</span>
+                      </div>
                     </div>
-                    <div className="flex items-center">
-                      <FaChalkboardTeacher className="w-5 h-5 text-pink-400 mr-2" />
-                      <span className="text-gray-300">{curso.profesor}</span>
-                    </div>
-                  </div>
 
-                  <div className="flex items-center justify-between pt-6 border-t border-gray-700/50">
-                    <div className="text-2xl font-bold text-white">
-                      {curso.precio}€
+                    <div className="flex items-center justify-between pt-6 border-t border-gray-700/50">
+                      <div className="text-2xl font-bold text-white">
+                        {curso.precio}€
+                      </div>
+                      <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        className="px-6 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-purple-500/20 transition-all duration-300"
+                      >
+                        Inscribirse
+                      </motion.button>
                     </div>
-                    <motion.button
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      className="px-6 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-purple-500/20 transition-all duration-300"
-                    >
-                      Inscribirse
-                    </motion.button>
                   </div>
                 </motion.div>
               ))

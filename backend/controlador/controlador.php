@@ -83,6 +83,19 @@
         echo json_encode($misCursos);
     }
 
+    function obtenerCurso(){
+        if (!isset($_POST["id"])) {
+            echo json_encode(["error" => "Datos de curso incompletos"]);
+            return;
+        }
+        
+        require_once("../modelo/cursos.php");
+        $cursos = new Cursos();
+        $curso = array();
+        $curso = $cursos->obtenerCurso($_POST["id"]);
+        echo json_encode($curso);
+    }
+
     function desconectar(){
         $_SESSION = array();
         
