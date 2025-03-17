@@ -225,12 +225,7 @@ const Header = () => {
         </div>
       </motion.header>
 
-      <Login 
-        isOpen={isLoginOpen}
-        onClose={handleLoginClose}
-        onSuccess={handleLoginSuccess}
-        onError={handleLoginError}
-      />
+      <Login isOpen={isLoginOpen} onClose={handleLoginClose} onSuccess={handleLoginSuccess} onError={handleLoginError}/>
     </>
   );
 };
