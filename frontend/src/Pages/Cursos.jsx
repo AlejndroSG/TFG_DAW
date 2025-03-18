@@ -13,14 +13,6 @@ const Cursos = () => {
   const [mios, setMios] = useState(false);
   const [userData, setUserData] = useState(null);
 
-  const tecnologiaImagenes = {
-    'React': 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/React-icon.svg/1200px-React-icon.svg.png',
-    'Python': 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c3/Python-logo-notext.svg/1869px-Python-logo-notext.svg.png',
-    'JavaScript': 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6a/JavaScript-logo.png/800px-JavaScript-logo.png',
-    'Node.js': 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d9/Node.js_logo.svg/1280px-Node.js_logo.svg.png',
-    'default': 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?q=80&w=1000&auto=format&fit=crop'
-  };
-
   useEffect(() => {
     const comprobarSesion = async () => {
       try {
@@ -156,7 +148,7 @@ const Cursos = () => {
                   {/* Imagen del curso */}
                   <div className="relative h-48 overflow-hidden">
                     <img
-                      src={tecnologiaImagenes[curso.tecnologia] || tecnologiaImagenes.default}
+                      src={curso.imgCurso}
                       alt={curso.titulo}
                       className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
                     />

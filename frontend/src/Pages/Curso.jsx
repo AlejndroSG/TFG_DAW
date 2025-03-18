@@ -15,6 +15,14 @@ const Curso = () => {
   const [error, setError] = useState(null);
   const [userData, setUserData] = useState(null);
 
+  const getImageUrl = (relativePath) => {
+    // Si la ruta empieza con ./ o ../, la convertimos a una ruta absoluta
+    if (relativePath?.startsWith('./')) {
+      return relativePath.replace('./', '/');
+    }
+    return relativePath;
+  };
+
   const tecnologiaImagenes = {
     'React': 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/React-icon.svg/1200px-React-icon.svg.png',
     'Python': 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c3/Python-logo-notext.svg/1869px-Python-logo-notext.svg.png',
@@ -32,8 +40,14 @@ const Curso = () => {
         { withCredentials: true }
       );
       await new Promise((resolve) => setTimeout(resolve, 1000));
-      setCurso(response.data[0]);
-      setError(null);
+      
+      if (response.data) {
+        setCurso(response.data);
+        setError(null);
+      } else {
+        setError("No se encontró el curso solicitado.");
+        setCurso(null);
+      }
     } catch (error) {
       setError("No se pudo cargar el curso. Por favor, intenta más tarde.");
       setCurso(null);
@@ -180,7 +194,7 @@ const Curso = () => {
               className="relative rounded-2xl overflow-hidden mb-12 aspect-video"
             >
               <img
-                src={tecnologiaImagenes[curso.tecnologia] || tecnologiaImagenes.default}
+                src={getImageUrl(curso.imgCurso)}
                 alt={curso.titulo}
                 className="w-full h-full object-cover"
               />

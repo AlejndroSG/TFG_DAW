@@ -93,6 +93,7 @@
         $cursos = new Cursos();
         $curso = array();
         $curso = $cursos->obtenerCurso($_POST["id"]);
+        error_log('Datos del curso: ' . print_r($curso, true));
         echo json_encode($curso);
     }
 
