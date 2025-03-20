@@ -9,7 +9,6 @@ const Curso = () => {
   const identifier = new FormData();
   identifier.append('id', id);
   
-  const navigate = useNavigate();
   const [curso, setCurso] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -77,6 +76,11 @@ const Curso = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    misCursos();
+  }, []);
+
 
   if (loading) {
     return (
