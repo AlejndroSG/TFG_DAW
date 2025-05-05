@@ -223,7 +223,9 @@ const Header = () => {
                       alt="Avatar" 
                       className="w-8 h-8 rounded-full bg-purple-500"
                     />
-                    <span className="text-white">{userData.nombre}</span>
+                    <Link to="/perfil" className="text-white hover:text-purple-400 transition-colors">
+                      {userData.nombre}
+                    </Link>
                   </motion.div>
                   <motion.button
                     whileHover={{ scale: 1.02 }}

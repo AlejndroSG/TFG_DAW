@@ -4,7 +4,7 @@
     class db{
         private $conn;
         public function __construct(){
-            $this->conn = new mysqli("localhost", "root", "", "learnia");
+            $this->conn = new mysqli("localhost", "root", "", "TFG_DAW");
             $this->conn->set_charset("utf8");
         }
 

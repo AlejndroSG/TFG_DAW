@@ -39,13 +39,22 @@ const Cursos = () => {
         "http://localhost/TFG_DAW/backend/controlador/controlador.php?action=obtenerCursos",
         { withCredentials: true }
       );
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      setCursos(response.data);
-      setError(null);
-      setMios(false);
+      
+      // Verificar si la respuesta es un array
+      if (Array.isArray(response.data)) {
+        setCursos(response.data);
+        setError(null);
+        setMios(false);
+      } else {
+        setError('Error al obtener los cursos');
+        setCursos([]);
+        setMios(false);
+      }
     } catch (error) {
-      setError("No se pudieron cargar los cursos. Por favor, intenta más tarde.");
+      console.error('Error al obtener los cursos:', error);
+      setError('Error al cargar los cursos');
       setCursos([]);
+      setMios(false);
     } finally {
       setLoading(false);
     }

@@ -70,6 +70,78 @@
         echo json_encode($cursos);
     }
 
+    function obtenerPerfil(){
+        if (!isset($_SESSION['id'])) {
+            echo json_encode(["error" => "Usuario no autenticado"]);
+            return;
+        }
+
+        require_once("../modelo/perfil.php");
+        $perfil = new Perfil();
+        $datos = $perfil->obtenerPerfil($_SESSION['id']);
+        
+        // Eliminar la contraseña de los datos
+        if (isset($datos['contraseña'])) {
+            unset($datos['contraseña']);
+        }
+        
+        echo json_encode($datos);
+    }
+
+    function obtenerPassword(){
+        if (!isset($_SESSION['id'])) {
+            echo json_encode(["error" => "Usuario no autenticado"]);
+            return;
+        }
+
+        require_once("../modelo/perfil.php");
+        $perfil = new Perfil();
+        $datos = $perfil->obtenerPassword($_SESSION['id']);
+        echo json_encode($datos);
+    }
+
+    function actualizarPerfil(){
+        if (!isset($_SESSION['id'])) {
+            echo json_encode(["error" => "Usuario no autenticado"]);
+            return;
+        }
+
+        if (!isset($_POST["nombre"]) || !isset($_POST["email"])) {
+            echo json_encode(["error" => "Datos incompletos"]);
+            return;
+        }
+
+        require_once("../modelo/perfil.php");
+        $perfil = new Perfil();
+        $datos = array(
+            "nombre" => $_POST["nombre"],
+            "email" => $_POST["email"]
+        );
+        $resultado = $perfil->actualizarPerfil($datos);
+        echo json_encode($resultado);
+    }
+
+    function cambiarPassword(){
+        if (!isset($_SESSION['id'])) {
+            echo json_encode(["error" => "Usuario no autenticado"]);
+            return;
+        }
+
+        if (!isset($_POST["password_actual"]) || !isset($_POST["password_nuevo"])) {
+            echo json_encode(["error" => "Datos incompletos"]);
+            return;
+        }
+
+        require_once("../modelo/perfil.php");
+        $perfil = new Perfil();
+        $datos = array(
+            "password_actual" => $_POST["password_actual"],
+            "password_nuevo" => $_POST["password_nuevo"]
+        );
+        $resultado = $perfil->cambiarPassword($datos);
+        echo json_encode($resultado);
+    }
+
     function obtenerMisCursos(){
         if (!isset($_SESSION['id'])) {
             echo json_encode(["error" => "Usuario no autenticado"]);
@@ -112,6 +184,19 @@
     // Si no ha sido iniciado el action
     if(isset($_REQUEST["action"])){
         $action = $_REQUEST["action"];
-        $action(); //La cabra del sistema, lo acciona absolutamente todo
+        
+        // Obtener la función correspondiente
+        $function = $action;
+        
+        // Verificar si la función existe
+        if (function_exists($function)) {
+            $function();
+            exit();
+        }
     }
+
+    // Si llegamos aquí, es que la acción no existe
+    header("HTTP/1.1 404 Not Found");
+    echo json_encode(["error" => "Acción no válida: " . htmlspecialchars($_REQUEST["action"] ?? '')]);
+    exit();
 ?>

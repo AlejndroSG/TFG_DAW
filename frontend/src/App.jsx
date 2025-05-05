@@ -9,6 +9,7 @@ import Blog from './Pages/Blog'
 import SobreNosotros from './Pages/SobreNosotros'
 import Contacto from './Pages/Contacto'
 import Curso from './Pages/Curso'
+import Perfil from './Pages/Perfil'
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
             <Route path="/sobre-nosotros" element={<SobreNosotros/>}/>
             <Route path="/contacto" element={<Contacto/>}/>
             <Route path="/curso/:id" element={<Curso/>}/>
+            <Route path="/perfil" element={<Perfil/>}/>
           </Route>
         </Routes>
       </BrowserRouter>
