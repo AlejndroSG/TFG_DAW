@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 18-03-2025 a las 17:57:56
+-- Tiempo de generación: 05-05-2025 a las 12:07:48
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.0.30
 
@@ -18,7 +18,7 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Base de datos: `learnia`
+-- Base de datos: `TFG_DAW`
 --
 
 -- --------------------------------------------------------
@@ -135,7 +135,7 @@ CREATE TABLE `usuarios` (
 --
 
 INSERT INTO `usuarios` (`id_usuario`, `nombre`, `email`, `contraseña`, `tipo_usuario`, `id_plan`) VALUES
-(1, 'Juan Pérez', 'juan@example.com', 'password123', 'Estudiante', 1),
+(1, 'Juan Pérez', 'juan@example.com', 'juan123', 'Estudiante', 1),
 (2, 'María López', 'maria@example.com', 'segura456', 'Estudiante', 2),
 (3, 'Carlos Sánchez', 'carlos@example.com', 'profesor789', 'Profesor', NULL);
 
