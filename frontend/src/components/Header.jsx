@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { Link, useLocation } from 'react-router-dom';
+import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
 import Login from '../Pages/Login';
 import { toast } from 'react-hot-toast';
 import axios from 'axios';
+import { FaRocket, FaGraduationCap, FaRegLightbulb, FaBook, FaPhoneAlt, FaInfoCircle, FaSignInAlt, FaRegUserCircle } from 'react-icons/fa';
 
 const Header = () => {
   const [scrolled, setScrolled] = useState(false);
@@ -58,6 +59,10 @@ const Header = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  const location = useLocation();
+  const { scrollYProgress } = useScroll();
+  const opacity = useTransform(scrollYProgress, [0, 0.2], [0, 1]);
+
   const navItems = [
     { name: 'Inicio', path: '/' },
     { name: 'Cursos', path: '/cursos' },
@@ -65,6 +70,17 @@ const Header = () => {
     { name: 'Sobre Nosotros', path: '/sobre-nosotros' },
     { name: 'Contacto', path: '/contacto' }
   ];
+  
+  const getIcon = (name) => {
+    switch(name) {
+      case 'Inicio': return <FaRocket className="text-purple-400" size={14} />;
+      case 'Cursos': return <FaGraduationCap className="text-purple-400" size={14} />;
+      case 'Blog': return <FaBook className="text-purple-400" size={14} />;
+      case 'Sobre Nosotros': return <FaInfoCircle className="text-purple-400" size={14} />;
+      case 'Contacto': return <FaPhoneAlt className="text-purple-400" size={14} />;
+      default: return <FaRegLightbulb className="text-purple-400" size={14} />;
+    }
+  };
 
   const handleLoginClick = () => {
     setIsLoginOpen(true);
@@ -141,12 +157,14 @@ const Header = () => {
         initial={{ y: -100 }}
         animate={{ y: 0 }}
         transition={{ type: "spring", stiffness: 50, damping: 15 }}
-        className={`fixed w-full z-40 ${
+        className={`fixed w-full z-40 backdrop-blur-sm ${
           scrolled 
-            ? 'bg-gray-900 bg-opacity-98'
+            ? 'bg-gray-900/90 shadow-lg shadow-purple-500/10'
             : 'bg-transparent'
         }`}
       >
+        {/* Barra decorativa superior con gradiente */}
+        <div className="h-0.5 w-full bg-gradient-to-r from-purple-600 via-pink-600 to-indigo-600"></div>
         <div className="container mx-auto px-4">
           <div className="flex justify-between items-center py-4">
             <motion.div
@@ -156,37 +174,59 @@ const Header = () => {
               className="flex items-center"
             >
               <Link to="/" className="flex items-center gap-3">
-                <img 
-                  className="h-10 w-10" 
-                  src="/src/assets/react.svg" 
-                  alt="LearnIA Logo" 
-                />
-                <span className="text-2xl font-bold text-transparent" style={{
-                  background: 'linear-gradient(to right, #a78bfa, #db2777)',
-                  WebkitBackgroundClip: 'text',
-                  backgroundClip: 'text'
-                }}>
-                  LearnIA
-                </span>
+                <div className="relative">
+                  <div className="absolute -inset-1 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full opacity-70 blur-sm animate-pulse"></div>
+                  <div className="relative flex items-center justify-center h-10 w-10 rounded-full bg-gray-900 border border-purple-500/30">
+                    <FaGraduationCap className="text-2xl text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600" />
+                  </div>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-2xl font-bold text-transparent" style={{
+                    background: 'linear-gradient(to right, #a78bfa, #db2777)',
+                    WebkitBackgroundClip: 'text',
+                    backgroundClip: 'text'
+                  }}>
+                    LearnIA
+                  </span>
+                  <span className="text-[10px] text-gray-400 -mt-1 font-medium tracking-wider">REVOLUCIONA TU APRENDIZAJE</span>
+                </div>
               </Link>
             </motion.div>
 
             {/* Menú de navegación para escritorio */}
-            <nav className="hidden md:flex items-center gap-8">
-              {navItems.map((item, index) => (
-                <motion.div
-                  key={index}
-                  whileHover={{ y: -1 }}
-                  transition={{ type: "tween", duration: 0.2 }}
-                >
-                  <Link
-                    to={item.path}
-                    className="text-gray-300 hover:text-white transition-colors duration-300"
+            <nav className="hidden md:flex items-center gap-7">
+              {navItems.map((item, index) => {
+                const isActive = location.pathname === item.path;
+                return (
+                  <motion.div
+                    key={index}
+                    initial={false}
+                    animate={{ y: isActive ? -2 : 0 }}
+                    whileHover={{ y: -2, scale: 1.03 }}
+                    transition={{ type: "spring", stiffness: 300, damping: 15 }}
+                    className="relative"
                   >
-                    {item.name}
-                  </Link>
-                </motion.div>
-              ))}
+                    <Link
+                      to={item.path}
+                      className={`flex items-center gap-1.5 text-sm font-medium px-2 py-1 rounded-md transition-all duration-300 ${
+                        isActive
+                          ? 'text-white bg-purple-600/10'
+                          : 'text-gray-300 hover:text-white hover:bg-purple-500/5'
+                      }`}
+                    >
+                      {getIcon(item.name)}
+                      <span>{item.name}</span>
+                    </Link>
+                    {isActive && (
+                      <motion.div 
+                        layoutId="activeIndicator"
+                        className="absolute -bottom-1 left-1/2 w-1.5 h-1.5 rounded-full bg-gradient-to-r from-purple-500 to-pink-600 transform -translate-x-1/2"
+                        transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                      />
+                    )}
+                  </motion.div>
+                );
+              })}
             </nav>
 
             <div className="flex items-center gap-4">
@@ -214,50 +254,63 @@ const Header = () => {
               {userData && isLoggedIn ? (
                 <div className="flex items-center gap-4">
                   <motion.div
-                    whileHover={{ scale: 1.02 }}
-                    transition={{ type: "tween", duration: 0.2 }}
-                    className="flex items-center gap-2"
+                    whileHover={{ scale: 1.03 }}
+                    transition={{ type: "spring", stiffness: 300, damping: 15 }}
+                    className="flex items-center gap-3 px-3 py-1.5 rounded-lg bg-purple-600/10 border border-purple-500/20"
                   >
-                    <img 
-                      src={`https://api.dicebear.com/7.x/initials/svg?seed=${userData.nombre}`}
-                      alt="Avatar" 
-                      className="w-8 h-8 rounded-full bg-purple-500"
-                    />
-                    <Link to="/perfil" className="text-white hover:text-purple-400 transition-colors">
-                      {userData.nombre}
-                    </Link>
+                    <div className="relative">
+                      <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-500 to-pink-600 rounded-full opacity-70 blur-sm"></div>
+                      <img 
+                        src={`https://api.dicebear.com/7.x/initials/svg?seed=${userData.nombre}`}
+                        alt="Avatar" 
+                        className="relative w-8 h-8 rounded-full bg-gradient-to-r from-purple-500 to-pink-600 p-0.5"
+                      />
+                    </div>
+                    <div className="flex flex-col">
+                      <Link to="/perfil" className="text-white font-medium hover:text-purple-400 transition-colors text-sm">
+                        {userData.nombre}
+                      </Link>
+                      <span className="text-[10px] text-gray-400">
+                        {userData.tipo_usuario === 'admin' ? 'Administrador' : 'Estudiante'}
+                      </span>
+                    </div>
                   </motion.div>
                   <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    transition={{ type: "tween", duration: 0.2 }}
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
+                    transition={{ type: "spring", stiffness: 300, damping: 15 }}
                     onClick={handleLogout}
-                    className="text-gray-300 hover:text-white transition-colors duration-300"
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-gray-300 hover:text-white hover:bg-purple-500/5 rounded-lg transition-all duration-300 border border-transparent hover:border-purple-500/20"
                   >
-                    Cerrar Sesión
+                    <FaRegUserCircle className="text-purple-400" size={14} />
+                    <span className="text-sm">Salir</span>
                   </motion.button>
                 </div>
               ) : (
                 <>
                   <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    transition={{ type: "tween", duration: 0.2 }}
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 10 }}
                     onClick={handleLoginClick}
-                    className="hidden md:block px-4 py-2 text-gray-300 hover:text-white transition-colors duration-300"
+                    className="hidden md:flex items-center gap-1.5 px-4 py-2 text-gray-200 hover:text-white transition-colors duration-300 border border-purple-500/20 rounded-lg hover:bg-purple-500/5"
                   >
-                    Iniciar Sesión
+                    <FaSignInAlt className="text-purple-400" size={14} />
+                    <span>Iniciar Sesión</span>
                   </motion.button>
                   <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    transition={{ type: "tween", duration: 0.2 }}
-                    className="hidden md:block px-6 py-2 text-white rounded-full font-medium shadow-lg hover:shadow-purple-500/25"
+                    whileHover={{ scale: 1.03, boxShadow: "0 10px 25px -5px rgba(139, 92, 246, 0.3)" }}
+                    whileTap={{ scale: 0.97 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                    className="hidden md:block px-5 py-2 text-white rounded-lg font-medium shadow-lg"
                     style={{
-                      background: 'linear-gradient(to right, #a78bfa, #db2777)'
+                      background: 'linear-gradient(45deg, #7c3aed, #db2777)'
                     }}
                   >
-                    Empezar Gratis
+                    <span className="relative inline-block px-1">
+                      <span className="relative z-10">Empezar Gratis</span>
+                      <div className="absolute inset-0 rounded-full bg-white/20 blur-sm animate-pulse z-0"></div>
+                    </span>
                   </motion.button>
                 </>
               )}
@@ -302,9 +355,10 @@ const Header = () => {
                       <Link
                         to={item.path}
                         onClick={() => setMenuOpen(false)}
-                        className="block py-3 px-4 text-gray-300 hover:text-white hover:bg-purple-500/10 rounded-lg transition-colors duration-300"
+                        className="flex items-center gap-2 py-3 px-4 text-gray-300 hover:text-white hover:bg-purple-500/10 rounded-lg transition-colors duration-300"
                       >
-                        {item.name}
+                        {getIcon(item.name)}
+                        <span>{item.name}</span>
                       </Link>
                     </motion.div>
                   ))}
@@ -314,22 +368,24 @@ const Header = () => {
                   {!isLoggedIn && (
                     <div className="space-y-4">
                       <motion.button
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
+                        whileHover={{ scale: 1.03 }}
+                        whileTap={{ scale: 0.97 }}
                         onClick={handleLoginClick}
-                        className="w-full py-3 text-gray-300 hover:text-white transition-colors duration-300 border border-purple-500/20 rounded-lg"
+                        className="w-full py-3 flex items-center justify-center gap-2 text-gray-300 hover:text-white transition-colors duration-300 border border-purple-500/20 rounded-lg hover:bg-purple-500/10"
                       >
-                        Iniciar Sesión
+                        <FaSignInAlt className="text-purple-400" />
+                        <span>Iniciar Sesión</span>
                       </motion.button>
                       <motion.button
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                        className="w-full py-3 text-white rounded-lg font-medium shadow-lg"
+                        whileHover={{ scale: 1.03 }}
+                        whileTap={{ scale: 0.97 }}
+                        className="w-full py-3 text-white rounded-lg font-medium shadow-lg relative overflow-hidden group"
                         style={{
-                          background: 'linear-gradient(to right, #7c3aed, #db2777)'
+                          background: 'linear-gradient(45deg, #7c3aed, #db2777)'
                         }}
                       >
-                        Empezar Gratis
+                        <span className="relative z-10">Empezar Gratis</span>
+                        <div className="absolute inset-0 -translate-x-full group-hover:translate-x-0 bg-gradient-to-r from-pink-600/40 to-purple-600/40 transition-transform duration-700"></div>
                       </motion.button>
                     </div>
                   )}
