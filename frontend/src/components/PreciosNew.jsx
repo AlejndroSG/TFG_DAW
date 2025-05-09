@@ -156,12 +156,12 @@ const Precios = () => {
                 )}
 
                 <div className="text-center mb-8 relative">
-                  <div className={`w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-r ${plan.color} p-0.5 flex items-center justify-center shadow-lg shadow-purple-500/20`}>
-                    <div className="w-full h-full rounded-full bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center">
+                  <div className={`w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-r ${plan.color} p-0.5 flex items-center justify-center`}>
+                    <div className="w-full h-full rounded-full bg-gray-800 flex items-center justify-center">
                       <motion.div
                         animate={{ scale: [1, 1.1, 1] }}
                         transition={{ duration: 3, repeat: Infinity }}
-                        className="text-3xl text-white"
+                        className="text-2xl text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600"
                       >
                         {plan.icono}
                       </motion.div>

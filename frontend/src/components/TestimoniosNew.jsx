@@ -232,10 +232,10 @@ const Testimonios = () => {
 
           <div className="absolute -bottom-16 left-0 right-0 flex justify-center items-center gap-6">
             <motion.button
-              whileHover={{ scale: 1.1 }}
+              whileHover={{ scale: 1.1, backgroundColor: "rgba(139, 92, 246, 0.5)" }}
               whileTap={{ scale: 0.95 }}
               onClick={testimonioAnterior}
-              className="p-4 rounded-full bg-gray-800/80 hover:bg-purple-500/30 text-white border border-purple-500/30 shadow-lg shadow-purple-500/10 backdrop-blur-sm transition-colors duration-200"
+              className="p-4 rounded-full bg-gray-800/80 text-white border border-purple-500/30 shadow-lg shadow-purple-500/10 backdrop-blur-sm"
             >
               <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -260,10 +260,10 @@ const Testimonios = () => {
             </div>
 
             <motion.button
-              whileHover={{ scale: 1.1 }}
+              whileHover={{ scale: 1.1, backgroundColor: "rgba(139, 92, 246, 0.5)" }}
               whileTap={{ scale: 0.95 }}
               onClick={siguienteTestimonio}
-              className="p-4 rounded-full bg-gray-800/80 hover:bg-purple-500/30 text-white border border-purple-500/30 shadow-lg shadow-purple-500/10 backdrop-blur-sm transition-colors duration-200"
+              className="p-4 rounded-full bg-gray-800/80 text-white border border-purple-500/30 shadow-lg shadow-purple-500/10 backdrop-blur-sm"
             >
               <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />

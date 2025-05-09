@@ -22,8 +22,22 @@ const Banner = () => {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
 
+    const handleResize = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      // Regenerar los meteoros y partículas al cambiar el tamaño
+      meteoros = [];
+      particulasFlotantesRef.current = [];
+      crearMeteoros(20);
+      crearParticulasFlotantes(40);
+    };
+
+    // Configuración inicial
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
+    
+    // Escuchar eventos de cambio de tamaño
+    window.addEventListener('resize', handleResize);
 
     const crearMeteoros = (cantidad) => {
       for (let i = 0; i < cantidad; i++) {
@@ -141,6 +155,7 @@ const Banner = () => {
 
     return () => {
       cancelAnimationFrame(animar);
+      window.removeEventListener('resize', handleResize);
     };
   }, []);
 
@@ -196,7 +211,7 @@ const Banner = () => {
   return (
     <>
       <div 
-        className="relative w-full h-screen flex items-center justify-center bg-gray-900 overflow-hidden" 
+        className="relative w-full min-h-screen pt-16 sm:pt-20 md:pt-0 flex flex-col items-center justify-center bg-gray-900 overflow-hidden" 
         onClick={manejarClic}
         onMouseMove={handleMouseMove}
       >
@@ -205,21 +220,21 @@ const Banner = () => {
           <canvas ref={canvasRef} className="w-full h-full"></canvas>
           
           {/* Círculos decorativos difuminados */}
-          <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-purple-600/30 rounded-full filter blur-[80px] animate-pulse"></div>
-          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-pink-600/20 rounded-full filter blur-[100px] animate-pulse delay-700"></div>
-          <div className="absolute bottom-1/3 left-1/3 w-72 h-72 bg-indigo-600/20 rounded-full filter blur-[90px] animate-pulse delay-1000"></div>
+          <div className="absolute top-1/4 left-1/4 w-40 h-40 sm:w-64 sm:h-64 bg-purple-600/30 rounded-full filter blur-[50px] sm:blur-[80px] animate-pulse"></div>
+          <div className="absolute bottom-1/4 right-1/4 w-64 h-64 sm:w-96 sm:h-96 bg-pink-600/20 rounded-full filter blur-[60px] sm:blur-[100px] animate-pulse delay-700"></div>
+          <div className="absolute bottom-1/3 left-1/3 w-48 h-48 sm:w-72 sm:h-72 bg-indigo-600/20 rounded-full filter blur-[50px] sm:blur-[90px] animate-pulse delay-1000"></div>
           
           {/* Rejilla decorativa */}
           <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
         </div>
 
-        <div className="relative z-10 container mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-10">
+        <div className="relative z-10 container mx-auto px-4 py-12 sm:py-16 md:py-20 flex flex-col md:flex-row items-center justify-between gap-8 lg:gap-10">
           {/* Columna de texto principal */}
           <motion.div 
             initial={{ opacity: 0, x: -50 }} 
             animate={{ opacity: 1, x: 0 }} 
             transition={{ duration: 1, type: "spring" }} 
-            className="md:w-1/2 text-left text-white"
+            className="w-full md:w-1/2 text-center md:text-left text-white"
           >
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
@@ -230,7 +245,7 @@ const Banner = () => {
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600 font-medium">Innovamos con IA</span>
             </motion.div>
             
-            <h1 className="text-5xl md:text-6xl font-bold mb-6 leading-tight">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-6 leading-tight">
               <TypeAnimation 
                 sequence={[
                   "Aprendizaje Inteligente", 
@@ -247,15 +262,15 @@ const Banner = () => {
               />
             </h1>
             
-            <p className="mt-4 text-xl opacity-80 leading-relaxed max-w-xl">
+            <p className="mt-4 text-base sm:text-lg md:text-xl opacity-80 leading-relaxed max-w-xl mx-auto md:mx-0">
               Impulsa tu aprendizaje con la plataforma educativa más avanzada en Inteligencia Artificial. Contenidos personalizados, seguimiento en tiempo real y una experiencia única.  
             </p>
             
-            <div className="mt-10 flex flex-wrap gap-4">
+            <div className="mt-10 flex flex-wrap justify-center md:justify-start gap-4">
               <motion.button
                 whileHover={{ scale: 1.05, boxShadow: "0 20px 25px -5px rgba(139, 92, 246, 0.25)" }}
                 whileTap={{ scale: 0.95 }}
-                className="px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-full font-semibold shadow-xl shadow-purple-500/20"
+                className="px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-full font-semibold shadow-xl shadow-purple-500/20 text-sm sm:text-base"
               >
                 Comienza Ahora
               </motion.button>
@@ -263,14 +278,14 @@ const Banner = () => {
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="px-8 py-4 bg-transparent text-white rounded-full font-semibold border-2 border-purple-500/30 hover:border-purple-500/60 transition-colors"
+                className="px-6 sm:px-8 py-3 sm:py-4 bg-transparent text-white rounded-full font-semibold border-2 border-purple-500/30 hover:border-purple-500/60 transition-colors text-sm sm:text-base"
               >
                 Ver Demostración
               </motion.button>
             </div>
             
             {/* Características destacadas animadas */}
-            <div className="mt-12 relative h-20">
+            <div className="mt-10 sm:mt-12 relative h-20 max-w-xs sm:max-w-sm md:max-w-md mx-auto md:mx-0">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={currentFeature}
@@ -308,7 +323,7 @@ const Banner = () => {
             initial={{ opacity: 0, x: 50 }} 
             animate={{ opacity: 1, x: 0 }} 
             transition={{ duration: 1, delay: 0.3, type: "spring" }}
-            className="md:w-1/2 flex justify-center"
+            className="w-full md:w-1/2 flex justify-center mt-12 md:mt-0"
             onHoverStart={() => setIsHovering(true)}
             onHoverEnd={() => setIsHovering(false)}
           >
@@ -319,12 +334,12 @@ const Banner = () => {
                 translateZ,
                 transition: "transform 0.3s ease-out"
               }}
-              className="relative w-full max-w-lg aspect-square"
+              className="relative w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg aspect-square"
             >
               {/* Tarjeta principal 3D */}
               <motion.div
                 whileHover={{ y: -10, scale: 1.02 }}
-                className="absolute inset-0 rounded-3xl overflow-hidden backdrop-blur-md border border-purple-500/20 bg-gradient-to-br from-purple-900/40 to-pink-900/40 shadow-[0_0_40px_rgba(139,92,246,0.3)] p-8 flex flex-col"
+                className="absolute inset-0 rounded-3xl overflow-hidden backdrop-blur-md border border-purple-500/20 bg-gradient-to-br from-purple-900/40 to-pink-900/40 shadow-[0_0_40px_rgba(139,92,246,0.3)] p-4 sm:p-6 md:p-8 flex flex-col"
               >
                 {/* Efecto de partículas flotantes */}
                 <div className="absolute inset-0 overflow-hidden">
@@ -353,8 +368,8 @@ const Banner = () => {
                 </div>
                 
                 {/* Sección superior con logo y decoración */}
-                <div className="flex justify-center mb-12 mt-4 relative">
-                  <div className="absolute w-40 h-40 bg-gradient-to-tr from-purple-600/20 via-purple-400/5 to-pink-600/10 rounded-full blur-2xl -top-8"></div>
+                <div className="flex justify-center mb-6 sm:mb-8 md:mb-12 mt-2 sm:mt-4 relative">
+                  <div className="absolute w-28 h-28 sm:w-40 sm:h-40 bg-gradient-to-tr from-purple-600/20 via-purple-400/5 to-pink-600/10 rounded-full blur-xl sm:blur-2xl -top-4 sm:-top-8"></div>
                   <motion.div 
                     className="flex flex-col items-center justify-center relative z-10"
                     initial={{ scale: 0.9, opacity: 0 }}
@@ -362,7 +377,7 @@ const Banner = () => {
                     transition={{ duration: 0.8, type: 'spring' }}
                   >
                     <motion.div
-                      className="w-20 h-20 rounded-full flex items-center justify-center bg-gradient-to-tr from-purple-500/50 to-pink-500/50 p-0.5"
+                      className="w-16 h-16 sm:w-18 sm:h-18 md:w-20 md:h-20 rounded-full flex items-center justify-center bg-gradient-to-tr from-purple-500/50 to-pink-500/50 p-0.5"
                       animate={{ 
                         boxShadow: ['0 0 20px rgba(139, 92, 246, 0.3)', '0 0 30px rgba(139, 92, 246, 0.5)', '0 0 20px rgba(139, 92, 246, 0.3)']
                       }}
@@ -412,7 +427,7 @@ const Banner = () => {
                     </motion.div>
                     
                     <motion.h3
-                      className="mt-6 text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600"
+                      className="mt-4 sm:mt-6 text-2xl sm:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600"
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.3 }}
@@ -432,7 +447,7 @@ const Banner = () => {
                 </div>
                 
                 {/* Sección central con características */}
-                <div className="flex flex-col space-y-5 mb-8">
+                <div className="flex flex-col space-y-3 sm:space-y-4 md:space-y-5 mb-4 sm:mb-6 md:mb-8">
                   {[
                     { icon: '✨', text: 'Experiencia personalizada' },
                     { icon: '🧠', text: 'Inteligencia artificial avanzada' },
@@ -440,12 +455,12 @@ const Banner = () => {
                   ].map((item, i) => (
                     <motion.div
                       key={i}
-                      className="flex items-center gap-3 p-4 bg-gradient-to-r from-purple-500/10 to-pink-500/5 rounded-lg border border-purple-500/10"
+                      className="flex items-center gap-2 sm:gap-3 p-3 sm:p-4 bg-gradient-to-r from-purple-500/10 to-pink-500/5 rounded-lg border border-purple-500/10 text-sm sm:text-base"
                       initial={{ opacity: 0, x: -10 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: 0.2 + (i * 0.2) }}
                     >
-                      <div className="w-8 h-8 rounded-md bg-gradient-to-br from-purple-500/20 to-pink-500/20 flex items-center justify-center text-xl">
+                      <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-md bg-gradient-to-br from-purple-500/20 to-pink-500/20 flex items-center justify-center text-lg sm:text-xl">
                         {item.icon}
                       </div>
                       <span className="text-gray-200 font-medium">{item.text}</span>
@@ -454,9 +469,9 @@ const Banner = () => {
                 </div>
                 
                 {/* Sección inferior con CTA */}
-                <div className="mt-auto pt-6 border-t border-purple-500/10">
+                <div className="mt-auto pt-4 sm:pt-6 border-t border-purple-500/10">
                   <motion.button
-                    className="w-full py-3 px-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-medium shadow-lg flex items-center justify-center gap-2"
+                    className="w-full py-2 sm:py-3 px-3 sm:px-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-medium shadow-lg flex items-center justify-center gap-2 text-sm sm:text-base"
                     whileTap={{ scale: 0.98 }}
                     animate={{ boxShadow: ['0 4px 12px rgba(139, 92, 246, 0.3)', '0 4px 20px rgba(139, 92, 246, 0.4)', '0 4px 12px rgba(139, 92, 246, 0.3)'] }}
                     transition={{ duration: 2, repeat: Infinity }}
@@ -501,7 +516,7 @@ const Banner = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 1.5, duration: 1 }}
-          className="absolute bottom-10 left-1/2 transform -translate-x-1/2 flex flex-col items-center"
+          className="absolute bottom-4 sm:bottom-6 md:bottom-10 left-1/2 transform -translate-x-1/2 flex flex-col items-center"
         >
           <span className="text-gray-400 text-sm mb-2">Descubre más</span>
           <motion.div

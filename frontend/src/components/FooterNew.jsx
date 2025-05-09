@@ -55,8 +55,14 @@ const Footer = () => {
 
   return (
     <footer ref={footerRef} className="bg-gray-900 text-white pt-20 pb-8 relative overflow-hidden">
-      {/* Fondo sutil sin animaciones */}
-      <div className="absolute inset-0 bg-gradient-to-b from-gray-900 to-gray-900 opacity-95"></div>
+      {/* Elementos decorativos de fondo */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute -top-24 -right-24 w-72 h-72 bg-purple-600/10 rounded-full blur-3xl opacity-40"></div>
+        <div className="absolute -bottom-24 -left-24 w-72 h-72 bg-pink-600/10 rounded-full blur-3xl opacity-40"></div>
+      </div>
+
+      {/* Decoración de rejilla */}
+      <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
 
       <motion.div 
         className="max-w-screen-xl mx-auto px-6 relative"
@@ -70,7 +76,15 @@ const Footer = () => {
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 p-0.5 shadow-lg shadow-purple-500/20">
                 <div className="rounded-full bg-gray-900 w-full h-full flex items-center justify-center">
-                  <FaBrain className="text-2xl text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600" />
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                    className="absolute inset-0 rounded-full"
+                    style={{
+                      background: 'conic-gradient(from 180deg, rgba(168, 85, 247, 0.3), rgba(236, 72, 153, 0.3), rgba(168, 85, 247, 0.3))'
+                    }}
+                  />
+                  <FaBrain className="text-2xl text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600 relative z-10" />
                 </div>
               </div>
               <h3 className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-pink-600 text-transparent bg-clip-text">

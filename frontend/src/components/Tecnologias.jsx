@@ -153,25 +153,6 @@ const Tecnologias = () => {
             </motion.div>
           ))}
         </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.4 }}
-          className="text-center mt-16"
-        >
-          <p className="text-gray-400 text-lg mb-6">
-            Y muchas más tecnologías actualizadas constantemente
-          </p>
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            transition={{ type: "tween", duration: 0.2 }}
-            className="px-8 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-full font-semibold hover:opacity-90 transition-opacity duration-300 shadow-lg"
-          >
-            Ver Todas las Tecnologías
-          </motion.button>
-        </motion.div>
       </div>
     </section>
   );

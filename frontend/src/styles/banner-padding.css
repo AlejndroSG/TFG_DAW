@@ -1,0 +1,30 @@
+/* Estilos para ajustar el espaciado en el Banner */
+
+/* Estilo para el div principal del banner para mantener el fondo estable */
+#root > div:first-of-type > div:first-of-type {
+  position: relative;
+  min-height: 100vh;
+  background-color: #111827; /* bg-gray-900 */
+  overflow: hidden;
+}
+
+/* Ajuste del contenedor z-10 con la clase container */
+#root > div:first-of-type > div:first-of-type > div.container {
+  padding-top: 4rem !important; /* pt-16 */
+  padding-bottom: 3rem !important; /* pb-12 */
+}
+
+/* Media queries para diferentes tamaños de pantalla */
+@media (min-width: 640px) {
+  #root > div:first-of-type > div:first-of-type > div.container {
+    padding-top: 5rem !important; /* sm:pt-20 */
+    padding-bottom: 4rem !important; /* sm:pb-16 */
+  }
+}
+
+@media (min-width: 768px) {
+  #root > div:first-of-type > div:first-of-type > div.container {
+    padding-top: 1.25rem !important;
+    padding-bottom: 5rem !important; /* md:py-20 */
+  }
+}
