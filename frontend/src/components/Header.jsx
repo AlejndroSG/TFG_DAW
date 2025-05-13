@@ -230,6 +230,23 @@ const Header = () => {
             </nav>
 
             <div className="flex items-center gap-4">
+              {/* Avatar en modo móvil cuando está logueado */}
+              {isLoggedIn && userData && (
+                <Link to="/perfil" className="md:hidden">
+                  <motion.div
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="relative">
+                    <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-500 to-pink-600 rounded-full opacity-70 blur-sm"></div>
+                    <img
+                      src={`https://api.dicebear.com/7.x/initials/svg?seed=${userData.nombre}`}
+                      alt="Avatar"
+                      className="relative w-8 h-8 rounded-full bg-gradient-to-r from-purple-500 to-pink-600 p-0.5"
+                    />
+                  </motion.div>
+                </Link>
+              )}
+              
               {/* Botón del menú hamburguesa */}
               <motion.button
                 whileTap={{ scale: 0.95 }}
@@ -252,7 +269,7 @@ const Header = () => {
               </motion.button>
 
               {userData && isLoggedIn ? (
-                <div className="flex items-center gap-4">
+                <div className="hidden md:flex items-center gap-4">
                   <motion.div
                     whileHover={{ scale: 1.03 }}
                     transition={{ type: "spring", stiffness: 300, damping: 15 }}
@@ -365,7 +382,7 @@ const Header = () => {
                 </nav>
 
                 <div className="mt-auto">
-                  {!isLoggedIn && (
+                  {!isLoggedIn ? (
                     <div className="space-y-4">
                       <motion.button
                         whileHover={{ scale: 1.03 }}
@@ -386,6 +403,37 @@ const Header = () => {
                       >
                         <span className="relative z-10">Empezar Gratis</span>
                         <div className="absolute inset-0 -translate-x-full group-hover:translate-x-0 bg-gradient-to-r from-pink-600/40 to-purple-600/40 transition-transform duration-700"></div>
+                      </motion.button>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-3 p-3 rounded-lg bg-purple-600/10 border border-purple-500/20">
+                        <div className="relative">
+                          <img 
+                            src={`https://api.dicebear.com/7.x/initials/svg?seed=${userData.nombre}`} 
+                            alt="Avatar" 
+                            className="w-10 h-10 rounded-full bg-gradient-to-r from-purple-500 to-pink-600 p-0.5"
+                          />
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-white font-medium text-sm">{userData.nombre}</span>
+                          <span className="text-[10px] text-gray-400">
+                            {userData.tipo_usuario === 'admin' ? 'Administrador' : 'Estudiante'}
+                          </span>
+                        </div>
+                      </div>
+                      <Link to="/perfil" className="w-full py-3 flex items-center justify-center gap-2 text-gray-300 hover:text-white transition-colors duration-300 border border-purple-500/20 rounded-lg hover:bg-purple-500/10">
+                        <FaRegUserCircle className="text-purple-400" />
+                        <span>Ver Perfil</span>
+                      </Link>
+                      <motion.button
+                        whileHover={{ scale: 1.03 }}
+                        whileTap={{ scale: 0.97 }}
+                        onClick={handleLogout}
+                        className="w-full py-3 flex items-center justify-center gap-2 text-gray-300 hover:text-white transition-colors duration-300 border border-purple-500/20 rounded-lg hover:bg-purple-500/10"
+                      >
+                        <FaSignInAlt className="text-purple-400" />
+                        <span>Cerrar Sesión</span>
                       </motion.button>
                     </div>
                   )}

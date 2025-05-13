@@ -18,32 +18,88 @@ const Banner = () => {
   const [currentFeature, setCurrentFeature] = useState(0);
   let meteoros = [];
 
+  // Dimensiones de referencia absolutas que queremos mantener para el canvas
+  const REFERENCE_WIDTH = 1920;
+  const REFERENCE_HEIGHT = 1080;
+  // Tamaños mínimos que nunca se reducirán en móviles
+  const MIN_WIDTH = 2560;
+  const MIN_HEIGHT = 1440;
+
   useEffect(() => {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
-
+    
     const handleResize = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-      // Regenerar los meteoros y partículas al cambiar el tamaño
+      // Configuración para mantener el tamaño absoluto sin reducirse nunca
+      
+      // Asignamos tamaño físico grande al canvas para mantener calidad
+      canvas.width = REFERENCE_WIDTH;
+      canvas.height = REFERENCE_HEIGHT;
+      
+      // Calcular el factor de escala necesario para mantener el tamaño mínimo
+      // Usamos un enfoque de tamaño mínimo fijo
+      
+      // Mantenemos una vista fija que nunca se reduce más allá del tamaño mínimo
+      const containerWidth = window.innerWidth;
+      const containerHeight = window.innerHeight;
+      
+      // Calculamos cuánto tenemos que escalar y centrar
+      const scaleX = containerWidth / MIN_WIDTH;
+      const scaleY = containerHeight / MIN_HEIGHT;
+      
+      // Usamos el valor menor para asegurar que el canvas nunca sea más pequeño que sus dimensiones mínimas
+      // Esto hará que se recorte en lugar de reducirse
+      const scale = Math.max(1, Math.max(scaleX, scaleY));
+      
+      // Calculamos los desplazamientos para centrar
+      const xOffset = (containerWidth - MIN_WIDTH) / 2;
+      const yOffset = (containerHeight - MIN_HEIGHT) / 2;
+      
+      // Aplicamos la transformación para mantener el tamaño y centrado
+      Object.assign(canvas.style, {
+        position: 'absolute',
+        width: `${MIN_WIDTH}px`,
+        height: `${MIN_HEIGHT}px`,
+        left: '50%',
+        top: '50%',
+        transform: 'translate(-50%, -50%)',
+        transformOrigin: 'center'
+      });
+      
+      // Regenerar los meteoros y partículas para las dimensiones de referencia
       meteoros = [];
       particulasFlotantesRef.current = [];
       crearMeteoros(20);
       crearParticulasFlotantes(40);
     };
 
-    // Configuración inicial
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+    // Configuración inicial con tamaño fijo que no se reducirá
+    
+    // Establecemos las dimensiones físicas del canvas al tamaño de referencia
+    canvas.width = REFERENCE_WIDTH;
+    canvas.height = REFERENCE_HEIGHT;
+    
+    // Aseguramos que el canvas mantenga un tamaño absoluto
+    Object.assign(canvas.style, {
+      position: 'absolute',
+      width: `${MIN_WIDTH}px`,
+      height: `${MIN_HEIGHT}px`,
+      left: '50%',
+      top: '50%',
+      transform: 'translate(-50%, -50%)',
+      transformOrigin: 'center'
+    });
     
     // Escuchar eventos de cambio de tamaño
     window.addEventListener('resize', handleResize);
 
     const crearMeteoros = (cantidad) => {
+      // Usamos las dimensiones de referencia definidas arriba
+      
       for (let i = 0; i < cantidad; i++) {
         meteoros.push({
-          x: Math.random() * (canvas.width + 400) - 200,
-          y: Math.random() * canvas.height - canvas.height / 2,
+          x: Math.random() * (REFERENCE_WIDTH + 400) - 200,
+          y: Math.random() * REFERENCE_HEIGHT - REFERENCE_HEIGHT / 2,
           longitud: Math.random() * 180 + 80,
           velocidad: Math.random() * 5 + 2,
           opacidad: Math.random() * 0.5 + 0.5,
@@ -55,10 +111,12 @@ const Banner = () => {
     };
 
     const crearParticulasFlotantes = (cantidad) => {
+      // Usamos las dimensiones de referencia definidas arriba
+      
       for (let i = 0; i < cantidad; i++) {
         particulasFlotantesRef.current.push({
-          x: Math.random() * canvas.width,
-          y: Math.random() * canvas.height,
+          x: Math.random() * REFERENCE_WIDTH,
+          y: Math.random() * REFERENCE_HEIGHT,
           tamaño: Math.random() * 2 + 1,
           velocidadX: (Math.random() - 0.5) * 0.2,
           velocidadY: (Math.random() - 0.5) * 0.2,
@@ -216,8 +274,26 @@ const Banner = () => {
         onMouseMove={handleMouseMove}
       >
         {/* Efecto de brillos y partículas */}
-        <div className="contenedorBanner absolute inset-0">
-          <canvas ref={canvasRef} className="w-full h-full"></canvas>
+        <div 
+          className="contenedorBanner overflow-hidden" 
+          style={{
+            position: 'absolute',
+            width: `${MIN_WIDTH}px`,
+            height: `${MIN_HEIGHT}px`,
+            left: '50%',
+            top: '50%',
+            transform: 'translate(-50%, -50%)',
+            transformOrigin: 'center',
+            zIndex: 0
+          }}
+        >
+          <canvas ref={canvasRef} style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%'
+          }}></canvas>
           
           {/* Círculos decorativos difuminados */}
           <div className="absolute top-1/4 left-1/4 w-40 h-40 sm:w-64 sm:h-64 bg-purple-600/30 rounded-full filter blur-[50px] sm:blur-[80px] animate-pulse"></div>

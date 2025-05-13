@@ -117,7 +117,7 @@ const Testimonios = () => {
           initial={{ opacity: 0 }}
           animate={isInView ? { opacity: 1 } : { opacity: 0 }}
           transition={{ duration: 0.5, delay: 0.3 }}
-          className="relative max-w-5xl mx-auto h-[500px] md:h-[340px]"
+          className="relative max-w-5xl mx-auto min-h-[480px] sm:min-h-[420px] md:min-h-[340px] lg:min-h-[360px]"
         >
           {/* Decoración de fondo para las tarjetas */}
           <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-60 bg-gradient-to-r from-purple-600/5 via-pink-600/5 to-purple-600/5 blur-2xl rounded-full"></div>
@@ -137,10 +137,10 @@ const Testimonios = () => {
               }}
               className="absolute inset-0 backdrop-blur-sm"
             >
-              <div className="bg-gradient-to-br from-gray-800/90 to-gray-900/90 border border-gray-700/50 rounded-2xl p-8 md:p-10 h-full shadow-xl shadow-purple-900/10">
-                <div className="flex flex-col md:flex-row items-center gap-10 h-full">
+              <div className="bg-gradient-to-br from-gray-800/90 to-gray-900/90 border border-gray-700/50 rounded-2xl p-5 sm:p-8 md:p-10 h-full shadow-xl shadow-purple-900/10">
+                <div className="flex flex-col md:flex-row items-center gap-5 sm:gap-8 md:gap-10 h-full">
                   <div className="w-full md:w-2/5 flex flex-col items-center">
-                    <div className="relative mb-6">
+                    <div className="relative mb-4 sm:mb-6">
                       {/* Círculo giratorio de gradiente */}
                       <motion.div 
                         animate={{ rotate: 360 }}
@@ -151,7 +151,7 @@ const Testimonios = () => {
                         }}
                       />
                       
-                      <div className="w-36 h-36 overflow-hidden rounded-full border-4 border-gray-800 relative z-10 p-1 bg-gray-800">
+                      <div className="w-28 h-28 sm:w-32 sm:h-32 md:w-36 md:h-36 overflow-hidden rounded-full border-4 border-gray-800 relative z-10 p-1 bg-gray-800">
                         <div className="w-full h-full rounded-full overflow-hidden bg-gradient-to-br from-purple-200 to-pink-200">
                           <img
                             src={testimonios[indiceActual].imagen}
@@ -215,12 +215,12 @@ const Testimonios = () => {
                     </div>
                   </div>
                   
-                  <div className="w-full md:w-3/5 flex items-center">
+                  <div className="w-full md:w-3/5 flex items-center mt-2 md:mt-0">
                     <blockquote className="relative">
                       <div className="absolute -left-6 top-0 opacity-10 text-6xl text-purple-400">
                         <FaQuoteLeft />
                       </div>
-                      <p className="text-gray-300 text-xl leading-relaxed italic relative z-10">
+                      <p className="text-gray-300 text-base sm:text-lg md:text-xl leading-relaxed italic relative z-10">
                         "{testimonios[indiceActual].texto}"
                       </p>
                     </blockquote>
@@ -230,14 +230,14 @@ const Testimonios = () => {
             </motion.div>
           </AnimatePresence>
 
-          <div className="absolute -bottom-16 left-0 right-0 flex justify-center items-center gap-6">
+          <div className="absolute -bottom-16 sm:-bottom-14 left-0 right-0 flex justify-center items-center gap-4 sm:gap-6">
             <motion.button
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.95 }}
               onClick={testimonioAnterior}
-              className="p-4 rounded-full bg-gray-800/80 hover:bg-purple-500/30 text-white border border-purple-500/30 shadow-lg shadow-purple-500/10 backdrop-blur-sm transition-colors duration-200"
+              className="p-3 sm:p-4 rounded-full bg-gray-800/80 hover:bg-purple-500/30 text-white border border-purple-500/30 shadow-lg shadow-purple-500/10 backdrop-blur-sm transition-colors duration-200"
             >
-              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
             </motion.button>
@@ -250,9 +250,9 @@ const Testimonios = () => {
                     setDireccion(indice > indiceActual ? 1 : -1);
                     setIndiceActual(indice);
                   }}
-                  className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                  className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full transition-all duration-300 ${
                     indice === indiceActual 
-                      ? 'w-10 bg-gradient-to-r from-purple-500 to-pink-500' 
+                      ? 'w-6 sm:w-10 bg-gradient-to-r from-purple-500 to-pink-500' 
                       : 'bg-gray-700 hover:bg-gray-600'
                   }`}
                 />
@@ -263,9 +263,9 @@ const Testimonios = () => {
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.95 }}
               onClick={siguienteTestimonio}
-              className="p-4 rounded-full bg-gray-800/80 hover:bg-purple-500/30 text-white border border-purple-500/30 shadow-lg shadow-purple-500/10 backdrop-blur-sm transition-colors duration-200"
+              className="p-3 sm:p-4 rounded-full bg-gray-800/80 hover:bg-purple-500/30 text-white border border-purple-500/30 shadow-lg shadow-purple-500/10 backdrop-blur-sm transition-colors duration-200"
             >
-              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
             </motion.button>
