@@ -2,10 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import axios from 'axios';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import {FaClock, FaChalkboardTeacher, FaBookReader, FaStar } from 'react-icons/fa';
+import {FaClock, FaChalkboardTeacher, FaBookReader, FaStar, FaPlay, FaCheck } from 'react-icons/fa';
 
 const Curso = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const identifier = new FormData();
   identifier.append('id', id);
   
@@ -179,13 +180,24 @@ const Curso = () => {
                     <div className="text-3xl font-bold text-white mr-2">{curso.precio}€</div>
                     <div className="text-gray-400">/ curso completo</div>
                   </div>
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="px-8 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-purple-500/20 transition-all duration-300"
-                  >
-                    Inscribirse Ahora
-                  </motion.button>
+                  <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3">
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => navigate(`/curso-visor/${id}`)}
+                      className="px-8 py-3 bg-gradient-to-r from-purple-500 to-purple-700 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-purple-500/20 transition-all duration-300 flex items-center justify-center"
+                    >
+                      <FaPlay className="mr-2" size={14} /> Acceder al Curso
+                    </motion.button>
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => navigate(`/pago/${id}`)}
+                      className="px-8 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-purple-500/20 transition-all duration-300"
+                    >
+                      Inscribirse Ahora
+                    </motion.button>
+                  </div>
                 </motion.div>
               </div>
             </div>

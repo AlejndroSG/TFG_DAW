@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { FaUserEdit, FaCheck, FaTimes, FaKey, FaUser, FaEnvelope, FaIdCard } from 'react-icons/fa';
+import { FaUserEdit, FaCheck, FaTimes, FaKey, FaUser, FaEnvelope, FaIdCard, FaCreditCard, FaGraduationCap, FaBook, FaCrown } from 'react-icons/fa';
 import axios from 'axios';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import HistorialPagos from '../components/Pagos/HistorialPagos';
+import Suscripciones from '../components/Pagos/Suscripciones';
 
 const Perfil = () => {
   const [userData, setUserData] = useState(null);
   const [editing, setEditing] = useState(false);
+  const [activeTab, setActiveTab] = useState('perfil');
   const [formData, setFormData] = useState({
     nombre: '',
     email: '',
@@ -194,7 +197,7 @@ const Perfil = () => {
     <div className="min-h-screen bg-gray-900 py-20">
       <ToastContainer position="top-right" theme="dark" />
       <div className="container mx-auto px-4">
-        <div className="text-center mb-16">
+        <div className="text-center mb-10">
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -205,21 +208,69 @@ const Perfil = () => {
             <div className="h-1 w-24 bg-gradient-to-r from-purple-600 to-pink-600 mx-auto mt-4 rounded-full"></div>
           </motion.h1>
         </div>
+        
+        {/* Pestañas de navegación */}
+        <div className="max-w-4xl mx-auto mb-8">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+            className="flex flex-wrap gap-2"
+          >
+            <button
+              onClick={() => setActiveTab('perfil')}
+              className={`flex items-center px-6 py-3 rounded-xl font-semibold transition-all ${activeTab === 'perfil' 
+                ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-600/20' 
+                : 'bg-gray-800/70 text-gray-300 hover:bg-gray-700/80'}`}
+            >
+              <FaUser className="mr-2" /> Información personal
+            </button>
+            
+            <button
+              onClick={() => setActiveTab('mis-cursos')}
+              className={`flex items-center px-6 py-3 rounded-xl font-semibold transition-all ${activeTab === 'mis-cursos' 
+                ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-600/20' 
+                : 'bg-gray-800/70 text-gray-300 hover:bg-gray-700/80'}`}
+            >
+              <FaGraduationCap className="mr-2" /> Mis cursos
+            </button>
+            
+            <button
+              onClick={() => setActiveTab('pagos')}
+              className={`flex items-center px-6 py-3 rounded-xl font-semibold transition-all ${activeTab === 'pagos' 
+                ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-600/20' 
+                : 'bg-gray-800/70 text-gray-300 hover:bg-gray-700/80'}`}
+            >
+              <FaCreditCard className="mr-2" /> Historial de pagos
+            </button>
+            
+            <button
+              onClick={() => setActiveTab('suscripciones')}
+              className={`flex items-center px-6 py-3 rounded-xl font-semibold transition-all ${activeTab === 'suscripciones' 
+                ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-600/20' 
+                : 'bg-gray-800/70 text-gray-300 hover:bg-gray-700/80'}`}
+            >
+              <FaCrown className="mr-2" /> Suscripciones
+            </button>
+          </motion.div>
+        </div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-8 max-w-2xl mx-auto shadow-lg border border-gray-700/50"
-        >
-          <div className="space-y-8">
-            <div className="flex justify-between items-center border-b border-purple-500/30 pb-4">
-              <h2 className="text-2xl font-semibold text-white flex items-center">
-                <span className="bg-gradient-to-r from-purple-500 to-pink-600 rounded-full p-2 mr-3">
-                  <FaUser className="w-5 h-5 text-white" />
-                </span>
-                Información Personal
-              </h2>
+        {/* Contenido según la pestaña seleccionada */}
+        {activeTab === 'perfil' && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-8 max-w-2xl mx-auto shadow-lg border border-gray-700/50"
+          >
+            <div className="space-y-8">
+              <div className="flex justify-between items-center border-b border-purple-500/30 pb-4">
+                <h2 className="text-2xl font-semibold text-white flex items-center">
+                  <span className="bg-gradient-to-r from-purple-500 to-pink-600 rounded-full p-2 mr-3">
+                    <FaUser className="w-5 h-5 text-white" />
+                  </span>
+                  Información Personal
+                </h2>
               {!editing && (
                 <motion.button
                   whileHover={{ scale: 1.1 }}
@@ -376,6 +427,60 @@ const Perfil = () => {
             )}
           </div>
         </motion.div>
+        )}
+
+        {/* Sección de Mis Cursos */}
+        {activeTab === 'mis-cursos' && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="max-w-4xl mx-auto"
+          >
+            <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-8 shadow-lg border border-gray-700/50">
+              <div className="flex items-center border-b border-purple-500/30 pb-4 mb-6">
+                <span className="bg-gradient-to-r from-purple-500 to-pink-600 rounded-full p-2 mr-3">
+                  <FaBook className="w-5 h-5 text-white" />
+                </span>
+                <h2 className="text-2xl font-semibold text-white">Mis Cursos</h2>
+              </div>
+              
+              {/* Este sería tu componente de cursos del usuario, que ya deberías tener implementado */}
+              <div className="text-center py-10">
+                <p className="text-gray-400">Aquí irían tus cursos inscritos.</p>
+                <button 
+                  className="mt-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-2 rounded-xl font-semibold hover:shadow-lg hover:shadow-purple-500/20 transition-all duration-300"
+                >
+                  Ir a mis cursos
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+        
+        {/* Sección de Historial de Pagos */}
+        {activeTab === 'pagos' && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="max-w-4xl mx-auto"
+          >
+            <HistorialPagos />
+          </motion.div>
+        )}
+        
+        {/* Sección de Suscripciones */}
+        {activeTab === 'suscripciones' && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="max-w-4xl mx-auto"
+          >
+            <Suscripciones />
+          </motion.div>
+        )}
       </div>
     </div>
   );

@@ -9,7 +9,10 @@ import Blog from './Pages/Blog'
 import SobreNosotros from './Pages/SobreNosotros'
 import Contacto from './Pages/Contacto'
 import Curso from './Pages/Curso'
+import VisorCurso from './Pages/VisorCurso'
+import Pago from './Pages/Pago'
 import Perfil from './Pages/Perfil'
+import AdminIndex from './Pages/Admin'
 
 function App() {
   return (
@@ -24,8 +27,11 @@ function App() {
             <Route path="/sobre-nosotros" element={<SobreNosotros/>}/>
             <Route path="/contacto" element={<Contacto/>}/>
             <Route path="/curso/:id" element={<Curso/>}/>
+            <Route path="/curso-visor/:cursoId" element={<VisorCurso/>}/>
+            <Route path="/pago/:cursoId" element={<Pago/>}/>
             <Route path="/perfil" element={<Perfil/>}/>
           </Route>
+          <Route path="/admin/*" element={<AdminIndex/>}/>
         </Routes>
       </BrowserRouter>
       <Toaster 

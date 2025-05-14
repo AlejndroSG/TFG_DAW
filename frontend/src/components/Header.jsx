@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
 import Login from '../Pages/Login';
 import { toast } from 'react-hot-toast';
 import axios from 'axios';
-import { FaRocket, FaGraduationCap, FaRegLightbulb, FaBook, FaPhoneAlt, FaInfoCircle, FaSignInAlt, FaRegUserCircle } from 'react-icons/fa';
+import { FaRocket, FaGraduationCap, FaRegLightbulb, FaBook, FaPhoneAlt, FaInfoCircle, FaSignInAlt, FaRegUserCircle, FaUserShield, FaChartLine } from 'react-icons/fa';
 
 const Header = () => {
+  const navigate = useNavigate();
   const [scrolled, setScrolled] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -95,6 +96,14 @@ const Header = () => {
     setIsLoggedIn(true);
     setUserData(userData);
     toast.success(`¡Bienvenido ${userData.nombre}!`);
+    
+    // Redirección automática al panel de administración si es admin
+    if (userData.tipo_usuario.toLowerCase() === 'administrador') {
+      setTimeout(() => {
+        navigate('/admin');
+        toast.success('Accediendo al panel de administración...');
+      }, 500);
+    }
   };
 
   const handleLoginError = (message) => {
@@ -288,10 +297,26 @@ const Header = () => {
                         {userData.nombre}
                       </Link>
                       <span className="text-[10px] text-gray-400">
-                        {userData.tipo_usuario === 'admin' ? 'Administrador' : 'Estudiante'}
+                        {userData.tipo_usuario.toLowerCase() === 'administrador' ? 'Administrador' : 'Estudiante'}
                       </span>
                     </div>
                   </motion.div>
+                  
+                  {userData.tipo_usuario === 'admin' && (
+                    <motion.div
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                    >
+                      <Link 
+                        to="/admin" 
+                        className="flex items-center gap-1.5 px-3 py-1.5 text-white rounded-lg transition-all duration-300 bg-gradient-to-r from-purple-600/80 to-pink-600/80 hover:shadow-lg hover:shadow-purple-500/20"
+                      >
+                        <FaUserShield className="text-white" size={14} />
+                        <span className="text-sm font-medium">Panel Admin</span>
+                      </Link>
+                    </motion.div>
+                  )}
                   <motion.button
                     whileHover={{ scale: 1.03 }}
                     whileTap={{ scale: 0.97 }}
@@ -418,14 +443,24 @@ const Header = () => {
                         <div className="flex flex-col">
                           <span className="text-white font-medium text-sm">{userData.nombre}</span>
                           <span className="text-[10px] text-gray-400">
-                            {userData.tipo_usuario === 'admin' ? 'Administrador' : 'Estudiante'}
+                            {userData.tipo_usuario.toLowerCase() === 'administrador' ? 'Administrador' : 'Estudiante'}
                           </span>
                         </div>
                       </div>
                       <Link to="/perfil" className="w-full py-3 flex items-center justify-center gap-2 text-gray-300 hover:text-white transition-colors duration-300 border border-purple-500/20 rounded-lg hover:bg-purple-500/10">
                         <FaRegUserCircle className="text-purple-400" />
-                        <span>Ver Perfil</span>
+                        <span>Mi Perfil</span>
                       </Link>
+                      {userData.tipo_usuario.toLowerCase() === 'administrador' && (
+                        <Link 
+                          to="/admin" 
+                          onClick={() => setMenuOpen(false)}
+                          className="w-full py-3 flex items-center justify-center gap-2 text-white transition-all duration-300 rounded-lg hover:shadow-lg hover:shadow-purple-500/20 bg-gradient-to-r from-purple-600 to-pink-600"
+                        >
+                          <FaUserShield className="text-white" />
+                          <span>Panel de Administración</span>
+                        </Link>
+                      )}
                       <motion.button
                         whileHover={{ scale: 1.03 }}
                         whileTap={{ scale: 0.97 }}

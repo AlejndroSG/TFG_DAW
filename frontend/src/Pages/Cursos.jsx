@@ -191,13 +191,30 @@ const Cursos = () => {
                       <div className="text-2xl font-bold text-white">
                         {curso.precio}€
                       </div>
-                      <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        className="px-6 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-purple-500/20 transition-all duration-300"
-                      >
-                        Inscribirse
-                      </motion.button>
+                      <div className="flex space-x-2">
+                        <motion.button
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/curso-visor/${curso.id}`);
+                          }}
+                          className="px-4 py-2 bg-gray-800 border border-purple-500/30 text-purple-400 rounded-xl font-medium hover:bg-gray-700 hover:text-purple-300 transition-all duration-300"
+                        >
+                          Ver curso
+                        </motion.button>
+                        <motion.button
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/pago/${curso.id}`);
+                          }}
+                          className="px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-purple-500/20 transition-all duration-300"
+                        >
+                          Inscribirse
+                        </motion.button>
+                      </div>
                     </div>
                   </div>
                 </motion.div>
