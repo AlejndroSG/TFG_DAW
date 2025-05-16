@@ -181,6 +181,29 @@
         echo json_encode(['success' => true]);
     }
     
+    function inscribirCurso(){
+        if (!isset($_SESSION['id'])) {
+            echo json_encode(["success" => false, "message" => "Usuario no autenticado"]);
+            return;
+        }
+
+        if (!isset($_POST["id_curso"])) {
+            echo json_encode(["success" => false, "message" => "ID de curso no proporcionado"]);
+            return;
+        }
+        
+        require_once("../modelo/inscripciones.php");
+        $inscripciones = new Inscripciones();
+        $datos = array(
+            "id_usuario" => $_SESSION['id'],
+            "id_curso" => $_POST["id_curso"],
+            "fecha_inscripcion" => date("Y-m-d H:i:s")
+        );
+        
+        $resultado = $inscripciones->inscribirCurso($datos);
+        echo json_encode($resultado);
+    }
+
     // Si no ha sido iniciado el action
     if(isset($_REQUEST["action"])){
         $action = $_REQUEST["action"];

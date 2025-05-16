@@ -1,10 +1,58 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaArrowLeft, FaLightbulb, FaEdit, FaDownload, FaStar, FaShare, FaLock, FaCheck, FaPlay } from 'react-icons/fa';
+import { FaArrowLeft, FaLightbulb, FaEdit, FaDownload, FaStar, FaShare, FaLock, FaCheck, FaPlay, 
+  FaCrown, FaInfoCircle, FaRegClock, FaUserLock, FaEye, FaMagic, FaGem, FaFireAlt } from 'react-icons/fa';
 import ProgresoModulos from '../components/Curso/ProgresoModulos';
 import ReproductorVideo from '../components/Curso/ReproductorVideo';
 import axios from 'axios';
+
+// Componente para contenido bloqueado
+const ContenidoBloqueado = ({ onClick, titulo }) => (
+  <motion.div 
+    whileHover={{ scale: 1.01 }}
+    className="relative overflow-hidden rounded-xl cursor-pointer group"
+    onClick={onClick}
+  >
+    <div className="absolute inset-0 bg-gradient-to-r from-purple-600/20 to-pink-600/20 backdrop-blur-lg z-10"></div>
+    <div className="absolute inset-0 bg-gray-900/60 z-20"></div>
+    
+    <div className="absolute inset-0 flex flex-col items-center justify-center z-30">
+      <motion.div
+        initial={{ scale: 0.8, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ delay: 0.2 }}
+        className="bg-gray-800/80 backdrop-blur-sm p-4 rounded-xl border border-purple-500/20 shadow-xl max-w-[80%] text-center"
+      >
+        <div className="mb-3 text-center">
+          <motion.div 
+            animate={{ rotate: [0, 10, -10, 0] }}
+            transition={{ repeat: Infinity, duration: 2 }}
+            className="inline-block"
+          >
+            <FaLock className="text-4xl text-pink-500 mb-2 mx-auto" />
+          </motion.div>
+          <h3 className="text-lg font-bold text-white mb-1">{titulo || 'Contenido Bloqueado'}</h3>
+          <p className="text-sm text-gray-300 mb-3">Inicia sesión para desbloquear este contenido</p>
+        </div>
+        
+        <motion.div 
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          className="inline-flex items-center bg-gradient-to-r from-purple-600 to-pink-600 text-white py-2 px-4 rounded-lg font-semibold text-sm"
+        >
+          <FaEye className="mr-1" /> Desbloquear
+        </motion.div>
+      </motion.div>
+    </div>
+    
+    <div className="p-6 blur-sm">
+      <div className="w-full h-12 bg-gray-600/30 rounded animate-pulse"></div>
+      <div className="w-4/5 h-4 bg-gray-600/30 rounded mt-4 animate-pulse"></div>
+      <div className="w-3/4 h-4 bg-gray-600/30 rounded mt-2 animate-pulse"></div>
+    </div>
+  </motion.div>
+);
 
 const VisorCurso = () => {
   const { cursoId } = useParams();
@@ -17,62 +65,174 @@ const VisorCurso = () => {
   const [pestanaActiva, setPestanaActiva] = useState('contenido');
   const [mensaje, setMensaje] = useState(null);
   const [haComprado, setHaComprado] = useState(false);
+  const [usuarioAutenticado, setUsuarioAutenticado] = useState(false);
+  const [modoVistaPreviaSinLogin, setModoVistaPreviaSinLogin] = useState(false);
   
-  // Simulamos datos del curso (en producción vendrían de tu API)
   useEffect(() => {
-    // Simulación de una llamada a la API
-    const fetchCurso = async () => {
-      try {
-        // En producción, esta sería una llamada real a tu API
-        // const response = await axios.get(`/api/cursos/${cursoId}`);
+    comprobarSesion();
+    obtenerDatosCurso();
+  }, [cursoId, navigate]);
+  
+  useEffect(() => {
+    if (usuarioAutenticado) {
+      verificarInscripcion();
+    }
+  }, [usuarioAutenticado, cursoId]);
+  
+  const comprobarSesion = async () => {
+    try {
+      const respuesta = await axios.get(
+        'http://localhost/TFG_DAW/backend/controlador/controlador.php?action=comprobarSesion',
+        { withCredentials: true }
+      );
+      
+      if (!respuesta.data || !respuesta.data.username) {
+        // Si no hay sesión iniciada, mostrar vista previa
+        setUsuarioAutenticado(false);
+        setModoVistaPreviaSinLogin(true);
+        setMensaje({
+          tipo: 'info',
+          texto: 'Estás viendo una versión limitada del curso. Inicia sesión para acceder a todo el contenido.'
+        });
+      } else {
+        setUsuarioAutenticado(true);
+        setModoVistaPreviaSinLogin(false);
+      }
+    } catch (error) {
+      console.error('Error al comprobar sesión:', error);
+      setUsuarioAutenticado(false);
+      setModoVistaPreviaSinLogin(true);
+      setMensaje({
+        tipo: 'warning',
+        texto: 'No se pudo verificar la sesión. Algunas funciones estarán limitadas.'
+      });
+    }
+  };
+  
+  const verificarInscripcion = async () => {
+    try {
+      const response = await axios.get(
+        'http://localhost/TFG_DAW/backend/controlador/controlador.php?action=obtenerMisCursos',
+        { withCredentials: true }
+      );
+      
+      if (response.data && !response.data.error) {
+        const estaInscrito = response.data.some(curso => curso.id == cursoId);
+        setHaComprado(estaInscrito);
         
-        // Datos simulados
-        const cursoSimulado = {
-          id: cursoId,
-          titulo: 'Curso completo de desarrollo web',
-          descripcion: 'Aprende a crear sitios web profesionales desde cero con las últimas tecnologías.',
+        if (!estaInscrito) {
+          setMensaje({
+            tipo: 'advertencia',
+            texto: 'No estás inscrito en este curso. Algunas secciones estarán bloqueadas.'
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Error al verificar inscripción:', error);
+    }
+  };
+  
+  const obtenerDatosCurso = async () => {
+    try {
+      setCargando(true);
+      
+      // Obtener datos del curso desde la API
+      const identifier = new FormData();
+      identifier.append('id', cursoId);
+      const response = await axios.post(
+        `http://localhost/TFG_DAW/backend/controlador/controlador.php?action=obtenerCurso`,
+        identifier,
+        { withCredentials: true }
+      );
+      
+      if (response.data) {
+        // Crear datos estructurados del curso con la información recibida
+        const cursoData = {
+          id: response.data.id,
+          titulo: response.data.titulo,
+          descripcion: response.data.descripcion,
           instructor: {
             id: 1,
-            nombre: 'María González',
+            nombre: response.data.profesor,
             avatar: 'https://i.pravatar.cc/150?img=37',
-            rol: 'Desarrolladora Web Senior'
+            rol: 'Instructor'
           },
-          precio: 49.99,
+          precio: response.data.precio,
           valoracion: 4.8,
-          numValoraciones: 256,
-          fechaActualizacion: '2025-04-20',
+          numValoraciones: 125,
+          fechaActualizacion: '2025-05-16',
           modulos: [
             {
               id: 1,
               titulo: 'Introducción al curso',
-              completado: true,
-              progreso: 100,
+              completado: false,
+              progreso: 0,
+              // Solo la primera lección está disponible para usuarios no autenticados
               lecciones: [
-                { id: 1, titulo: 'Bienvenida y presentación', duracion: '05:30', completada: true },
-                { id: 2, titulo: 'Requisitos previos', duracion: '08:45', completada: true },
-                { id: 3, titulo: 'Configuración del entorno', duracion: '12:20', completada: true }
+                { id: 1, titulo: 'Bienvenida y presentación (Vista previa)', duracion: '03:00', completada: false, vistaPrevia: !modoVistaPreviaSinLogin ? false : true },
+                { id: 2, titulo: 'Requisitos previos', duracion: '08:45', completada: false, bloqueada: modoVistaPreviaSinLogin },
+                { id: 3, titulo: 'Configuración del entorno', duracion: '12:20', completada: false, bloqueada: modoVistaPreviaSinLogin }
               ]
             },
             {
               id: 2,
               titulo: 'Fundamentos básicos',
-              completado: true,
-              progreso: 100,
+              completado: usuarioAutenticado ? true : false,
+              progreso: usuarioAutenticado ? 100 : 0,
+              // Bloqueado para usuarios sin sesión
+              bloqueado: modoVistaPreviaSinLogin,
               lecciones: [
-                { id: 4, titulo: 'Conceptos fundamentales', duracion: '15:10', completada: true },
-                { id: 5, titulo: 'Primeros ejemplos prácticos', duracion: '18:30', completada: true },
-                { id: 6, titulo: 'Ejercicios guiados', duracion: '22:15', completada: true }
+                { 
+                  id: 4, 
+                  titulo: 'Conceptos fundamentales', 
+                  duracion: '15:10', 
+                  completada: usuarioAutenticado ? true : false,
+                  bloqueada: modoVistaPreviaSinLogin 
+                },
+                { 
+                  id: 5, 
+                  titulo: 'Primeros ejemplos prácticos', 
+                  duracion: '18:30', 
+                  completada: usuarioAutenticado ? true : false,
+                  bloqueada: modoVistaPreviaSinLogin 
+                },
+                { 
+                  id: 6, 
+                  titulo: 'Ejercicios guiados', 
+                  duracion: '22:15', 
+                  completada: usuarioAutenticado ? true : false,
+                  bloqueada: modoVistaPreviaSinLogin 
+                }
               ]
             },
             {
               id: 3,
               titulo: 'Técnicas avanzadas',
-              completado: false,
-              progreso: 33,
+              completado: usuarioAutenticado ? false : false,
+              progreso: usuarioAutenticado ? 33 : 0,
+              bloqueado: modoVistaPreviaSinLogin,
               lecciones: [
-                { id: 7, titulo: 'Patrones avanzados', duracion: '20:45', completada: true },
-                { id: 8, titulo: 'Optimización y buenas prácticas', duracion: '25:30', completada: false },
-                { id: 9, titulo: 'Casos de estudio reales', duracion: '30:00', completada: false }
+                { 
+                  id: 7, 
+                  titulo: 'Patrones avanzados', 
+                  duracion: '20:45', 
+                  completada: usuarioAutenticado ? true : false,
+                  bloqueada: modoVistaPreviaSinLogin 
+                },
+                { 
+                  id: 8, 
+                  titulo: 'Optimización y buenas prácticas', 
+                  duracion: '25:30', 
+                  completada: false,
+                  bloqueada: modoVistaPreviaSinLogin 
+                },
+                { 
+                  id: 9, 
+                  titulo: 'Casos de estudio reales', 
+                  duracion: '30:00', 
+                  completada: false,
+                  bloqueada: modoVistaPreviaSinLogin 
+                }
               ]
             },
             {
@@ -80,45 +240,69 @@ const VisorCurso = () => {
               titulo: 'Proyecto final',
               completado: false,
               progreso: 0,
-              bloqueado: !haComprado,
+              bloqueado: modoVistaPreviaSinLogin || !haComprado,
               lecciones: [
                 { 
                   id: 10, 
                   titulo: 'Planificación del proyecto', 
                   duracion: '15:20', 
                   completada: false, 
-                  bloqueada: !haComprado 
+                  bloqueada: modoVistaPreviaSinLogin || !haComprado 
                 },
                 { 
                   id: 11, 
                   titulo: 'Desarrollo guiado', 
                   duracion: '35:45', 
                   completada: false, 
-                  bloqueada: !haComprado 
+                  bloqueada: modoVistaPreviaSinLogin || !haComprado 
                 },
                 { 
                   id: 12, 
                   titulo: 'Pruebas y despliegue', 
                   duracion: '25:10', 
                   completada: false, 
-                  bloqueada: !haComprado 
+                  bloqueada: modoVistaPreviaSinLogin || !haComprado 
                 }
               ]
             }
           ],
           recursos: [
-            { id: 1, titulo: 'Presentación del curso', tipo: 'pdf', tamano: '2.4 MB' },
-            { id: 2, titulo: 'Código fuente de ejemplos', tipo: 'zip', tamano: '15 MB' },
-            { id: 3, titulo: 'Guía de referencia rápida', tipo: 'pdf', tamano: '1.8 MB' },
-            { id: 4, titulo: 'Plantillas de proyectos', tipo: 'zip', tamano: '8.5 MB', premium: true }
+            { 
+              id: 1, 
+              titulo: 'Documentación de referencia', 
+              tipo: 'pdf', 
+              tamano: '2.4 MB',
+              bloqueado: modoVistaPreviaSinLogin || !haComprado
+            },
+            { 
+              id: 2, 
+              titulo: 'Código fuente de ejemplos', 
+              tipo: 'zip', 
+              tamano: '4.8 MB',
+              bloqueado: modoVistaPreviaSinLogin || !haComprado
+            },
+            { 
+              id: 3, 
+              titulo: 'Plantillas de proyecto', 
+              tipo: 'zip', 
+              tamano: '1.7 MB',
+              bloqueado: modoVistaPreviaSinLogin
+            },
+            { 
+              id: 4, 
+              titulo: 'Muestra gratuita del curso', 
+              tipo: 'pdf', 
+              tamano: '0.8 MB',
+              bloqueado: false
+            }
           ],
           preguntas: [
             { 
               id: 1, 
-              usuario: 'Carlos S.', 
+              usuario: 'Carlos R.', 
               fecha: '2025-05-01', 
-              texto: '¿Este curso es adecuado para principiantes?',
-              respuesta: 'Sí, el curso está diseñado para todos los niveles, comenzamos desde lo básico y avanzamos gradualmente.',
+              texto: '¿Hay algún requisito específico para seguir este curso?',
+              respuesta: 'Solo necesitas conocimientos básicos de programación y una computadora con conexión a internet.',
               avatarUsuario: 'https://i.pravatar.cc/150?img=68'
             },
             { 
@@ -140,110 +324,181 @@ const VisorCurso = () => {
           ]
         };
         
-        setCurso(cursoSimulado);
+        setCurso(cursoData);
         
-        // Establecer la primera lección como actual
-        if (cursoSimulado.modulos.length > 0 && cursoSimulado.modulos[0].lecciones.length > 0) {
-          setLeccionActual(cursoSimulado.modulos[0].lecciones[0]);
-          setModuloActual(cursoSimulado.modulos[0]);
+        // Iniciar con la primera lección del primer módulo
+        if (cursoData.modulos.length > 0 && cursoData.modulos[0].lecciones.length > 0) {
+          setModuloActual(cursoData.modulos[0]);
+          setLeccionActual(cursoData.modulos[0].lecciones[0]);
         }
-        
-        setCargando(false);
-      } catch (error) {
-        console.error('Error al cargar los datos del curso:', error);
+      } else {
         setMensaje({
           tipo: 'error',
-          texto: 'No se pudo cargar el curso. Por favor, inténtalo de nuevo.'
+          texto: 'No se encontró información del curso'
         });
-        setCargando(false);
       }
-    };
-    
-    fetchCurso();
-    
-    // Verificamos si el usuario ha comprado el curso (simulado)
-    const verificarCompra = async () => {
-      try {
-        // En un caso real, esto sería una llamada a tu API
-        // const response = await axios.get(`/api/usuarios/cursos/${cursoId}/verificar-compra`);
-        // setHaComprado(response.data.comprado);
-        
-        // Por ahora, lo simulamos con un estado falso (no ha comprado)
-        setHaComprado(false);
-      } catch (error) {
-        console.error('Error al verificar la compra:', error);
-      }
-    };
-    
-    verificarCompra();
-  }, [cursoId]);
-  
-  const handleSeleccionarLeccion = (leccion, modulo) => {
-    // En un caso real, verificaríamos si la lección está desbloqueada
-    if (leccion.bloqueada) {
+    } catch (error) {
+      console.error('Error al obtener curso:', error);
       setMensaje({
-        tipo: 'advertencia',
-        texto: 'Esta lección está bloqueada. Adquiere el curso completo para acceder a todo el contenido.'
+        tipo: 'error',
+        texto: 'Error al cargar el curso'
+      });
+    } finally {
+      setCargando(false);
+    }
+  };
+    
+  const handleSeleccionLeccion = (modulo, leccion) => {
+    // Si la lección está bloqueada y el usuario no ha comprado, mostrar mensaje
+    if (leccion.bloqueada && !haComprado) {
+      setMensaje({
+        tipo: 'info',
+        texto: 'Necesitas inscribirte en el curso para acceder a esta lección'
       });
       return;
     }
     
-    setLeccionActual(leccion);
     setModuloActual(modulo);
-    
-    // En un caso real, aquí registraríamos el progreso del usuario
-    // axios.post('/api/progreso', { leccionId: leccion.id, cursoId });
+    setLeccionActual(leccion);
+    // Scrollear al reproductor de video
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
   
-  const completarLeccion = () => {
-    // En un caso real, marcaríamos la lección como completada en la base de datos
-    // y actualizaríamos el estado local
-    console.log('Lección completada:', leccionActual?.id);
-    
-    // Actualizar el estado de leccionActual para mostrarla como completada
-    if (leccionActual) {
-      setLeccionActual({
-        ...leccionActual,
-        completada: true
-      });
-      
-      // En un caso real, aquí se actualizaría también el estado del curso completo
-      // con la lección marcada como completada
-    }
+  const handleCambiarPestana = (pestana) => {
+    setPestanaActiva(pestana);
   };
   
   const handleComprarCurso = () => {
-    // Redirigir a la página de pago
     navigate(`/pago/${cursoId}`);
   };
   
+  const handleMarcarCompletada = (leccionId) => {
+    if (!haComprado) {
+      setMensaje({
+        tipo: 'info',
+        texto: 'Necesitas inscribirte en el curso para marcar lecciones como completadas'
+      });
+      return;
+    }
+    
+    // Actualizar el estado local
+    // En producción, esto enviaría una petición al servidor
+    setCurso(prevCurso => {
+      const nuevoCurso = { ...prevCurso };
+      const todosModulos = [...nuevoCurso.modulos];
+      
+      // Encontrar la lección y marcarla como completada
+      for (let i = 0; i < todosModulos.length; i++) {
+        const modulo = todosModulos[i];
+        const leccionIndex = modulo.lecciones.findIndex(l => l.id === leccionId);
+        
+        if (leccionIndex >= 0) {
+          // Actualizar la lección
+          modulo.lecciones[leccionIndex].completada = true;
+          
+          // Actualizar el progreso del módulo
+          const leccionesCompletadas = modulo.lecciones.filter(l => l.completada).length;
+          modulo.progreso = Math.round((leccionesCompletadas / modulo.lecciones.length) * 100);
+          modulo.completado = modulo.progreso === 100;
+          
+          break;
+        }
+      }
+      
+      nuevoCurso.modulos = todosModulos;
+      return nuevoCurso;
+    });
+    
+    // Mostrar mensaje de éxito
+    setMensaje({
+      tipo: 'exito',
+      texto: '¡Lección marcada como completada!'
+    });
+  };
+  
+  // Renderizar estado de carga
   if (cargando) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-        <div className="w-16 h-16 border-4 border-t-purple-600 border-r-pink-600 border-b-purple-600 border-l-pink-600 border-solid rounded-full animate-spin"></div>
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center pt-20">
+        <div className="text-center flex flex-col items-center">
+          <div className="w-16 h-16 border-4 border-t-purple-600 border-r-pink-600 border-b-purple-600 border-l-pink-600 border-solid rounded-full animate-spin"></div>
+          <p className="mt-4 text-gray-300">Cargando curso...</p>
+        </div>
       </div>
     );
   }
   
+  // Renderizar error si no hay datos del curso
   if (!curso) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-        <div className="text-white text-center">
-          <h2 className="text-2xl font-bold mb-2">Curso no encontrado</h2>
-          <p className="mb-4">No pudimos encontrar el curso que estás buscando.</p>
-          <button 
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center pt-20">
+        <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-8 max-w-md w-full border border-gray-700/50 text-center">
+          <div className="text-red-500 text-5xl mb-4">
+            <span role="img" aria-label="Error">⚠️</span>
+          </div>
+          <h2 className="text-xl font-bold text-white mb-4">No se pudo cargar el curso</h2>
+          <p className="text-gray-300 mb-6">{mensaje?.texto || 'Ha ocurrido un error al cargar el curso'}</p>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
             onClick={() => navigate('/cursos')}
-            className="px-6 py-2 bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg hover:shadow-lg hover:shadow-purple-500/20"
+            className="px-6 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-purple-500/20 transition-all"
           >
-            Ver todos los cursos
-          </button>
+            Volver a Cursos
+          </motion.button>
         </div>
       </div>
     );
   }
   
   return (
-    <div className="min-h-screen bg-gray-900 pt-20">
+    <div className="min-h-screen bg-gray-900 pt-20 relative">
+      {modoVistaPreviaSinLogin && (
+        <motion.div 
+          initial={{ y: 100, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ type: "spring", stiffness: 300, damping: 25 }}
+          className="fixed bottom-0 left-0 right-0 bg-gradient-to-r from-purple-800/90 to-pink-700/90 backdrop-blur-lg p-4 z-50 border-t border-purple-500/30 shadow-lg shadow-purple-900/50"
+        >
+          <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div className="flex items-center">
+              <div className="relative mr-3">
+                <FaUserLock className="text-white text-2xl" />
+                <motion.div 
+                  animate={{ scale: [1, 1.2, 1] }}
+                  transition={{ repeat: Infinity, duration: 2 }}
+                  className="absolute -top-1 -right-1 w-3 h-3 bg-pink-400 rounded-full"
+                />
+              </div>
+              <div>
+                <h3 className="text-white font-bold text-lg mb-1">Modo Vista Previa</h3>
+                <p className="text-white/80 text-sm">Descubre más iniciando sesión en nuestra plataforma</p>
+              </div>
+            </div>
+            
+            <motion.div
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+              className="relative group"
+            >
+              <div className="absolute -inset-0.5 bg-gradient-to-r from-pink-500 to-purple-600 rounded-xl blur-sm opacity-75 group-hover:opacity-100 transition duration-300"></div>
+              <Link 
+                to="/login" 
+                state={{ returnUrl: `/curso-visor/${cursoId}` }} 
+                className="relative flex items-center px-6 py-3 bg-gray-900 rounded-xl text-white font-bold hover:bg-gray-800 transition-all"
+              >
+                <span className="mr-2">Desbloquear Curso</span>
+                <motion.div
+                  animate={{ x: [0, 5, 0] }}
+                  transition={{ repeat: Infinity, duration: 1.5 }}
+                >
+                  <FaLock className="text-pink-400" />
+                </motion.div>
+              </Link>
+            </motion.div>
+          </div>
+        </motion.div>
+      )}
       {/* Navbar superior */}
       <div className="bg-gray-900/90 backdrop-blur-sm border-b border-gray-800 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex justify-between items-center">
@@ -254,47 +509,64 @@ const VisorCurso = () => {
             >
               <FaArrowLeft size={20} />
             </button>
-            <h1 className="text-lg sm:text-xl font-bold text-white truncate max-w-[250px] sm:max-w-md">
-              {curso.titulo}
+            <h1 className="text-lg sm:text-xl font-bold truncate max-w-[250px] sm:max-w-md">
+              <span className="bg-gradient-to-r from-purple-400 to-pink-600 bg-clip-text text-transparent">
+                {curso.titulo}
+              </span>
             </h1>
           </div>
           
           <div className="flex items-center space-x-2">
-            {!haComprado && (
+            {!haComprado && !modoVistaPreviaSinLogin && (
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={handleComprarCurso}
                 className="flex items-center px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold text-sm hover:shadow-lg hover:shadow-purple-500/20 transition-all"
               >
-                Comprar ({curso.precio}€)
+                Inscribirse ({curso.precio}€)
               </motion.button>
             )}
-            
-            <button className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-gray-800 text-white transition-colors">
-              <FaShare size={16} />
-            </button>
+            {modoVistaPreviaSinLogin && (
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => navigate('/login', { state: { returnUrl: `/curso-visor/${cursoId}` } })}
+                className="flex items-center px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold text-sm hover:shadow-lg hover:shadow-purple-500/20 transition-all"
+              >
+                <FaLock className="mr-2" size={14} /> Iniciar sesión
+              </motion.button>
+            )}
+            {haComprado && (
+              <div className="flex items-center px-4 py-2 bg-green-600/20 text-green-400 rounded-xl font-semibold text-sm border border-green-500/30">
+                <FaCheck className="mr-2" size={14} /> Inscrito
+              </div>
+            )}
           </div>
         </div>
       </div>
       
-      {/* Mensaje de notificación */}
+      {/* Mensaje de estado */}
       <AnimatePresence>
         {mensaje && (
           <motion.div 
-            initial={{ opacity: 0, y: -50 }}
+            initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -50 }}
-            className={`fixed top-20 left-1/2 transform -translate-x-1/2 z-50 px-6 py-3 rounded-xl shadow-lg ${
-              mensaje.tipo === 'error' ? 'bg-red-500' : 
-              mensaje.tipo === 'exito' ? 'bg-green-500' : 
-              'bg-amber-500'
-            } text-white`}
+            exit={{ opacity: 0, y: -20 }}
+            className={`mx-auto max-w-4xl mt-4 px-4 ${mensaje.tipo === 'error' ? 'bg-red-500/10 border-red-500/30 text-red-300' : mensaje.tipo === 'exito' ? 'bg-green-500/10 border-green-500/30 text-green-300' : mensaje.tipo === 'advertencia' ? 'bg-yellow-500/10 border-yellow-500/30 text-yellow-300' : 'bg-blue-500/10 border-blue-500/30 text-blue-300'} border rounded-xl p-4 flex items-start`}
           >
-            <p>{mensaje.texto}</p>
+            <div className="flex-shrink-0 mr-3">
+              {mensaje.tipo === 'error' && <span className="text-xl">⚠️</span>}
+              {mensaje.tipo === 'exito' && <FaCheck />}
+              {mensaje.tipo === 'advertencia' && <span className="text-xl">⚠️</span>}
+              {mensaje.tipo === 'info' && <FaLightbulb />}
+            </div>
+            <div className="flex-1">
+              <p>{mensaje.texto}</p>
+            </div>
             <button 
               onClick={() => setMensaje(null)}
-              className="absolute top-1 right-1 w-6 h-6 flex items-center justify-center text-white/70 hover:text-white"
+              className="ml-auto flex-shrink-0 text-gray-400 hover:text-white"
             >
               ×
             </button>
@@ -302,301 +574,501 @@ const VisorCurso = () => {
         )}
       </AnimatePresence>
       
-      {/* Contenido principal */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Panel izquierdo - Reproductor y detalles */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Reproductor de video */}
-            <ReproductorVideo 
-              leccion={leccionActual} 
-              bloqueado={leccionActual?.bloqueada}
-              onComplete={completarLeccion} 
-            />
-            
-            {/* Información de la lección */}
-            <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-700/50">
-              <h2 className="text-xl font-bold text-white mb-2">{leccionActual?.titulo}</h2>
-              <div className="flex items-center space-x-2 text-gray-400 text-sm mb-6">
-                <span>{moduloActual?.titulo}</span>
-                <span>•</span>
-                <span>{leccionActual?.duracion}</span>
-                {leccionActual?.completada && (
-                  <>
-                    <span>•</span>
-                    <span className="flex items-center text-green-400">
-                      <FaCheck size={12} className="mr-1" /> Completada
-                    </span>
-                  </>
-                )}
+      {!haComprado && !modoVistaPreviaSinLogin && (
+        <motion.div 
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mx-auto max-w-7xl px-4 sm:px-6 py-3 mb-4"
+        >
+          <div className="bg-gradient-to-r from-purple-600/20 to-pink-600/20 rounded-xl p-4 border border-pink-600/30 flex items-center justify-between">
+            <div className="flex items-center">
+              <div className="bg-gray-800 p-3 rounded-full mr-4">
+                <FaCrown className="text-yellow-400" size={24} />
               </div>
-              
-              {/* Pestañas de contenido */}
-              <div className="border-b border-gray-700/50 mb-6">
-                <div className="flex space-x-6">
-                  {['contenido', 'recursos', 'preguntas'].map((tab) => (
-                    <button 
-                      key={tab}
-                      onClick={() => setPestanaActiva(tab)}
-                      className={`pb-3 px-2 font-medium capitalize ${
-                        pestanaActiva === tab 
-                          ? 'text-purple-400 border-b-2 border-purple-400' 
-                          : 'text-gray-400 hover:text-gray-300'
-                      }`}
-                    >
-                      {tab}
-                    </button>
-                  ))}
+              <div>
+                <h3 className="text-lg font-medium text-white mb-1">Acceso limitado al contenido</h3>
+                <p className="text-gray-300 max-w-xl">Inscríbete en este curso para desbloquear todas las lecciones, recursos y ejercicios.</p>
+              </div>
+            </div>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={handleComprarCurso}
+              className="hidden md:flex items-center px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-purple-500/20 transition-all"
+            >
+              Inscribirse ahora ({curso?.precio || 0}€)
+            </motion.button>
+          </div>
+        </motion.div>
+      )}
+      
+      {modoVistaPreviaSinLogin && (
+        <motion.div 
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ type: "spring", stiffness: 300, damping: 25 }}
+          className="mx-auto max-w-7xl px-4 sm:px-6 py-3 mb-4"
+        >
+          <div className="bg-gradient-to-r from-purple-600/20 to-pink-600/20 rounded-xl p-4 border border-pink-600/30 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-full filter blur-3xl -translate-y-1/2 translate-x-1/4"></div>
+            <div className="absolute bottom-0 left-0 w-40 h-40 bg-gradient-to-tl from-pink-500/20 to-purple-500/20 rounded-full filter blur-3xl translate-y-1/3 -translate-x-1/4"></div>
+            
+            <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-4">
+              <div className="flex items-center">
+                <div className="relative mr-4">
+                  <div className="bg-gray-800 p-3 rounded-full">
+                    <FaMagic className="text-purple-400" size={24} />
+                  </div>
+                  <motion.div
+                    animate={{ 
+                      scale: [1, 1.5, 1],
+                      opacity: [0.7, 1, 0.7]
+                    }}
+                    transition={{ 
+                      repeat: Infinity,
+                      duration: 3
+                    }}
+                    className="absolute -top-1 -right-1 w-4 h-4 bg-pink-500 rounded-full blur-sm"
+                  />
+                </div>
+                <div>
+                  <div className="flex items-center mb-1">
+                    <h3 className="text-lg font-bold text-white mr-3">Modo Vista Previa</h3>
+                    <span className="bg-purple-600/30 text-purple-300 text-xs px-3 py-1 rounded-full border border-purple-600/20">
+                      Solo demostración
+                    </span>
+                  </div>
+                  <p className="text-gray-300 max-w-xl">Estás viendo una versión limitada. Inicia sesión para acceder a todas las funciones.</p>
                 </div>
               </div>
               
-              {/* Contenido de pestañas */}
-              <div>
-                {pestanaActiva === 'contenido' && (
-                  <div className="prose prose-invert max-w-none">
-                    <p>
-                      En esta lección aprenderás conceptos fundamentales sobre desarrollo web moderno.
-                      Exploraremos las mejores prácticas de la industria y cómo implementarlas en tus proyectos.
-                    </p>
-                    <h3>Objetivos de aprendizaje</h3>
-                    <ul>
-                      <li>Comprender la estructura básica de una aplicación web</li>
-                      <li>Familiarizarse con las herramientas de desarrollo esenciales</li>
-                      <li>Crear componentes reutilizables siguiendo estándares actuales</li>
-                      <li>Implementar sistemas de diseño escalables</li>
-                    </ul>
-                    <div className="bg-gray-800/70 p-4 rounded-xl border border-gray-700/50 flex items-start mt-6">
-                      <div className="text-yellow-400 mr-3 mt-1">
-                        <FaLightbulb size={20} />
-                      </div>
-                      <div>
-                        <h4 className="text-yellow-400 font-semibold mb-1">Consejo profesional</h4>
-                        <p className="text-sm text-gray-300">
-                          Siempre prueba tu código en diferentes navegadores para asegurar la compatibilidad.
-                          Herramientas como BrowserStack pueden ayudarte a simular diferentes entornos.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-                
-                {pestanaActiva === 'recursos' && (
-                  <div>
-                    <ul className="divide-y divide-gray-700/50">
-                      {curso.recursos.map((recurso) => (
-                        <li key={recurso.id} className="py-3">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center">
-                              <div className={`w-10 h-10 rounded-lg mr-4 flex items-center justify-center ${
-                                recurso.tipo === 'pdf' ? 'bg-red-500/20' : 
-                                recurso.tipo === 'zip' ? 'bg-blue-500/20' : 
-                                'bg-green-500/20'
-                              }`}>
-                                <span className="uppercase text-xs font-bold">{recurso.tipo}</span>
-                              </div>
-                              <div>
-                                <h4 className="text-white font-medium">{recurso.titulo}</h4>
-                                <p className="text-gray-400 text-sm">{recurso.tamano}</p>
-                              </div>
-                            </div>
-                            
-                            {recurso.premium && !haComprado ? (
-                              <div className="flex items-center text-gray-500">
-                                <FaLock size={14} className="mr-2" />
-                                <span>Premium</span>
-                              </div>
-                            ) : (
-                              <motion.button
-                                whileHover={{ scale: 1.1 }}
-                                whileTap={{ scale: 0.95 }}
-                                className="flex items-center justify-center w-10 h-10 rounded-full bg-purple-500/20 text-purple-400 hover:bg-purple-500/30 transition-colors"
-                              >
-                                <FaDownload size={14} />
-                              </motion.button>
-                            )}
+              <Link 
+                to="/login" 
+                state={{ returnUrl: `/curso-visor/${cursoId}` }}
+                className="flex-shrink-0 group relative"
+              >
+                <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl opacity-75 blur-sm group-hover:opacity-100 transition duration-200"></div>
+                <div className="relative flex items-center px-6 py-3 bg-gray-900 rounded-xl text-white font-bold transition-colors group-hover:bg-gray-800">
+                  <span className="mr-2">Desbloquear Ahora</span>
+                  <FaLock className="text-pink-400 group-hover:text-pink-300" />
+                </div>
+              </Link>
+            </div>
+          </div>
+        </motion.div>
+      )}
+      
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Columna izquierda: Reproductor de video y pestañas */}
+          <div className="lg:col-span-2">
+            {/* Reproductor de video */}
+            <div className="mb-6 bg-gray-800 rounded-2xl overflow-hidden border border-gray-700/50 relative">
+              {leccionActual && (
+                <>
+                  <ReproductorVideo 
+                    videoUrl="https://www.youtube.com/embed/dQw4w9WgXcQ" 
+                    titulo={leccionActual.titulo}
+                    bloqueado={leccionActual.bloqueada && !haComprado}
+                  />
+                  
+                  {(!haComprado && moduloActual && moduloActual.id > 1) || modoVistaPreviaSinLogin ? (
+                    <div className="absolute inset-0 bg-gray-900/80 backdrop-blur-sm flex flex-col items-center justify-center z-10 p-6 text-center">
+                      <motion.div 
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        transition={{ type: "spring" }}
+                        className="w-20 h-20 bg-gradient-to-r from-purple-600/30 to-pink-600/30 rounded-full flex items-center justify-center mb-4 border border-pink-600/50 relative overflow-hidden"
+                      >
+                        <div className="absolute inset-0 bg-gradient-to-r from-purple-500/30 to-pink-500/30 animate-pulse"></div>
+                        <FaLock className="text-pink-400 relative z-10" size={30} />
+                        <motion.div 
+                          animate={{ 
+                            rotate: 360,
+                            scale: [1, 1.1, 1] 
+                          }}
+                          transition={{ 
+                            rotate: { repeat: Infinity, duration: 10, ease: "linear" },
+                            scale: { repeat: Infinity, duration: 2 }
+                          }}
+                          className="absolute inset-0 rounded-full border-2 border-dashed border-pink-500/30"
+                        />
+                      </motion.div>
+                      
+                      <motion.h3 
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.3 }}
+                        className="text-2xl font-bold text-white mb-2"
+                      >
+                        {modoVistaPreviaSinLogin ? "Contenido Bloqueado" : "Contenido exclusivo"}
+                      </motion.h3>
+                      
+                      <motion.p 
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 0.5 }}
+                        className="text-gray-300 mb-6 max-w-md"
+                      >
+                        {modoVistaPreviaSinLogin 
+                          ? "Es necesario iniciar sesión para ver el contenido completo del curso." 
+                          : "Esta lección solo está disponible para estudiantes inscritos en el curso completo."}
+                      </motion.p>
+                      
+                      {modoVistaPreviaSinLogin ? (
+                        <Link 
+                          to="/login" 
+                          state={{ returnUrl: `/curso-visor/${cursoId}` }}
+                          className="group relative"
+                        >
+                          <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl opacity-70 blur group-hover:opacity-100 transition duration-200"></div>
+                          <div className="relative px-8 py-3 bg-gray-900 rounded-xl text-white font-bold flex items-center group-hover:bg-gray-800 transition-colors">
+                            <span className="mr-2">Iniciar Sesión</span>
+                            <motion.div
+                              animate={{ x: [0, 5, 0] }}
+                              transition={{ repeat: Infinity, duration: 1.5 }}
+                            >
+                              <FaLock className="text-pink-400" />
+                            </motion.div>
                           </div>
-                        </li>
-                      ))}
-                    </ul>
-                    
-                    {!haComprado && (
-                      <div className="mt-4 p-4 border border-gray-700/50 rounded-xl bg-gray-800/50 text-center">
-                        <p className="text-gray-300 mb-3">
-                          Adquiere este curso para desbloquear todos los recursos premium.
-                        </p>
+                        </Link>
+                      ) : (
                         <motion.button
                           whileHover={{ scale: 1.05 }}
                           whileTap={{ scale: 0.95 }}
                           onClick={handleComprarCurso}
-                          className="px-6 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold text-sm hover:shadow-lg hover:shadow-purple-500/20 transition-all"
+                          className="px-8 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-purple-500/20 transition-all"
                         >
-                          Comprar curso ahora
+                          Inscribirse por {curso.precio}€
                         </motion.button>
-                      </div>
-                    )}
-                  </div>
-                )}
-                
-                {pestanaActiva === 'preguntas' && (
-                  <div>
-                    <ul className="space-y-5">
-                      {curso.preguntas.map((pregunta) => (
-                        <li key={pregunta.id} className="bg-gray-800/30 rounded-xl p-4 border border-gray-700/50">
-                          <div className="flex items-start mb-3">
-                            <img 
-                              src={pregunta.avatarUsuario} 
-                              alt={pregunta.usuario} 
-                              className="w-10 h-10 rounded-full mr-3 object-cover"
-                            />
-                            <div>
-                              <div className="flex items-baseline">
-                                <h4 className="text-white font-medium mr-2">{pregunta.usuario}</h4>
-                                <span className="text-gray-500 text-xs">{pregunta.fecha}</span>
-                              </div>
-                              <p className="text-gray-300 mt-1">{pregunta.texto}</p>
-                            </div>
-                          </div>
-                          
-                          {pregunta.respuesta && (
-                            <div className="ml-12 pl-4 border-l-2 border-purple-500/30">
-                              <div className="flex items-baseline">
-                                <h5 className="text-purple-400 font-medium mr-2">Instructor</h5>
-                                <span className="text-gray-500 text-xs">Respuesta</span>
-                              </div>
-                              <p className="text-gray-400 mt-1">{pregunta.respuesta}</p>
-                            </div>
-                          )}
-                        </li>
-                      ))}
-                    </ul>
-                    
-                    <div className="mt-6">
-                      <h4 className="text-white font-medium mb-3">Haz una pregunta</h4>
-                      <textarea 
-                        className="w-full bg-gray-800/30 border border-gray-700/50 rounded-xl p-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500/50 resize-none h-24"
-                        placeholder="Escribe tu pregunta aquí..."
-                      />
-                      <div className="flex justify-end mt-2">
-                        <motion.button
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
-                          className="px-6 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold text-sm hover:shadow-lg hover:shadow-purple-500/20 transition-all"
-                        >
-                          Enviar pregunta
-                        </motion.button>
+                      )}
+                    </div>
+                  ) : null}
+                </>
+              )}
+            </div>
+            
+            {/* Pestañas de contenido */}
+            <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-700/50">
+              <div className="flex border-b border-gray-700 mb-6">
+                <button
+                  onClick={() => handleCambiarPestana('contenido')}
+                  className={`px-4 py-3 font-medium transition-colors ${pestanaActiva === 'contenido' ? 'border-b-2 border-purple-500 text-white' : 'text-gray-400 hover:text-gray-300'}`}
+                >
+                  Contenido
+                </button>
+                <button
+                  onClick={() => handleCambiarPestana('recursos')}
+                  className={`px-4 py-3 font-medium transition-colors ${pestanaActiva === 'recursos' ? 'border-b-2 border-purple-500 text-white' : 'text-gray-400 hover:text-gray-300'}`}
+                >
+                  Recursos
+                </button>
+                <button
+                  onClick={() => handleCambiarPestana('preguntas')}
+                  className={`px-4 py-3 font-medium transition-colors ${pestanaActiva === 'preguntas' ? 'border-b-2 border-purple-500 text-white' : 'text-gray-400 hover:text-gray-300'}`}
+                >
+                  Preguntas
+                </button>
+              </div>
+              
+              {/* Contenido de las pestañas */}
+              {pestanaActiva === 'contenido' && (
+                <div>
+                  {/* Cabecera con degradado */}
+                  <div className="bg-gradient-to-r from-purple-600/10 to-pink-600/10 rounded-xl p-6 mb-8 border border-gray-700 relative overflow-hidden">
+                    <div className="absolute inset-0 bg-gray-900/30 backdrop-blur-sm"></div>
+                    <div className="relative z-10">
+                      <h2 className="text-2xl font-bold mb-2 bg-gradient-to-r from-purple-400 to-pink-600 bg-clip-text text-transparent">
+                        {curso.titulo}
+                      </h2>
+                      <p className="text-gray-300 mb-4">
+                        {curso.descripcion}
+                      </p>
+                      <div className="flex flex-wrap gap-2 mt-3">
+                        <span className="bg-purple-600/20 text-purple-400 text-xs px-3 py-1 rounded-full border border-purple-600/30">
+                          {curso.tipo_curso || 'Todos los niveles'}
+                        </span>
+                        <span className="bg-pink-600/20 text-pink-400 text-xs px-3 py-1 rounded-full border border-pink-600/30">
+                          {console.log(curso)}
+                          {curso.duracion || '0'} horas de contenido
+                        </span>
+                        <span className="bg-gray-700/30 text-gray-300 text-xs px-3 py-1 rounded-full border border-gray-700">
+                          Actualizado {curso.fechaActualizacion}
+                        </span>
                       </div>
                     </div>
                   </div>
-                )}
-              </div>
-            </div>
-            
-            {/* Valoraciones y reseñas */}
-            <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-700/50">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xl font-bold text-white">Valoraciones y reseñas</h3>
-                <div className="flex items-center">
-                  <div className="flex items-center text-yellow-400 mr-2">
-                    {[...Array(5)].map((_, i) => (
-                      <FaStar key={i} size={16} className={i < Math.floor(curso.valoracion) ? "text-yellow-400" : "text-gray-600"} />
+
+                  {/* Información sobre el instructor */}
+                  <div className="mb-8">
+                    <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
+                      <span className="bg-gradient-to-r from-purple-500 to-pink-500 w-1 h-6 rounded mr-3"></span>
+                      Sobre el instructor
+                    </h3>
+                    <div className="bg-gray-800/30 rounded-xl p-6 border border-gray-700/50">
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center">
+                        <img 
+                          src={curso.instructor.avatar} 
+                          alt={curso.instructor.nombre}
+                          className="w-16 h-16 rounded-full mb-4 sm:mb-0 sm:mr-6 border-2 border-purple-500/30" 
+                        />
+                        <div>
+                          <h4 className="text-xl font-semibold text-white mb-1">{curso.instructor.nombre}</h4>
+                          <p className="text-gray-400 mb-3">{curso.instructor.rol}</p>
+                          <p className="text-gray-300">
+                            Experto con amplia experiencia en enseñanza. Ha impartido más de 20 cursos en línea 
+                            y ha ayudado a miles de estudiantes a desarrollar sus habilidades en este campo.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Lo que aprenderás */}
+                  <div className="mb-8">
+                    <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
+                      <span className="bg-gradient-to-r from-purple-500 to-pink-500 w-1 h-6 rounded mr-3"></span>
+                      Lo que aprenderás
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {[
+                        'Dominarás los conceptos fundamentales de este campo',
+                        'Aplicarás técnicas avanzadas en casos reales',
+                        'Desarrollarás proyectos profesionales completos',
+                        'Optimizarás tu flujo de trabajo con buenas prácticas',
+                        'Resolverás problemas comunes de manera eficiente',
+                        'Implementarás soluciones escalables y mantenibles'
+                      ].map((item, index) => (
+                        <div key={index} className="flex items-start p-3 bg-gray-800/20 rounded-lg border border-gray-700/30">
+                          <FaCheck className="text-green-400 mt-1 mr-3 flex-shrink-0" />
+                          <p className="text-gray-300">{item}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Estadísticas del curso */}
+                  <div className="mb-8">
+                    <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
+                      <span className="bg-gradient-to-r from-purple-500 to-pink-500 w-1 h-6 rounded mr-3"></span>
+                      Estadísticas del curso
+                    </h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      <div className="bg-gray-800/30 rounded-xl p-5 border border-gray-700/50 text-center">
+                        <div className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-pink-500 bg-clip-text text-transparent mb-1">
+                          {curso.numValoraciones}
+                        </div>
+                        <p className="text-gray-400">Estudiantes inscritos</p>
+                      </div>
+                      <div className="bg-gray-800/30 rounded-xl p-5 border border-gray-700/50 text-center">
+                        <div className="flex justify-center text-yellow-400 mb-1">
+                          {[...Array(5)].map((_, index) => (
+                            <FaStar 
+                              key={index}
+                              className={index < Math.floor(curso.valoracion) ? 'text-yellow-400' : 'text-gray-600'}
+                              size={20}
+                            />
+                          ))}
+                        </div>
+                        <p className="text-gray-400">{curso.valoracion} valoración promedio</p>
+                      </div>
+                      <div className="bg-gray-800/30 rounded-xl p-5 border border-gray-700/50 text-center">
+                        <div className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-pink-500 bg-clip-text text-transparent mb-1">
+                          {curso.duracion || '0'} h
+                        </div>
+                        <p className="text-gray-400">Duración total</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Requisitos previos */}
+                  <div className="mb-8">
+                    <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
+                      <span className="bg-gradient-to-r from-purple-500 to-pink-500 w-1 h-6 rounded mr-3"></span>
+                      Requisitos previos
+                    </h3>
+                    <ul className="list-disc list-inside space-y-2 text-gray-300 ml-4">
+                      <li>Conocimientos básicos de programación</li>
+                      <li>Familiaridad con entornos de desarrollo</li>
+                      <li>Ordenador con acceso a internet</li>
+                      <li>Interés en aprender y practicar los conceptos</li>
+                    </ul>
+                  </div>
+
+                  {/* Para quién es este curso */}
+                  <div className="mb-8">
+                    <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
+                      <span className="bg-gradient-to-r from-purple-500 to-pink-500 w-1 h-6 rounded mr-3"></span>
+                      Para quién es este curso
+                    </h3>
+                    <div className="bg-gray-800/30 rounded-xl p-6 border border-gray-700/50">
+                      <ul className="space-y-4">
+                        <li className="flex items-start">
+                          <div className="bg-purple-600/20 p-2 rounded-lg mr-4 flex-shrink-0">
+                            <FaPlay className="text-purple-400" size={14} />
+                          </div>
+                          <div>
+                            <h4 className="text-white font-medium mb-1">Principiantes con conocimientos básicos</h4>
+                            <p className="text-gray-400">Personas con fundamentos que quieren profundizar sus habilidades</p>
+                          </div>
+                        </li>
+                        <li className="flex items-start">
+                          <div className="bg-pink-600/20 p-2 rounded-lg mr-4 flex-shrink-0">
+                            <FaPlay className="text-pink-400" size={14} />
+                          </div>
+                          <div>
+                            <h4 className="text-white font-medium mb-1">Profesionales buscando actualización</h4>
+                            <p className="text-gray-400">Desarrolladores que necesitan ponerse al día con las nuevas técnicas</p>
+                          </div>
+                        </li>
+                        <li className="flex items-start">
+                          <div className="bg-purple-600/20 p-2 rounded-lg mr-4 flex-shrink-0">
+                            <FaPlay className="text-purple-400" size={14} />
+                          </div>
+                          <div>
+                            <h4 className="text-white font-medium mb-1">Estudiantes de carreras técnicas</h4>
+                            <p className="text-gray-400">Complemento perfecto para reforzar conocimientos académicos</p>
+                          </div>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              )}
+              
+              {pestanaActiva === 'recursos' && (
+                <div>
+                  <h2 className="text-xl font-bold text-white mb-4">
+                    Recursos del curso
+                  </h2>
+                  
+                  {!haComprado && (
+                    <div className="bg-gray-800/50 rounded-xl p-5 mb-6 border border-gray-700/50">
+                      <div className="flex items-start">
+                        <FaInfoCircle className="text-purple-400 mt-1 mr-3 flex-shrink-0" size={18} />
+                        <p className="text-gray-300">
+                          <span className="font-semibold text-white">Acceso limitado a recursos:</span> Solo los estudiantes inscritos pueden descargar todos los recursos del curso. Inscríbete para desbloquear {curso.recursos.filter(r => r.bloqueado).length} recursos adicionales.
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                  
+                  <div className="space-y-3">
+                    {curso.recursos.map(recurso => (
+                      <motion.div 
+                        key={recurso.id}
+                        whileHover={!recurso.bloqueado ? { y: -2 } : {}}
+                        className={`p-4 rounded-xl ${recurso.bloqueado ? 'bg-gray-800/50' : 'bg-gray-700/30'} flex items-center justify-between ${recurso.bloqueado && !haComprado ? 'border border-gray-700/50' : ''}`}
+                      >
+                        <div className="flex items-center">
+                          <div className="mr-3">
+                            {recurso.tipo === 'pdf' && <FaDownload className={`${recurso.bloqueado && !haComprado ? 'text-gray-500' : 'text-purple-400'}`} size={18} />}
+                            {recurso.tipo === 'zip' && <FaDownload className={`${recurso.bloqueado && !haComprado ? 'text-gray-500' : 'text-blue-400'}`} size={18} />}
+                          </div>
+                          <div>
+                            <p className={`font-medium ${recurso.bloqueado && !haComprado ? 'text-gray-500' : 'text-white'}`}>
+                              {recurso.titulo}
+                            </p>
+                            <p className="text-sm text-gray-400">{recurso.tamano}</p>
+                          </div>
+                        </div>
+                        
+                        {recurso.bloqueado && !haComprado ? (
+                          <div className="flex items-center">
+                            <div className="bg-gray-800 p-1 rounded-lg border border-gray-700">
+                              <FaLock size={14} className="text-pink-400" />
+                            </div>
+                            <span className="ml-2 text-gray-400 text-sm">Contenido premium</span>
+                          </div>
+                        ) : (
+                          <motion.button
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            className="px-3 py-1 bg-gradient-to-r from-purple-600 to-pink-600 text-white text-sm rounded-lg hover:shadow-lg hover:shadow-purple-500/20 transition-all"
+                          >
+                            Descargar
+                          </motion.button>
+                        )}
+                      </motion.div>
                     ))}
                   </div>
-                  <span className="text-white font-semibold">{curso.valoracion}</span>
-                  <span className="text-gray-400 ml-1">({curso.numValoraciones})</span>
                 </div>
-              </div>
+              )}
               
-              {/* Aquí irían las reseñas, pero las omitimos por brevedad */}
-              <div className="text-center py-4">
-                <p className="text-gray-400 mb-4">
-                  {haComprado 
-                    ? '¿Has completado el curso? Comparte tu experiencia con otros estudiantes.'
-                    : 'Las valoraciones están disponibles solo para estudiantes que han completado el curso.'}
-                </p>
-                
-                {haComprado ? (
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="px-6 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold text-sm hover:shadow-lg hover:shadow-purple-500/20 transition-all"
-                  >
-                    <FaEdit className="inline mr-2" />
-                    Escribir reseña
-                  </motion.button>
-                ) : (
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={handleComprarCurso}
-                    className="px-6 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold text-sm hover:shadow-lg hover:shadow-purple-500/20 transition-all"
-                  >
-                    Comprar curso
-                  </motion.button>
-                )}
-              </div>
+              {pestanaActiva === 'preguntas' && (
+                <div>
+                  <h2 className="text-xl font-bold text-white mb-4">
+                    Preguntas frecuentes
+                  </h2>
+                  <div className="space-y-6">
+                    {curso.preguntas.map(pregunta => (
+                      <div key={pregunta.id} className="border-b border-gray-700 pb-6 last:border-b-0 last:pb-0">
+                        <div className="flex items-start mb-3">
+                          <img 
+                            src={pregunta.avatarUsuario} 
+                            alt={pregunta.usuario}
+                            className="w-8 h-8 rounded-full mr-3" 
+                          />
+                          <div>
+                            <p className="text-white font-medium">{pregunta.usuario}</p>
+                            <p className="text-xs text-gray-400">{pregunta.fecha}</p>
+                          </div>
+                        </div>
+                        <p className="text-gray-200 mb-3">{pregunta.texto}</p>
+                        <div className="bg-gray-700/30 rounded-xl p-4 ml-6">
+                          <p className="text-gray-300">{pregunta.respuesta}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
           
-          {/* Panel derecho - Progreso y módulos */}
-          <div className="space-y-6">
-            {/* Información del instructor */}
+          {/* Columna derecha: Progreso del curso */}
+          <div className="lg:sticky lg:top-24 self-start">
             <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-700/50">
-              <h3 className="text-lg font-bold text-white mb-4">Sobre el instructor</h3>
-              <div className="flex items-center mb-4">
-                <img 
-                  src={curso.instructor.avatar} 
-                  alt={curso.instructor.nombre}
-                  className="w-16 h-16 rounded-full mr-4 object-cover border-2 border-purple-500"
-                />
-                <div>
-                  <h4 className="text-white font-medium">{curso.instructor.nombre}</h4>
-                  <p className="text-gray-400 text-sm">{curso.instructor.rol}</p>
+              <h2 className="text-xl font-bold text-white mb-6">Contenido del curso</h2>
+              
+              {!haComprado && (
+                <div className="mb-6 p-4 bg-gray-900/60 rounded-xl border border-gray-700">
+                  <div className="flex items-center mb-3">
+                    <div className="bg-purple-600/20 p-2 rounded-full mr-3">
+                      <FaRegClock className="text-purple-400" size={16} />
+                    </div>
+                    <h3 className="text-white font-medium">Acceso de prueba</h3>
+                  </div>
+                  <p className="text-gray-400 text-sm mb-3">Tienes acceso gratuito al primer módulo del curso. Inscríbete para acceder a:</p>
+                  <ul className="space-y-2">
+                    <li className="flex items-center text-gray-300 text-sm">
+                      <FaCheck className="text-green-400 mr-2" size={12} /> Todos los módulos y lecciones
+                    </li>
+                    <li className="flex items-center text-gray-300 text-sm">
+                      <FaCheck className="text-green-400 mr-2" size={12} /> Recursos y materiales descargables
+                    </li>
+                    <li className="flex items-center text-gray-300 text-sm">
+                      <FaCheck className="text-green-400 mr-2" size={12} /> Acceso de por vida y actualizaciones
+                    </li>
+                  </ul>
+                  <motion.button
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
+                    onClick={handleComprarCurso}
+                    className="w-full mt-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-medium hover:shadow-lg hover:shadow-purple-500/20 transition-all text-sm"
+                  >
+                    Inscribirme ahora
+                  </motion.button>
                 </div>
-              </div>
-              <p className="text-gray-300 text-sm">
-                Profesional con más de 10 años de experiencia en desarrollo web y educación tecnológica.
-                Especialista en crear contenido didáctico para todos los niveles.
-              </p>
-              <div className="mt-4">
-                <button className="text-purple-400 text-sm font-medium hover:text-purple-300 transition-colors">
-                  Ver perfil completo
-                </button>
-              </div>
-            </div>
-            
-            {/* Componente de progreso */}
-            <ProgresoModulos 
-              curso={curso} 
-              onSeleccionarLeccion={handleSeleccionarLeccion} 
-            />
-            
-            {/* Información adicional */}
-            <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-700/50">
-              <h3 className="text-lg font-bold text-white mb-4">Detalles del curso</h3>
-              <ul className="space-y-3 text-sm">
-                <li className="flex justify-between">
-                  <span className="text-gray-400">Última actualización</span>
-                  <span className="text-white">{curso.fechaActualizacion}</span>
-                </li>
-                <li className="flex justify-between">
-                  <span className="text-gray-400">Total de lecciones</span>
-                  <span className="text-white">
-                    {curso.modulos.reduce((acc, modulo) => acc + modulo.lecciones.length, 0)}
-                  </span>
-                </li>
-                <li className="flex justify-between">
-                  <span className="text-gray-400">Nivel</span>
-                  <span className="text-white">Todos los niveles</span>
-                </li>
-                <li className="flex justify-between">
-                  <span className="text-gray-400">Idioma</span>
-                  <span className="text-white">Español</span>
-                </li>
-                <li className="flex justify-between">
-                  <span className="text-gray-400">Certificado</span>
-                  <span className="text-white">Sí, al completar</span>
-                </li>
-              </ul>
+              )}
+              
+              <ProgresoModulos 
+                modulos={curso.modulos}
+                moduloActual={moduloActual}
+                leccionActual={leccionActual}
+                onSeleccionarLeccion={handleSeleccionLeccion}
+                haComprado={haComprado}
+              />
             </div>
           </div>
         </div>

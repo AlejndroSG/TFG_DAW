@@ -1,8 +1,19 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { FaCreditCard, FaPaypal, FaLock, FaShieldAlt, FaArrowLeft, FaCheck } from 'react-icons/fa';
+import { FaCreditCard, FaPaypal, FaLock, FaShieldAlt, FaArrowLeft, FaCheck, FaGraduationCap } from 'react-icons/fa';
 
 const PasarelaPago = ({ curso, onClose, onPaymentComplete }) => {
+  // Verificar que el curso tiene la información necesaria
+  if (!curso) {
+    return (
+      <div className="p-6 text-center">
+        <div className="text-red-400 mb-3">
+          <span role="img" aria-label="Error">⚠️</span>
+        </div>
+        <p className="text-gray-300">No se ha podido cargar la información del curso</p>
+      </div>
+    );
+  }
   const [metodo, setMetodo] = useState('tarjeta');
   const [paso, setPaso] = useState(1);
   const [datosTarjeta, setDatosTarjeta] = useState({
@@ -99,6 +110,15 @@ const PasarelaPago = ({ curso, onClose, onPaymentComplete }) => {
       case 1:
         return (
           <div className="space-y-6 py-2">
+            <div className="mb-6 p-4 bg-gray-800/70 rounded-xl border border-gray-700">
+              <div className="flex items-center mb-3">
+                <FaGraduationCap className="text-purple-400 mr-2" size={18} />
+                <h3 className="text-lg font-bold text-white">{curso.titulo}</h3>
+              </div>
+              <div className="text-xl font-bold text-white mb-2">{curso.precio}€</div>
+              <p className="text-sm text-gray-400">Instructor: {curso.profesor}</p>
+            </div>
+            
             <h2 className="text-2xl font-bold text-white mb-6">Selecciona método de pago</h2>
             
             {/* Tarjeta de crédito */}

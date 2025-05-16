@@ -42,29 +42,20 @@ const Pago = () => {
       try {
         setCargando(true);
         
-        // En producción, esta sería la llamada real a la API
-        // const identifier = new FormData();
-        // identifier.append('id', cursoId);
-        // const response = await axios.post(
-        //   `http://localhost/TFG_DAW/backend/controlador/controlador.php?action=obtenerCurso`,
-        //   identifier,
-        //   { withCredentials: true }
-        // );
+        // Obtener datos reales del curso desde la API
+        const identifier = new FormData();
+        identifier.append('id', cursoId);
+        const response = await axios.post(
+          `http://localhost/TFG_DAW/backend/controlador/controlador.php?action=obtenerCurso`,
+          identifier,
+          { withCredentials: true }
+        );
         
-        // Simulación para desarrollo
-        // Datos simulados
-        const cursoSimulado = {
-          id: cursoId,
-          titulo: 'Curso completo de desarrollo web',
-          descripcion: 'Aprende a crear sitios web profesionales desde cero con las últimas tecnologías.',
-          precio: 49.99,
-          duracion: 25,
-          profesor: 'María González',
-          tipo_curso: 'Todos los niveles',
-          imgCurso: 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?q=80&w=1000&auto=format&fit=crop'
-        };
-        
-        setCurso(cursoSimulado);
+        if (response.data) {
+          setCurso(response.data);
+        } else {
+          setError('No se encontró información del curso');
+        }
         setCargando(false);
       } catch (error) {
         console.error('Error al cargar el curso:', error);
@@ -76,16 +67,36 @@ const Pago = () => {
     obtenerCurso();
   }, [cursoId, navigate]);
   
-  const handleCompletarPago = () => {
-    setCompletado(true);
-    
-    // En un caso real, aquí registraríamos la compra en la base de datos
-    // Y realizaríamos cualquier otra acción necesaria como enviar email de confirmación, etc.
-    
-    // Después de 3 segundos, redirigimos al curso
-    setTimeout(() => {
-      navigate(`/curso-visor/${cursoId}`);
-    }, 3000);
+  const handleCompletarPago = async () => {
+    try {
+      // Registrar la inscripción en la base de datos
+      const formData = new FormData();
+      formData.append('id_curso', cursoId);
+      
+      const response = await axios.post(
+        'http://localhost/TFG_DAW/backend/controlador/controlador.php?action=inscribirCurso',
+        formData,
+        { withCredentials: true }
+      );
+      
+      if (response.data.success) {
+        console.log('Inscripción completada:', response.data);
+        setCompletado(true);
+        
+        // Después de 3 segundos, redirigimos al curso
+        setTimeout(() => {
+          navigate(`/curso-visor/${cursoId}`);
+        }, 3000);
+      } else {
+        // Maneja los diferentes formatos de respuesta de error
+        const mensajeError = response.data.message || response.data.error || 'Error al procesar la inscripción';
+        console.error('Error en la inscripción:', mensajeError);
+        setError(mensajeError);
+      }
+    } catch (error) {
+      console.error('Error al procesar la inscripción:', error);
+      setError('Error al procesar la inscripción. Por favor, inténtalo de nuevo.');
+    }
   };
   
   if (cargando) {

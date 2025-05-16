@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 05-05-2025 a las 12:07:48
+-- Tiempo de generación: 16-05-2025 a las 13:04:34
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.0.30
 
@@ -57,18 +57,16 @@ CREATE TABLE `inscripciones` (
   `id_inscripcion` int(11) NOT NULL,
   `id_usuario` int(11) NOT NULL,
   `id_curso` int(11) NOT NULL,
-  `fecha_inscripcion` date NOT NULL DEFAULT curdate(),
-  `estado` enum('Activa','Finalizada','Cancelada') NOT NULL
+  `fecha_inscripcion` date NOT NULL DEFAULT curdate()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Volcado de datos para la tabla `inscripciones`
 --
 
-INSERT INTO `inscripciones` (`id_inscripcion`, `id_usuario`, `id_curso`, `fecha_inscripcion`, `estado`) VALUES
-(1, 1, 1, '2025-03-10', 'Activa'),
-(2, 2, 2, '2025-03-10', 'Finalizada'),
-(3, 1, 3, '2025-03-10', 'Activa');
+INSERT INTO `inscripciones` (`id_inscripcion`, `id_usuario`, `id_curso`, `fecha_inscripcion`) VALUES
+(5, 1, 1, '2025-05-16'),
+(6, 1, 2, '2025-05-16');
 
 -- --------------------------------------------------------
 
@@ -135,6 +133,7 @@ CREATE TABLE `usuarios` (
 --
 
 INSERT INTO `usuarios` (`id_usuario`, `nombre`, `email`, `contraseña`, `tipo_usuario`, `id_plan`) VALUES
+(0, 'admin', 'admin@example.com', 'admin', 'Administrador', NULL),
 (1, 'Juan Pérez', 'juan@example.com', 'juan123', 'Estudiante', 1),
 (2, 'María López', 'maria@example.com', 'segura456', 'Estudiante', 2),
 (3, 'Carlos Sánchez', 'carlos@example.com', 'profesor789', 'Profesor', NULL);
@@ -193,7 +192,7 @@ ALTER TABLE `cursos`
 -- AUTO_INCREMENT de la tabla `inscripciones`
 --
 ALTER TABLE `inscripciones`
-  MODIFY `id_inscripcion` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id_inscripcion` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT de la tabla `pagos`
@@ -211,7 +210,7 @@ ALTER TABLE `planes`
 -- AUTO_INCREMENT de la tabla `usuarios`
 --
 ALTER TABLE `usuarios`
-  MODIFY `id_usuario` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id_usuario` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- Restricciones para tablas volcadas

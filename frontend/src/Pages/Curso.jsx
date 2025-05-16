@@ -14,6 +14,8 @@ const Curso = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [userData, setUserData] = useState(null);
+  const [inscrito, setInscrito] = useState(false);
+  const [cursosInscritos, setCursosInscritos] = useState([]);
 
   const getImageUrl = (relativePath) => {
     // Si la ruta empieza con ./ o ../, la convertimos a una ruta absoluta
@@ -58,7 +60,44 @@ const Curso = () => {
 
   useEffect(() => {
     obtenerCursos();
+    comprobarSesion();
   }, []);
+  
+  const comprobarSesion = async () => {
+    try {
+      const respuesta = await axios.get(
+        'http://localhost/TFG_DAW/backend/controlador/controlador.php?action=comprobarSesion',
+        { withCredentials: true }
+      );
+      
+      if (respuesta.data && respuesta.data.username) {
+        setUserData(respuesta.data);
+        // Si el usuario está autenticado, obtener sus cursos inscritos
+        obtenerCursosInscritos();
+      }
+    } catch (error) {
+      console.error('Error al comprobar sesión:', error);
+    }
+  };
+  
+  const obtenerCursosInscritos = async () => {
+    try {
+      const response = await axios.get(
+        'http://localhost/TFG_DAW/backend/controlador/controlador.php?action=obtenerMisCursos',
+        { withCredentials: true }
+      );
+      
+      if (response.data && !response.data.error) {
+        setCursosInscritos(response.data);
+        
+        // Comprobar si el usuario está inscrito en este curso
+        const estaInscrito = response.data.some(curso => curso.id == id);
+        setInscrito(estaInscrito);
+      }
+    } catch (error) {
+      console.error('Error al obtener cursos inscritos:', error);
+    }
+  };
 
   const misCursos = async () => {
     try {
@@ -189,14 +228,23 @@ const Curso = () => {
                     >
                       <FaPlay className="mr-2" size={14} /> Acceder al Curso
                     </motion.button>
-                    <motion.button
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={() => navigate(`/pago/${id}`)}
-                      className="px-8 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-purple-500/20 transition-all duration-300"
-                    >
-                      Inscribirse Ahora
-                    </motion.button>
+                    {!inscrito && (
+                      <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => navigate(`/pago/${id}`)}
+                        className="px-8 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-purple-500/20 transition-all duration-300"
+                      >
+                        Inscribirse Ahora
+                      </motion.button>
+                    )}
+                    {inscrito && (
+                      <motion.div
+                        className="px-8 py-3 bg-green-600/20 text-green-400 rounded-xl font-semibold flex items-center justify-center border border-green-500/30"
+                      >
+                        <FaCheck className="mr-2" size={14} /> Ya inscrito
+                      </motion.div>
+                    )}
                   </div>
                 </motion.div>
               </div>
