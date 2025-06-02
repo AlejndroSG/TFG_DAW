@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
+import axios from 'axios';
 import { 
   FaLightbulb, 
   FaUsers, 
@@ -20,6 +21,33 @@ import { BiCodeAlt } from 'react-icons/bi';
 import { BsArrowRight } from 'react-icons/bs';
 
 const SobreNosotros = () => {
+  const [userData, setUserData] = useState(null);
+
+  // Verificar si el usuario ha iniciado sesión
+  useEffect(() => {
+    const comprobarSesion = async () => {
+      try {
+        const respuesta = await axios.get(
+          'http://localhost/TFG_DAW/backend/controlador/controlador.php?action=comprobarSesion',
+          { withCredentials: true }
+        );
+        
+        if (respuesta.data && respuesta.data.username) {
+          console.log('Sesión activa en SobreNosotros:', respuesta.data);
+          setUserData(respuesta.data);
+        } else {
+          console.log('No hay sesión activa en SobreNosotros');
+          setUserData(null);
+        }
+      } catch (error) {
+        console.error('Error al comprobar sesión:', error);
+        setUserData(null);
+      }
+    };
+
+    comprobarSesion();
+  }, []);
+
   const valores = [
     {
       icono: <FaLightbulb className="w-8 h-8 text-white" />,
@@ -388,29 +416,34 @@ const SobreNosotros = () => {
           </div>
         </motion.div>
 
-        {/* Llamada a la acción */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          viewport={{ once: true }}
-          className="text-center py-16 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-purple-900/30 to-pink-900/30 backdrop-blur-sm rounded-2xl shadow-lg"
-        >
-          <div className="max-w-3xl mx-auto">
-            <h2 className="text-3xl font-bold text-white mb-6">¿Listo para transformar tu futuro?</h2>
-            <p className="text-gray-300 text-lg mb-8">
-              Únete a nuestra comunidad y comienza tu viaje en el mundo de la programación con los mejores recursos y apoyo.
-            </p>
-            <div className="flex flex-wrap justify-center gap-4">
-              <Link to="/registro" className="px-8 py-3 bg-gradient-to-r from-purple-500 to-pink-600 text-white rounded-lg font-semibold hover:shadow-lg hover:shadow-purple-500/30 transition-all duration-300 flex items-center">
-                Empieza Ahora <BsArrowRight className="ml-2" />
-              </Link>
-              <Link to="/cursos" className="px-8 py-3 bg-gray-800 text-white rounded-lg font-semibold hover:bg-gray-700 transition-all duration-300">
-                Ver Cursos
-              </Link>
+        {/* Llamada a la acción - Solo visible si no hay sesión iniciada */}
+        {(userData === null || !userData) && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+            className="text-center py-16 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-purple-900/30 to-pink-900/30 backdrop-blur-sm rounded-2xl shadow-lg"
+          >
+            <div className="max-w-3xl mx-auto">
+              <h2 className="text-3xl font-bold text-white mb-6">¿Listo para transformar tu futuro?</h2>
+              <p className="text-gray-300 text-lg mb-8">
+                Únete a nuestra comunidad y comienza tu viaje en el mundo de la programación con los mejores recursos y apoyo.
+              </p>
+              <div className="flex flex-wrap justify-center gap-4">
+                <button 
+                  onClick={() => window.dispatchEvent(new CustomEvent('openRegistro'))}
+                  className="px-8 py-3 bg-gradient-to-r from-purple-500 to-pink-600 text-white rounded-lg font-semibold hover:shadow-lg hover:shadow-purple-500/30 transition-all duration-300 flex items-center"
+                >
+                  Empieza Ahora <BsArrowRight className="ml-2" />
+                </button>
+                <Link to="/cursos" className="px-8 py-3 bg-gray-800 text-white rounded-lg font-semibold hover:bg-gray-700 transition-all duration-300">
+                  Ver Cursos
+                </Link>
+              </div>
             </div>
-          </div>
-        </motion.div>
+          </motion.div>
+        )}
       </div>
     </div>
   );

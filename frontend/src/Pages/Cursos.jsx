@@ -12,6 +12,7 @@ const Cursos = () => {
   const [error, setError] = useState(null);
   const [mios, setMios] = useState(false);
   const [userData, setUserData] = useState(null);
+  const [cursosInscritos, setCursosInscritos] = useState([]);
 
   useEffect(() => {
     const comprobarSesion = async () => {
@@ -23,6 +24,8 @@ const Cursos = () => {
         
         if (respuesta.data && respuesta.data.username) {
           setUserData(respuesta.data);
+          // Si el usuario ha iniciado sesión, obtener sus cursos inscritos
+          obtenerCursosInscritos();
         }
       } catch (error) {
         console.error('Error al comprobar sesión:', error);
@@ -31,6 +34,24 @@ const Cursos = () => {
 
     comprobarSesion();
   }, []);
+  
+  // Función para obtener los cursos en los que el usuario está inscrito
+  const obtenerCursosInscritos = async () => {
+    try {
+      const response = await axios.get(
+        'http://localhost/TFG_DAW/backend/controlador/controlador.php?action=obtenerMisCursos',
+        { withCredentials: true }
+      );
+      
+      if (Array.isArray(response.data)) {
+        // Extraer solo los IDs de los cursos inscritos para facilitar la comparación
+        const idsInscritos = response.data.map(curso => curso.id);
+        setCursosInscritos(idsInscritos);
+      }
+    } catch (error) {
+      console.error('Error al obtener cursos inscritos:', error);
+    }
+  };
 
   const obtenerCursos = async () => {
     try {
@@ -254,17 +275,30 @@ const Cursos = () => {
                         >
                           Ver curso
                         </motion.button>
-                        <motion.button
-                          whileHover={{ scale: 1.05, boxShadow: "0 10px 25px -5px rgba(124, 58, 237, 0.5)" }}
-                          whileTap={{ scale: 0.95 }}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            navigate(`/pago/${curso.id}`);
-                          }}
-                          className="px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-600 text-white rounded-xl font-semibold hover:opacity-95 transition-all duration-300 flex items-center"
-                        >
-                          Inscribirse
-                        </motion.button>
+                        {/* Mostrar el botón de inscripción solo si el usuario no está inscrito en este curso */}
+                        {(!userData || (userData && !cursosInscritos.includes(curso.id))) && (
+                          <motion.button
+                            whileHover={{ scale: 1.05, boxShadow: "0 10px 25px -5px rgba(124, 58, 237, 0.5)" }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigate(`/pago/${curso.id}`);
+                            }}
+                            className="px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-600 text-white rounded-xl font-semibold hover:opacity-95 transition-all duration-300 flex items-center"
+                          >
+                            Inscribirse
+                          </motion.button>
+                        )}
+                        {/* Mostrar un botón de 'Ya inscrito' cuando el usuario está inscrito */}
+                        {userData && cursosInscritos.includes(curso.id) && (
+                          <motion.button
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            className="px-4 py-2 bg-gray-700 text-gray-300 rounded-xl font-medium cursor-default flex items-center"
+                          >
+                            <span className="mr-2">✓</span> Ya inscrito
+                          </motion.button>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -288,26 +322,31 @@ const Cursos = () => {
           </motion.div>
         )}
         
-        {/* Sección de llamada a la acción */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          viewport={{ once: true }}
-          className="text-center py-16 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-purple-900/30 to-pink-900/30 backdrop-blur-sm rounded-2xl shadow-lg mt-20"
-        >
-          <div className="max-w-3xl mx-auto">
-            <h2 className="text-3xl font-bold text-white mb-6">¿Listo para mejorar tus habilidades?</h2>
-            <p className="text-gray-300 text-lg mb-8">
-              Nuestros cursos están diseñados por expertos de la industria para ayudarte a dominar las tecnologías más demandadas.
-            </p>
-            <div className="flex flex-wrap justify-center gap-4">
-              <a href="/registro" className="px-8 py-3 bg-gradient-to-r from-purple-500 to-pink-600 text-white rounded-lg font-semibold hover:shadow-lg hover:shadow-purple-500/30 transition-all duration-300">
-                Comenzar Ahora
-              </a>
+        {/* Sección de llamada a la acción - Solo visible si no hay sesión iniciada */}
+        {!userData && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+            className="text-center py-16 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-purple-900/30 to-pink-900/30 backdrop-blur-sm rounded-2xl shadow-lg mt-20"
+          >
+            <div className="max-w-3xl mx-auto">
+              <h2 className="text-3xl font-bold text-white mb-6">¿Listo para mejorar tus habilidades?</h2>
+              <p className="text-gray-300 text-lg mb-8">
+                Nuestros cursos están diseñados por expertos de la industria para ayudarte a dominar las tecnologías más demandadas.
+              </p>
+              <div className="flex flex-wrap justify-center gap-4">
+                <button 
+                  onClick={() => window.dispatchEvent(new CustomEvent('openRegistro'))}
+                  className="px-8 py-3 bg-gradient-to-r from-purple-500 to-pink-600 text-white rounded-lg font-semibold hover:shadow-lg hover:shadow-purple-500/30 transition-all duration-300"
+                >
+                  Comenzar Ahora
+                </button>
+              </div>
             </div>
-          </div>
-        </motion.div>
+          </motion.div>
+        )}
       </div>
     </div>
   );
