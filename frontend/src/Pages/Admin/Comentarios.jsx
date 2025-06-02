@@ -38,7 +38,7 @@ const AdminComentarios = () => {
         
         if (respuesta.data && respuesta.data.username) {
           // Verificar si el usuario es administrador
-          if (respuesta.data.tipo_usuario.toLowerCase() === 'administrador') {
+          if (respuesta.data.tipo_usuario.toLowerCase() === 'administrador' || respuesta.data.tipo_usuario === 'admin') {
             setUserData(respuesta.data);
             // Cargar los comentarios
             cargarComentarios();
@@ -183,7 +183,7 @@ const AdminComentarios = () => {
     );
   }
 
-  if (!userData || userData.tipo_usuario !== 'admin') {
+  if (!userData || (userData.tipo_usuario.toLowerCase() !== 'administrador' && userData.tipo_usuario !== 'admin')) {
     return <Navigate to="/" />;
   }
 
@@ -206,7 +206,7 @@ const AdminComentarios = () => {
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             className={`flex items-center w-full p-3 rounded-xl transition-all ${
-              item.path === '/admin/comentarios' 
+              window.location.pathname === item.path 
                 ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white'
                 : 'text-gray-300 hover:bg-gray-700/50'
             }`}
