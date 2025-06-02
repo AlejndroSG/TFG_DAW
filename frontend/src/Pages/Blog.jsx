@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
 import { FaCalendarAlt, FaUser, FaTags, FaArrowRight } from 'react-icons/fa';
 
 const Blog = () => {
@@ -37,7 +38,7 @@ const Blog = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-900 py-16 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-900 py-16 px-4 sm:px-6 lg:px-8 pt-30">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -100,12 +101,14 @@ const Blog = () => {
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-gray-400">{post.readTime} de lectura</span>
-                  <motion.button
-                    whileHover={{ x: 5 }}
-                    className="flex items-center text-purple-400 hover:text-pink-500 transition-colors"
-                  >
-                    Leer más <FaArrowRight className="ml-2" />
-                  </motion.button>
+                  <Link to={`/blog/${post.id}`}>
+                    <motion.button
+                      whileHover={{ x: 5 }}
+                      className="flex items-center text-purple-400 hover:text-pink-500 transition-colors"
+                    >
+                      Leer más <FaArrowRight className="ml-2" />
+                    </motion.button>
+                  </Link>
                 </div>
               </div>
             </motion.article>

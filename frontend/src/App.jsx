@@ -6,6 +6,7 @@ import Banner from './Pages/Banner'
 import Login from './Pages/Login'
 import Cursos from './Pages/Cursos'
 import Blog from './Pages/Blog'
+import BlogPost from './Pages/BlogPost'
 import SobreNosotros from './Pages/SobreNosotros'
 import Contacto from './Pages/Contacto'
 import Curso from './Pages/Curso'
@@ -24,6 +25,7 @@ function App() {
             <Route path="/login" element={<Login/>}/>
             <Route path="/cursos" element={<Cursos/>}/>
             <Route path="/blog" element={<Blog/>}/>
+            <Route path="/blog/:id" element={<BlogPost/>}/>
             <Route path="/sobre-nosotros" element={<SobreNosotros/>}/>
             <Route path="/contacto" element={<Contacto/>}/>
             <Route path="/curso/:id" element={<Curso/>}/>
