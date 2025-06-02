@@ -10,8 +10,6 @@ import { FaRocket, FaLightbulb, FaBrain, FaGraduationCap } from 'react-icons/fa'
 
 const Banner = () => {
   const canvasRef = useRef(null);
-  const particulasRef = useRef([]);
-  const particulasFlotantesRef = useRef([]);
   const mousePos = useMotionValue({ x: 0, y: 0 });
   const [isHovering, setIsHovering] = useState(false);
   const controls = useAnimation();
@@ -66,11 +64,9 @@ const Banner = () => {
         transformOrigin: 'center'
       });
       
-      // Regenerar los meteoros y partículas para las dimensiones de referencia
+      // Regenerar solo los meteoros para las dimensiones de referencia
       meteoros = [];
-      particulasFlotantesRef.current = [];
       crearMeteoros(20);
-      crearParticulasFlotantes(40);
     };
 
     // Configuración inicial con tamaño fijo que no se reducirá
@@ -110,23 +106,7 @@ const Banner = () => {
       }
     };
 
-    const crearParticulasFlotantes = (cantidad) => {
-      // Usamos las dimensiones de referencia definidas arriba
-      
-      for (let i = 0; i < cantidad; i++) {
-        particulasFlotantesRef.current.push({
-          x: Math.random() * REFERENCE_WIDTH,
-          y: Math.random() * REFERENCE_HEIGHT,
-          tamaño: Math.random() * 2 + 1,
-          velocidadX: (Math.random() - 0.5) * 0.2,
-          velocidadY: (Math.random() - 0.5) * 0.2,
-          opacidad: Math.random() * 0.2 + 0.1,
-        });
-      }
-    };
-
     crearMeteoros(20);
-    crearParticulasFlotantes(40);
 
     const dibujarMeteoros = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -168,44 +148,10 @@ const Banner = () => {
       });
     };
 
-    const dibujarParticulas = () => {
-      particulasRef.current.forEach((p, indice) => {
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.tamaño, 0, Math.PI * 1);
-        ctx.fillStyle = `rgba(255, ${p.color}, ${255 - p.color}, ${p.opacidad})`;
-        ctx.fill();
 
-        p.x += p.velocidadX;
-        p.y += p.velocidadY;
-        p.opacidad -= 0.02;
-
-        if (p.opacidad <= 0) {
-          particulasRef.current.splice(indice, 1);
-        }
-      });
-    };
-
-    const dibujarParticulasFlotantes = () => {
-      particulasFlotantesRef.current.forEach((p) => {
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.tamaño, 0, Math.PI * 1);
-        ctx.fillStyle = `rgba(255, 255, 255, ${p.opacidad})`;
-        ctx.fill();
-
-        p.x += p.velocidadX;
-        p.y += p.velocidadY;
-
-        if (p.x < 0 || p.x > canvas.width || p.y < 0 || p.y > canvas.height) {
-          p.x = Math.random() * canvas.width;
-          p.y = Math.random() * canvas.height;
-        }
-      });
-    };
 
     const animar = () => {
       dibujarMeteoros();
-      dibujarParticulas();
-      dibujarParticulasFlotantes();
       requestAnimationFrame(animar);
     };
 
@@ -217,25 +163,7 @@ const Banner = () => {
     };
   }, []);
 
-  const manejarClic = (e) => {
-    const rect = canvasRef.current.getBoundingClientRect();
-    const x = ((e.clientX - rect.left) / rect.width) * canvasRef.current.width;
-    const y = ((e.clientY - rect.top) / rect.height) * canvasRef.current.height;
-  
-    let nuevasParticulas = [];
-    for (let i = 0; i < 20; i++) {
-      nuevasParticulas.push({
-        x,
-        y,
-        tamaño: Math.random() * 3 + 1,
-        velocidadX: (Math.random() - 0.5) * 4,
-        velocidadY: (Math.random() - 0.5) * 4,
-        opacidad: 1,
-        color: Math.random() * 255,
-      });
-    }
-    particulasRef.current.push(...nuevasParticulas);
-  };
+
 
   // Características destacadas con iconos y animaciones
   const features = [
@@ -270,7 +198,6 @@ const Banner = () => {
     <>
       <div 
         className="relative w-full min-h-screen pt-16 sm:pt-20 md:pt-0 flex flex-col items-center justify-center bg-gray-900 overflow-hidden" 
-        onClick={manejarClic}
         onMouseMove={handleMouseMove}
       >
         {/* Efecto de brillos y partículas */}
