@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
-import { FaFacebook, FaTwitter, FaInstagram, FaLinkedin, FaGraduationCap, FaBook, FaBrain, FaEnvelope, FaMapMarkerAlt, FaPhone } from 'react-icons/fa';
+import { FaFacebook, FaTwitter, FaInstagram, FaLinkedin, FaBrain, FaEnvelope, FaArrowUp, FaCode, FaLaptopCode, FaBookOpen } from 'react-icons/fa';
 
 const Footer = () => {
   const footerRef = useRef(null);
@@ -32,45 +32,64 @@ const Footer = () => {
   };
 
   const socialLinks = [
-    { icon: <FaFacebook />, url: "#", color: "hover:text-blue-500" },
-    { icon: <FaTwitter />, url: "#", color: "hover:text-sky-500" },
-    { icon: <FaInstagram />, url: "#", color: "hover:text-pink-500" },
-    { icon: <FaLinkedin />, url: "#", color: "hover:text-blue-600" }
+    { icon: <FaFacebook />, url: "#", color: "hover:text-purple-400" },
+    { icon: <FaTwitter />, url: "#", color: "hover:text-purple-400" },
+    { icon: <FaInstagram />, url: "#", color: "hover:text-purple-400" },
+    { icon: <FaLinkedin />, url: "#", color: "hover:text-purple-400" }
   ];
 
   const quickLinks = [
-    { name: "Cursos", url: "/cursos" },
-    { name: "Blog", url: "/blog" },
-    { name: "Sobre Nosotros", url: "/sobre-nosotros" },
-    { name: "Privacidad", url: "/privacidad" },
-    { name: "Términos de Uso", url: "/terminos" },
-    { name: "Contacto", url: "/contacto" }
+    { name: "Cursos", url: "/cursos", icon: <FaBookOpen /> },
+    { name: "Blog", url: "/blog", icon: <FaCode /> },
+    { name: "Sobre Nosotros", url: "/sobre-nosotros", icon: <FaLaptopCode /> },
+    { name: "Contacto", url: "/contacto", icon: <FaEnvelope /> }
   ];
 
-  const contactInfo = [
-    { icon: <FaEnvelope />, text: "info@learnia.com" },
-    { icon: <FaPhone />, text: "+34 912 456 789" },
-    { icon: <FaMapMarkerAlt />, text: "Madrid, España" }
-  ];
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+  };
 
   return (
-    <footer ref={footerRef} className="bg-gray-900 text-white pt-20 pb-8 relative overflow-hidden">
-      {/* Fondo sutil sin animaciones */}
-      <div className="absolute inset-0 bg-gradient-to-b from-gray-900 to-gray-900 opacity-95"></div>
+    <footer ref={footerRef} className="bg-gray-900 text-white pt-16 pb-8 relative overflow-hidden">
+      {/* Elementos decorativos sutiles */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute -top-24 -right-24 w-64 h-64 bg-purple-600/10 rounded-full blur-3xl opacity-20"></div>
+        <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-pink-600/10 rounded-full blur-3xl opacity-20"></div>
+      </div>
+      
+      <div className="max-w-screen-xl mx-auto px-6 relative">
+        {/* Botón de volver arriba */}
+        <motion.div 
+          className="absolute -top-8 right-6"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+        >
+          <motion.button
+            onClick={scrollToTop}
+            whileHover={{ y: -4, scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="w-14 h-14 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 flex items-center justify-center shadow-lg shadow-purple-500/20 hover:shadow-xl hover:shadow-purple-500/40 transition-shadow duration-300"
+          >
+            <FaArrowUp className="text-white text-lg" />
+          </motion.button>
+        </motion.div>
 
-      <motion.div 
-        className="max-w-screen-xl mx-auto px-6 relative"
-        initial="hidden"
-        animate={isInView ? "visible" : "hidden"}
-        variants={containerVariants}
-      >
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
-          {/* Columna 1: Logo y descripción */}
-          <motion.div className="space-y-6" variants={itemVariants}>
+        <motion.div 
+          initial="hidden"
+          animate={isInView ? "visible" : "hidden"}
+          variants={containerVariants}
+          className="flex flex-col md:flex-row gap-10 justify-between mb-10"
+        >
+          {/* Logo y descripción */}
+          <motion.div className="md:w-1/3 space-y-6" variants={itemVariants}>
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 p-0.5 shadow-lg shadow-purple-500/20">
+              <div className="w-12 h-12 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 p-0.5 shadow-lg shadow-purple-500/20 flex items-center justify-center">
                 <div className="rounded-full bg-gray-900 w-full h-full flex items-center justify-center">
-                  <FaBrain className="text-2xl text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600" />
+                  <FaBrain className="text-xl text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600" />
                 </div>
               </div>
               <h3 className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-pink-600 text-transparent bg-clip-text">
@@ -78,12 +97,11 @@ const Footer = () => {
               </h3>
             </div>
             
-            <p className="text-gray-300 leading-relaxed">
-              Transformamos la educación con inteligencia artificial avanzada, creando 
-              experiencias de aprendizaje personalizadas y efectivas.
+            <p className="text-gray-300 text-base leading-relaxed pr-4">
+              Transformamos la educación con inteligencia artificial avanzada, creando experiencias de aprendizaje personalizadas para cada estudiante.
             </p>
             
-            <div className="flex space-x-4">
+            <div className="flex space-x-5">
               {socialLinks.map((link, index) => (
                 <motion.a 
                   key={index}
@@ -98,103 +116,74 @@ const Footer = () => {
             </div>
           </motion.div>
 
-          {/* Columna 2: Enlaces rápidos */}
-          <motion.div variants={itemVariants} className="md:mx-auto">
-            <h4 className="text-xl font-semibold mb-6 text-white flex items-center gap-2">
-              <div className="p-1.5 rounded-lg bg-gradient-to-r from-purple-500/20 to-pink-500/20">
-                <FaBook className="text-purple-400" />
-              </div>
+          {/* Enlaces rápidos */}
+          <motion.div variants={itemVariants} className="md:w-1/3">
+            <h4 className="text-xl font-semibold mb-6 text-white">
               Enlaces Rápidos
             </h4>
-            <div className="grid grid-cols-1 gap-3">
+            <div className="grid grid-cols-2 gap-5">
               {quickLinks.map((link, index) => (
                 <motion.a
                   key={index}
                   href={link.url}
-                  className="text-gray-300 hover:text-purple-400 transition-all duration-300 hover:translate-x-1 flex items-center gap-2 group"
+                  className="text-gray-300 hover:text-purple-400 transition-all duration-300 flex items-center gap-3 group"
                   whileHover={{ x: 5 }}
                 >
-                  <span className="h-px w-5 bg-purple-500/50 group-hover:w-8 transition-all duration-300"></span>
-                  {link.name}
+                  <div className="p-2 rounded-lg bg-gradient-to-r from-purple-500/10 to-pink-500/10 group-hover:from-purple-500/20 group-hover:to-pink-500/20 transition-colors">
+                    <span className="text-purple-400">{link.icon}</span>
+                  </div>
+                  <span>{link.name}</span>
                 </motion.a>
               ))}
             </div>
           </motion.div>
 
-          {/* Columna 3: Contacto */}
-          <motion.div variants={itemVariants} className="md:mx-auto">
-            <h4 className="text-xl font-semibold mb-6 text-white flex items-center gap-2">
-              <div className="p-1.5 rounded-lg bg-gradient-to-r from-purple-500/20 to-pink-500/20">
-                <FaPhone className="text-purple-400" />
-              </div>
-              Contacto
-            </h4>
-            <div className="space-y-4">
-              {contactInfo.map((info, index) => (
-                <div key={index} className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-purple-400">
-                    {info.icon}
-                  </div>
-                  <span className="text-gray-300">{info.text}</span>
-                </div>
-              ))}
-            </div>
-          </motion.div>
-
-          {/* Columna 4: Newsletter */}
-          <motion.div variants={itemVariants}>
-            <h4 className="text-xl font-semibold mb-6 text-white flex items-center gap-2">
-              <div className="p-1.5 rounded-lg bg-gradient-to-r from-purple-500/20 to-pink-500/20">
-                <FaGraduationCap className="text-purple-400" />
-              </div>
+          {/* Newsletter */}
+          <motion.div variants={itemVariants} className="md:w-1/3">
+            <h4 className="text-xl font-semibold mb-6 text-white">
               Newsletter
             </h4>
-            <div className="space-y-4">
+            <div className="space-y-5 bg-gradient-to-br from-purple-900/30 to-pink-900/30 p-5 rounded-xl backdrop-blur-sm border border-purple-500/10">
               <p className="text-gray-300">
-                Suscríbete para recibir recursos educativos gratuitos y noticias sobre nuevos cursos.
+                Recibe noticias sobre nuevos cursos y recursos educativos.
               </p>
-              <div className="flex flex-col space-y-3">
-                <div className="relative">
-                  <input 
-                    type="email" 
-                    placeholder="Tu email" 
-                    className="w-full px-4 py-3 bg-gray-800/50 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500/50 text-gray-300"
-                  />
-                  <div className="absolute inset-y-0 right-0 flex items-center pr-3">
-                    <FaEnvelope className="text-gray-500" />
-                  </div>
-                </div>
+              <div className="flex items-center">
+                <input 
+                  type="email" 
+                  placeholder="Tu email" 
+                  className="px-4 py-3 bg-gray-800/70 border border-gray-700 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-purple-500/50 text-gray-200 w-full"
+                />
                 <motion.button
-                  whileHover={{ scale: 1.02 }}
+                  whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.98 }}
-                  className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg text-white font-medium shadow-lg shadow-purple-500/25 hover:shadow-xl hover:shadow-purple-500/30 transition-shadow"
+                  className="px-5 py-3 bg-gradient-to-r from-purple-600 to-pink-600 rounded-r-lg text-white shadow-lg shadow-purple-500/30 hover:shadow-xl hover:shadow-purple-500/40 transition-shadow"
                 >
-                  Suscribirme
+                  <FaEnvelope className="text-lg" />
                 </motion.button>
               </div>
             </div>
           </motion.div>
-        </div>
+        </motion.div>
         
         {/* Separador con gradiente */}
-        <div className="h-px w-full bg-gradient-to-r from-transparent via-gray-700 to-transparent my-8"></div>
+        <div className="h-px w-full bg-gradient-to-r from-purple-600/30 via-pink-600/40 to-purple-600/30 my-8"></div>
         
         {/* Copyright */}
         <motion.div 
-          className="text-center text-sm text-gray-400 flex flex-col md:flex-row justify-between items-center"
+          className="text-center text-sm text-gray-400 flex flex-col sm:flex-row justify-between items-center"
           variants={itemVariants}
         >
-          <p className="mb-4 md:mb-0">&copy; {new Date().getFullYear()} LearnIA. Todos los derechos reservados.</p>
-          <div className="flex space-x-6">
+          <p>&copy; {new Date().getFullYear()} LearnIA. Todos los derechos reservados.</p>
+          <div className="flex space-x-6 mt-3 sm:mt-0">
             <a href="/privacidad" className="hover:text-purple-400 transition-colors">Privacidad</a>
             <a href="/terminos" className="hover:text-purple-400 transition-colors">Términos</a>
             <a href="/cookies" className="hover:text-purple-400 transition-colors">Cookies</a>
           </div>
         </motion.div>
-      </motion.div>
+      </div>
       
-      {/* Decoración de fondo */}
-      <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 opacity-60"></div>
+      {/* Línea decorativa inferior */}
+      <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 opacity-70"></div>
     </footer>
   );
 };
