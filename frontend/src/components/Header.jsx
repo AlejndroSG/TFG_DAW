@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
 import Login from '../Pages/Login';
+import Registro from '../Pages/Registro';
 import { toast } from 'react-hot-toast';
 import axios from 'axios';
 import { FaRocket, FaGraduationCap, FaRegLightbulb, FaBook, FaPhoneAlt, FaInfoCircle, FaSignInAlt, FaRegUserCircle, FaUserShield, FaChartLine } from 'react-icons/fa';
@@ -10,6 +11,7 @@ const Header = () => {
   const navigate = useNavigate();
   const [scrolled, setScrolled] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const [isRegistroOpen, setIsRegistroOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userData, setUserData] = useState(null);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -60,6 +62,26 @@ const Header = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  useEffect(() => {
+    // Escuchar el evento personalizado para abrir el modal de registro desde el login
+    const handleOpenRegistro = () => {
+      setIsRegistroOpen(true);
+    };
+
+    // Escuchar el evento personalizado para abrir el modal de login desde el registro
+    const handleOpenLogin = () => {
+      setIsLoginOpen(true);
+    };
+
+    window.addEventListener('openRegistro', handleOpenRegistro);
+    window.addEventListener('openLogin', handleOpenLogin);
+    
+    return () => {
+      window.removeEventListener('openRegistro', handleOpenRegistro);
+      window.removeEventListener('openLogin', handleOpenLogin);
+    };
+  }, []);
+
   const location = useLocation();
   const { scrollYProgress } = useScroll();
   const opacity = useTransform(scrollYProgress, [0, 0.2], [0, 1]);
@@ -108,6 +130,17 @@ const Header = () => {
 
   const handleLoginError = (message) => {
     toast.error(message);
+  };
+
+  const handleRegistroSuccess = (userData) => {
+    setIsRegistroOpen(false);
+    setIsLoggedIn(true);
+    setUserData({
+      nombre: userData.nombre,
+      id: userData.id || 0,
+      tipo_usuario: userData.tipo_usuario || 'usuario'
+    });
+    toast.success(`¡Bienvenido ${userData.nombre}! Tu cuenta ha sido creada correctamente.`);
   };
 
   const handleLogout = async () => {
@@ -341,6 +374,7 @@ const Header = () => {
                     <span>Iniciar Sesión</span>
                   </motion.button>
                   <motion.button
+                    onClick={() => setIsRegistroOpen(true)}
                     whileHover={{ scale: 1.03, boxShadow: "0 10px 25px -5px rgba(139, 92, 246, 0.3)" }}
                     whileTap={{ scale: 0.97 }}
                     transition={{ type: "spring", stiffness: 400, damping: 10 }}
@@ -419,6 +453,10 @@ const Header = () => {
                         <span>Iniciar Sesión</span>
                       </motion.button>
                       <motion.button
+                        onClick={() => {
+                          setMenuOpen(false);
+                          setIsRegistroOpen(true);
+                        }}
                         whileHover={{ scale: 1.03 }}
                         whileTap={{ scale: 0.97 }}
                         className="w-full py-3 text-white rounded-lg font-medium shadow-lg relative overflow-hidden group"
@@ -480,6 +518,7 @@ const Header = () => {
       </motion.header>
 
       <Login isOpen={isLoginOpen} onClose={handleLoginClose} onSuccess={handleLoginSuccess} onError={handleLoginError}/>
+      <Registro isOpen={isRegistroOpen} onClose={() => setIsRegistroOpen(false)} onSuccess={handleRegistroSuccess} onError={handleLoginError}/>
     </>
   );
 };

@@ -377,9 +377,12 @@ const Contacto = () => {
               <a href="/cursos" className="px-8 py-3 bg-gradient-to-r from-purple-500 to-pink-600 text-white rounded-lg font-semibold hover:shadow-lg hover:shadow-purple-500/30 transition-all duration-300 flex items-center">
                 Ver Cursos <BsArrowRight className="ml-2" />
               </a>
-              <a href="/registro" className="px-8 py-3 bg-gray-800 text-white rounded-lg font-semibold hover:bg-gray-700 transition-all duration-300">
+              <button
+                onClick={() => window.dispatchEvent(new CustomEvent('openRegistro'))}
+                className="px-8 py-3 bg-gray-800 text-white rounded-lg font-semibold hover:bg-gray-700 transition-all duration-300"
+              >
                 Registrarse
-              </a>
+              </button>
             </div>
           </div>
         </motion.div>

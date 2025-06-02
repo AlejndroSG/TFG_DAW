@@ -204,6 +204,56 @@
         echo json_encode($resultado);
     }
 
+    function registrarUsuario(){
+        if (!isset($_POST["username"]) || !isset($_POST["email"]) || !isset($_POST["password"])) {
+            echo json_encode(["error" => "Datos de registro incompletos"]);
+            return;
+        }
+        
+        $username = trim($_POST["username"]);
+        $email = trim($_POST["email"]);
+        $password = trim($_POST["password"]);
+        
+        // Validaciones básicas
+        if (strlen($username) < 3) {
+            echo json_encode(["error" => "El nombre de usuario debe tener al menos 3 caracteres"]);
+            return;
+        }
+        
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            echo json_encode(["error" => "El email no es válido"]);
+            return;
+        }
+        
+        if (strlen($password) < 6) {
+            echo json_encode(["error" => "La contraseña debe tener al menos 6 caracteres"]);
+            return;
+        }
+        
+        require_once("../modelo/bd.php");
+        $modelo = new db();
+        $resultado = $modelo->registrarUsuario($username, $email, $password);
+        
+        if (isset($resultado["success"]) && $resultado["success"]) {
+            // Iniciar sesión automáticamente tras el registro
+            session_regenerate_id(true);
+            
+            $_SESSION['id'] = $resultado['id'];
+            $_SESSION['username'] = $resultado['nombre'];
+            $_SESSION['tipo_usuario'] = $resultado['tipo_usuario'];
+            
+            echo json_encode([
+                "success" => true,
+                "mensaje" => "Usuario registrado correctamente",
+                "id" => $resultado['id'],
+                "nombre" => $resultado['nombre'],
+                "tipo_usuario" => $resultado['tipo_usuario']
+            ]);
+        } else {
+            echo json_encode($resultado); // Devolver el error del modelo
+        }
+    }
+
     // Si no ha sido iniciado el action
     if(isset($_REQUEST["action"])){
         $action = $_REQUEST["action"];

@@ -24,5 +24,42 @@
             $consulta->close();
             return $comprobar;
         }
+        
+        // Registrar un nuevo usuario
+        public function registrarUsuario(String $nombre, String $email, String $password) {
+            // Primero verificamos si el usuario ya existe
+            $sentencia = "SELECT COUNT(*) FROM usuarios WHERE nombre = ? OR email = ?";
+            $consulta = $this->conn->prepare($sentencia);
+            $consulta->bind_param("ss", $nombre, $email);
+            $consulta->bind_result($count);
+            $consulta->execute();
+            $consulta->fetch();
+            $consulta->close();
+            
+            if ($count > 0) {
+                return ["error" => "El nombre de usuario o email ya está en uso"];
+            }
+            
+            // Si no existe, procedemos a registrar el usuario
+            $tipo_usuario = "usuario"; // Por defecto, todos los nuevos registros son de tipo 'usuario'
+            $sentencia = "INSERT INTO usuarios (nombre, email, contraseña, tipo_usuario) VALUES (?, ?, ?, ?)";
+            $consulta = $this->conn->prepare($sentencia);
+            $consulta->bind_param("ssss", $nombre, $email, $password, $tipo_usuario);
+            
+            if ($consulta->execute()) {
+                $id = $this->conn->insert_id;
+                $consulta->close();
+                return [
+                    "success" => true,
+                    "mensaje" => "Usuario registrado correctamente",
+                    "id" => $id,
+                    "nombre" => $nombre,
+                    "tipo_usuario" => $tipo_usuario
+                ];
+            } else {
+                $consulta->close();
+                return ["error" => "Error al registrar el usuario: " . $this->conn->error];
+            }
+        }
     }
 ?>

@@ -140,9 +140,17 @@ const Login = ({ isOpen, onClose, onSuccess, onError }) => {
 
               <p className="text-center text-gray-400 text-sm">
                 ¿No tienes una cuenta?{' '}
-                <a href="#" className="text-purple-500 hover:text-purple-400">
+                <button 
+                  type="button"
+                  onClick={() => {
+                    onClose();
+                    // Emitir un evento personalizado para abrir el modal de registro
+                    window.dispatchEvent(new CustomEvent('openRegistro'));
+                  }}
+                  className="text-purple-500 hover:text-purple-400"
+                >
                   Regístrate
-                </a>
+                </button>
               </p>
             </form>
           </motion.div>
