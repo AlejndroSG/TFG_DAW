@@ -64,83 +64,28 @@ const AdminCursos = () => {
     comprobarSesion();
   }, [navigate]);
 
-  // Esta función se implementaría con tu backend real
+  // Obtener cursos reales de la base de datos
   const cargarCursos = async () => {
-    // Simulamos datos de cursos para la demo
-    // En un caso real, esto sería una llamada a tu API:
-    // const response = await axios.get('http://localhost/TFG_DAW/backend/controlador/controlador.php?action=obtenerTodosCursos', { withCredentials: true });
-    // setCursos(response.data);
-    
-    // Datos simulados:
-    setTimeout(() => {
-      const cursosMock = [
-        { 
-          id: 1, 
-          titulo: 'JavaScript Avanzado', 
-          descripcion: 'Domina los conceptos avanzados de JavaScript, incluyendo promesas, async/await, y patrones de diseño modernos.',
-          imgCurso: 'https://placehold.co/600x400/2a2a2a/purple?text=JavaScript+Avanzado',
-          precio: 49.99,
-          profesor: 'Carlos Martínez', 
-          duracion: 12,
-          estudiantes: 342,
-          valoracion: 4.8,
-          publicado: true,
-          destacado: true,
-          tipo_curso: 'Avanzado',
-          fecha_creacion: '2024-09-15',
-          modulos: 8
-        },
-        { 
-          id: 2, 
-          titulo: 'React Native Masterclass', 
-          descripcion: 'Aprende a crear aplicaciones móviles nativas para iOS y Android con React Native. Incluye proyectos prácticos y deployment.',
-          imgCurso: 'https://placehold.co/600x400/2a2a2a/pink?text=React+Native',
-          precio: 59.99,
-          profesor: 'María López', 
-          duracion: 15,
-          estudiantes: 287,
-          valoracion: 4.7,
-          publicado: true,
-          destacado: true,
-          tipo_curso: 'Intermedio',
-          fecha_creacion: '2024-10-05',
-          modulos: 10
-        },
-        { 
-          id: 3, 
-          titulo: 'Python para Data Science', 
-          descripcion: 'Introducción a la ciencia de datos con Python. Aprende pandas, numpy, matplotlib y técnicas de análisis de datos.',
-          imgCurso: 'https://placehold.co/600x400/2a2a2a/blue?text=Python+Data',
-          precio: 39.99,
-          profesor: 'Juan Pérez', 
-          duracion: 10,
-          estudiantes: 254,
-          valoracion: 4.9,
-          publicado: true,
-          destacado: false,
-          tipo_curso: 'Principiante',
-          fecha_creacion: '2024-08-20',
-          modulos: 6
-        },
-        { 
-          id: 4, 
-          titulo: 'DevOps con Docker y Kubernetes', 
-          descripcion: 'Domina las herramientas esenciales de DevOps. Contenedores, orquestación y CI/CD para implementaciones modernas.',
-          imgCurso: 'https://placehold.co/600x400/2a2a2a/cyan?text=DevOps',
-          precio: 69.99,
-          profesor: 'Ana Sánchez', 
-          duracion: 18,
-          estudiantes: 176,
-          valoracion: 4.6,
-          publicado: false,
-          destacado: false,
-          tipo_curso: 'Avanzado',
-          fecha_creacion: '2024-11-10',
-          modulos: 12
-        },
-      ];
-      setCursos(cursosMock);
-    }, 1000);
+    try {
+      setLoading(true);
+      const response = await axios.get(
+        'http://localhost/TFG_DAW/backend/controlador/controlador.php?action=obtenerTodosCursos', 
+        { withCredentials: true }
+      );
+      
+      if (Array.isArray(response.data)) {
+        setCursos(response.data);
+        console.log('Cursos cargados del servidor:', response.data);
+      } else if (response.data.error) {
+        console.error('Error al cargar cursos:', response.data.error);
+      } else {
+        console.error('Formato de respuesta inesperado:', response.data);
+      }
+    } catch (error) {
+      console.error('Error al cargar los cursos:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleAbrirModal = (curso = null) => {

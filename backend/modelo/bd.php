@@ -12,6 +12,41 @@
             return $this->conn;
         }
         
+        // Obtener todos los usuarios para el panel de administraciu00f3n
+        public function obtenerTodosUsuarios() {
+            $usuarios = array();
+            $sentencia = "SELECT id_usuario, nombre, email, tipo_usuario, fecha_registro, activo FROM usuarios ORDER BY id_usuario DESC";
+            $resultado = $this->conn->query($sentencia);
+            
+            if ($resultado && $resultado->num_rows > 0) {
+                while ($fila = $resultado->fetch_assoc()) {
+                    // Obtener el nu00famero de cursos en los que estu00e1 inscrito cada usuario
+                    $id_usuario = $fila['id_usuario'];
+                    $sentenciaCursos = "SELECT COUNT(*) as total FROM inscripciones WHERE id_usuario = $id_usuario";
+                    $resultadoCursos = $this->conn->query($sentenciaCursos);
+                    $cursos_inscritos = 0;
+                    
+                    if ($resultadoCursos && $resultadoCursos->num_rows > 0) {
+                        $filaCursos = $resultadoCursos->fetch_assoc();
+                        $cursos_inscritos = $filaCursos['total'];
+                    }
+                    
+                    // Agregar toda la informaciu00f3n al array de usuarios
+                    $usuarios[] = array(
+                        'id' => $fila['id_usuario'],
+                        'nombre' => $fila['nombre'],
+                        'email' => $fila['email'],
+                        'tipo_usuario' => $fila['tipo_usuario'],
+                        'fecha_registro' => $fila['fecha_registro'],
+                        'activo' => $fila['activo'] == 1 ? true : false,
+                        'cursos_inscritos' => $cursos_inscritos
+                    );
+                }
+            }
+            
+            return $usuarios;
+        }
+        
         // Comprobamos si las credenciales son correctas
         public function compCredenciales(String $nom, String $psw){
             $sentencia = "SELECT id_usuario, nombre, tipo_usuario FROM usuarios WHERE nombre = ? AND contraseña = ?"; 

@@ -59,24 +59,27 @@ const AdminUsuarios = () => {
     comprobarSesion();
   }, [navigate]);
 
-  // Esta función se implementaría con tu backend real
+  // Obtener usuarios reales de la base de datos
   const cargarUsuarios = async () => {
-    // Simulamos datos de usuarios para la demo
-    // En un caso real, esto sería una llamada a tu API:
-    // const response = await axios.get('http://localhost/TFG_DAW/backend/controlador/controlador.php?action=obtenerUsuarios', { withCredentials: true });
-    // setUsuarios(response.data);
-    
-    // Datos simulados:
-    setTimeout(() => {
-      const usuariosMock = [
-        { id: 1, nombre: 'Carlos Martínez', email: 'carlos@example.com', tipo_usuario: 'estudiante', fecha_registro: '2024-10-15', cursos_inscritos: 3, activo: true },
-        { id: 2, nombre: 'María López', email: 'maria@example.com', tipo_usuario: 'profesor', fecha_registro: '2024-09-23', cursos_inscritos: 0, activo: true },
-        { id: 3, nombre: 'Juan Pérez', email: 'juan@example.com', tipo_usuario: 'estudiante', fecha_registro: '2024-11-05', cursos_inscritos: 5, activo: true },
-        { id: 4, nombre: 'Ana Sánchez', email: 'ana@example.com', tipo_usuario: 'admin', fecha_registro: '2024-05-10', cursos_inscritos: 0, activo: true },
-        { id: 5, nombre: 'Miguel García', email: 'miguel@example.com', tipo_usuario: 'estudiante', fecha_registro: '2024-10-30', cursos_inscritos: 1, activo: false },
-      ];
-      setUsuarios(usuariosMock);
-    }, 1000);
+    try {
+      setLoading(true);
+      const response = await axios.get(
+        'http://localhost/TFG_DAW/backend/controlador/controlador.php?action=obtenerUsuarios', 
+        { withCredentials: true }
+      );
+      
+      if (Array.isArray(response.data)) {
+        setUsuarios(response.data);
+      } else if (response.data.error) {
+        console.error('Error al cargar usuarios:', response.data.error);
+      } else {
+        console.error('Formato de respuesta inesperado:', response.data);
+      }
+    } catch (error) {
+      console.error('Error al cargar los usuarios:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleAbrirModal = (usuario = null) => {

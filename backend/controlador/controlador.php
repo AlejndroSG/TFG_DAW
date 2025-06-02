@@ -254,6 +254,38 @@
         }
     }
 
+    function obtenerUsuarios() {
+        // Verificar si el usuario tiene permisos de administrador
+        if (!isset($_SESSION['tipo_usuario']) || ($_SESSION['tipo_usuario'] != 'administrador' && $_SESSION['tipo_usuario'] != 'admin')) {
+            echo json_encode([
+                'error' => 'No tienes permiso para realizar esta acción'
+            ]);
+            exit;
+        }
+        
+        require_once("../modelo/bd.php");
+        $modelo = new db();
+        $usuarios = $modelo->obtenerTodosUsuarios();
+        
+        echo json_encode($usuarios);
+    }
+
+    function obtenerTodosCursos() {
+        // Verificar si el usuario tiene permisos de administrador
+        if (!isset($_SESSION['tipo_usuario']) || ($_SESSION['tipo_usuario'] != 'administrador' && $_SESSION['tipo_usuario'] != 'admin')) {
+            echo json_encode([
+                'error' => 'No tienes permiso para realizar esta acción'
+            ]);
+            exit;
+        }
+        
+        require_once("../modelo/cursos.php");
+        $modeloCursos = new Cursos();
+        $cursos = $modeloCursos->obtenerTodosCursos();
+        
+        echo json_encode($cursos);
+    }
+
     // Si no ha sido iniciado el action
     if(isset($_REQUEST["action"])){
         $action = $_REQUEST["action"];
