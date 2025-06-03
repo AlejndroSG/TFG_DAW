@@ -435,15 +435,17 @@ class Cursos {
             try {
                 $sentenciaValoracion = "SELECT AVG(valoracion) as promedio FROM valoraciones WHERE id_curso = ?";
                 $stmtVal = $this->conn->prepare($sentenciaValoracion);
-                $stmtVal->bind_param("i", $id);
-                $stmtVal->execute();
-                $resultadoVal = $stmtVal->get_result();
+                if ($stmtVal) {
+                    $stmtVal->bind_param("i", $id);
+                    $stmtVal->execute();
+                    $resultadoVal = $stmtVal->get_result();
                 
-                if ($resultadoVal && $resultadoVal->num_rows > 0) {
-                    $filaVal = $resultadoVal->fetch_assoc();
-                    $valoracion = $filaVal['promedio'] ? round($filaVal['promedio'], 1) : 0;
+                    if ($resultadoVal && $resultadoVal->num_rows > 0) {
+                        $filaVal = $resultadoVal->fetch_assoc();
+                        $valoracion = $filaVal['promedio'] ? round($filaVal['promedio'], 1) : 0;
+                    }
+                    $stmtVal->close();
                 }
-                $stmtVal->close();
             } catch (Exception $e) {
                 // La tabla valoraciones no existe, se mantiene el valor predeterminado
             }
@@ -452,15 +454,17 @@ class Cursos {
             try {
                 $sentenciaModulos = "SELECT COUNT(*) as total FROM modulos WHERE id_curso = ?";
                 $stmtMod = $this->conn->prepare($sentenciaModulos);
-                $stmtMod->bind_param("i", $id);
-                $stmtMod->execute();
-                $resultadoMod = $stmtMod->get_result();
-                
-                if ($resultadoMod && $resultadoMod->num_rows > 0) {
-                    $filaMod = $resultadoMod->fetch_assoc();
-                    $modulos = $filaMod['total'];
+                if ($stmtMod) {
+                    $stmtMod->bind_param("i", $id);
+                    $stmtMod->execute();
+                    $resultadoMod = $stmtMod->get_result();
+                    
+                    if ($resultadoMod && $resultadoMod->num_rows > 0) {
+                        $filaMod = $resultadoMod->fetch_assoc();
+                        $modulos = $filaMod['total'];
+                    }
+                    $stmtMod->close();
                 }
-                $stmtMod->close();
             } catch (Exception $e) {
                 // La tabla modulos no existe, se mantiene el valor predeterminado
             }
