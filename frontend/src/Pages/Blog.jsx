@@ -81,7 +81,7 @@ const Blog = () => {
               <span className="bg-gradient-to-r from-purple-400 to-pink-600 bg-clip-text text-transparent">
                 Blog de
               </span> 
-              <span className="text-white">Desarrollo</span>
+              <span className="text-white"> Desarrollo</span>
             </h1>
             <div className="w-32 h-1 bg-gradient-to-r from-purple-400 to-pink-600 mx-auto mb-8"></div>
             <p className="text-gray-300 text-xl max-w-3xl mx-auto leading-relaxed">

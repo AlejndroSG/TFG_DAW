@@ -15,7 +15,8 @@
         // Obtener todos los usuarios para el panel de administraciu00f3n
         public function obtenerTodosUsuarios() {
             $usuarios = array();
-            $sentencia = "SELECT id_usuario, nombre, email, tipo_usuario, fecha_registro, activo FROM usuarios ORDER BY id_usuario DESC";
+            // Adaptamos la consulta a las columnas existentes en la BD
+            $sentencia = "SELECT id_usuario, nombre, email, tipo_usuario, id_plan FROM usuarios ORDER BY id_usuario DESC";
             $resultado = $this->conn->query($sentencia);
             
             if ($resultado && $resultado->num_rows > 0) {
@@ -31,15 +32,16 @@
                         $cursos_inscritos = $filaCursos['total'];
                     }
                     
-                    // Agregar toda la informaciu00f3n al array de usuarios
+                    // Agregar toda la informaciu00f3n al array de usuarios con valores predeterminados para campos faltantes
                     $usuarios[] = array(
                         'id' => $fila['id_usuario'],
                         'nombre' => $fila['nombre'],
                         'email' => $fila['email'],
                         'tipo_usuario' => $fila['tipo_usuario'],
-                        'fecha_registro' => $fila['fecha_registro'],
-                        'activo' => $fila['activo'] == 1 ? true : false,
-                        'cursos_inscritos' => $cursos_inscritos
+                        'fecha_registro' => date('Y-m-d'), // Valor predeterminado ya que no existe en la BD
+                        'activo' => true, // Valor predeterminado ya que no existe en la BD
+                        'cursos_inscritos' => $cursos_inscritos,
+                        'plan' => $fila['id_plan'] ? $fila['id_plan'] : 'Ninguno'
                     );
                 }
             }

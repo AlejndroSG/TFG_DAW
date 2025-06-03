@@ -20,6 +20,10 @@
     }
 
     function comprobarSesion(){
+        // Log para depurar la sesiu00f3n actual
+        error_log('SESSION en comprobarSesion: ' . print_r($_SESSION, true));
+        error_log('SESSION ID: ' . session_id());
+        
         $response = array(
             'id' => isset($_SESSION['id']) ? $_SESSION['id'] : null,
             'username' => isset($_SESSION['username']) ? $_SESSION['username'] : null,
@@ -255,8 +259,21 @@
     }
 
     function obtenerUsuarios() {
+        // Log para depurar
+        error_log('SESSION en obtenerUsuarios: ' . print_r($_SESSION, true));
+        error_log('tipo_usuario: ' . (isset($_SESSION['tipo_usuario']) ? $_SESSION['tipo_usuario'] : 'no definido'));
+        
         // Verificar si el usuario tiene permisos de administrador
-        if (!isset($_SESSION['tipo_usuario']) || ($_SESSION['tipo_usuario'] != 'administrador' && $_SESSION['tipo_usuario'] != 'admin')) {
+        if (!isset($_SESSION['tipo_usuario'])) {
+            echo json_encode([
+                'error' => 'No hay sesiu00f3n activa'
+            ]);
+            exit;
+        }
+        
+        // Convertir a minu00fasculas y comparar
+        $tipo = strtolower($_SESSION['tipo_usuario']);
+        if ($tipo !== 'administrador' && $tipo !== 'admin') {
             echo json_encode([
                 'error' => 'No tienes permiso para realizar esta acción'
             ]);
@@ -271,8 +288,21 @@
     }
 
     function obtenerTodosCursos() {
+        // Log para depurar
+        error_log('SESSION en obtenerTodosCursos: ' . print_r($_SESSION, true));
+        error_log('tipo_usuario: ' . (isset($_SESSION['tipo_usuario']) ? $_SESSION['tipo_usuario'] : 'no definido'));
+        
         // Verificar si el usuario tiene permisos de administrador
-        if (!isset($_SESSION['tipo_usuario']) || ($_SESSION['tipo_usuario'] != 'administrador' && $_SESSION['tipo_usuario'] != 'admin')) {
+        if (!isset($_SESSION['tipo_usuario'])) {
+            echo json_encode([
+                'error' => 'No hay sesiu00f3n activa'
+            ]);
+            exit;
+        }
+        
+        // Convertir a minu00fasculas y comparar
+        $tipo = strtolower($_SESSION['tipo_usuario']);
+        if ($tipo !== 'administrador' && $tipo !== 'admin') {
             echo json_encode([
                 'error' => 'No tienes permiso para realizar esta acción'
             ]);

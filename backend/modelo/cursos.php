@@ -65,13 +65,12 @@ class Cursos {
     public function obtenerTodosCursos() {
         $cursos = array();
         
-        // Consulta principal para obtener datos bu00e1sicos de los cursos
+        // Consulta principal para obtener datos bu00e1sicos de los cursos, adaptada a la estructura actual
         $sentencia = "
             SELECT c.id_curso, c.titulo, c.descripcion, c.precio, c.duracion, c.tipo_Curso, 
-                   u.nombre as profesor, c.imgCurso, c.fecha_creacion, c.publicado, c.destacado
+                   u.nombre as profesor, c.imgCurso
             FROM cursos c
             JOIN usuarios u ON c.id_profesor = u.id_usuario
-            ORDER BY c.fecha_creacion DESC
         ";
         
         $resultado = $this->conn->query($sentencia);
@@ -90,27 +89,37 @@ class Cursos {
                     $estudiantes = $filaEstudiantes['total'];
                 }
                 
-                // Obtener valoraciu00f3n promedio
-                $sentenciaValoracion = "SELECT AVG(valoracion) as promedio FROM valoraciones WHERE id_curso = $id_curso";
-                $resultadoValoracion = $this->conn->query($sentenciaValoracion);
+                // Valores predeterminados para campos que no existen en la BD actual
                 $valoracion = 0;
-                
-                if ($resultadoValoracion && $resultadoValoracion->num_rows > 0) {
-                    $filaValoracion = $resultadoValoracion->fetch_assoc();
-                    $valoracion = $filaValoracion['promedio'] ? round($filaValoracion['promedio'], 1) : 0;
-                }
-                
-                // Contar mu00f3dulos del curso
-                $sentenciaModulos = "SELECT COUNT(*) as total FROM modulos WHERE id_curso = $id_curso";
-                $resultadoModulos = $this->conn->query($sentenciaModulos);
                 $modulos = 0;
                 
-                if ($resultadoModulos && $resultadoModulos->num_rows > 0) {
-                    $filaModulos = $resultadoModulos->fetch_assoc();
-                    $modulos = $filaModulos['total'];
+                // Intentar obtener valoraciu00f3n si existe la tabla
+                try {
+                    $sentenciaValoracion = "SELECT AVG(valoracion) as promedio FROM valoraciones WHERE id_curso = $id_curso";
+                    $resultadoValoracion = $this->conn->query($sentenciaValoracion);
+                    
+                    if ($resultadoValoracion && $resultadoValoracion->num_rows > 0) {
+                        $filaValoracion = $resultadoValoracion->fetch_assoc();
+                        $valoracion = $filaValoracion['promedio'] ? round($filaValoracion['promedio'], 1) : 0;
+                    }
+                } catch (Exception $e) {
+                    // La tabla valoraciones no existe, se mantiene el valor predeterminado
                 }
                 
-                // Agregar toda la informaciu00f3n al array de cursos
+                // Intentar contar mu00f3dulos si existe la tabla
+                try {
+                    $sentenciaModulos = "SELECT COUNT(*) as total FROM modulos WHERE id_curso = $id_curso";
+                    $resultadoModulos = $this->conn->query($sentenciaModulos);
+                    
+                    if ($resultadoModulos && $resultadoModulos->num_rows > 0) {
+                        $filaModulos = $resultadoModulos->fetch_assoc();
+                        $modulos = $filaModulos['total'];
+                    }
+                } catch (Exception $e) {
+                    // La tabla modulos no existe, se mantiene el valor predeterminado
+                }
+                
+                // Agregar toda la informaciu00f3n al array de cursos con valores predeterminados para campos faltantes
                 $cursos[] = array(
                     'id' => $id_curso,
                     'titulo' => $fila['titulo'],
@@ -121,10 +130,10 @@ class Cursos {
                     'duracion' => (int)$fila['duracion'],
                     'estudiantes' => $estudiantes,
                     'valoracion' => $valoracion,
-                    'publicado' => $fila['publicado'] == 1 ? true : false,
-                    'destacado' => $fila['destacado'] == 1 ? true : false,
+                    'publicado' => true, // Valor predeterminado
+                    'destacado' => false, // Valor predeterminado
                     'tipo_curso' => $fila['tipo_Curso'],
-                    'fecha_creacion' => $fila['fecha_creacion'],
+                    'fecha_creacion' => date('Y-m-d'), // Fecha actual como predeterminada
                     'modulos' => $modulos
                 );
             }

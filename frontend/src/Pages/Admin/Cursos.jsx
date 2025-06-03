@@ -40,8 +40,12 @@ const AdminCursos = () => {
         );
         
         if (respuesta.data && respuesta.data.username) {
+          // Log para depurar el tipo de usuario
+          console.log('Tipo de usuario:', respuesta.data.tipo_usuario);
+          console.log('Sesión completa:', respuesta.data);
+          
           // Verificar si el usuario es administrador
-          if (respuesta.data.tipo_usuario.toLowerCase() === 'administrador' || respuesta.data.tipo_usuario === 'admin') {
+          if (respuesta.data.tipo_usuario && (respuesta.data.tipo_usuario.toLowerCase() === 'administrador' || respuesta.data.tipo_usuario.toLowerCase() === 'admin')) {
             setUserData(respuesta.data);
             // Cargar la lista de cursos
             cargarCursos();
