@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import axios from 'axios';
 import { Navigate, useNavigate } from 'react-router-dom';
@@ -27,8 +27,8 @@ const AdminCursos = () => {
   const [cursos, setCursos] = useState([]);
   const [filtro, setFiltro] = useState('');
   const [tipoFiltro, setTipoFiltro] = useState('todos');
-  const [editandoCurso, setEditandoCurso] = useState({});
-  const [formValues, setFormValues] = useState({});
+  // Simplificamos el estado
+  const [cursoSeleccionado, setCursoSeleccionado] = useState(null);
   const [mostrarModal, setMostrarModal] = useState(false);
   const [ordenarPor, setOrdenarPor] = useState('recientes');
 
@@ -93,154 +93,26 @@ const AdminCursos = () => {
     }
   };
 
-  const handleAbrirModal = (curso = null) => {
-    const cursoData = curso ? {
-      // Para editar, asegurarse de usar el campo id_curso como id
-      id_curso: curso.id_curso || curso.id, // Primero intentamos id_curso, luego id
-      titulo: curso.titulo || '',
-      descripcion: curso.descripcion || '',
-      imgCurso: curso.imgCurso || '',
-      precio: parseFloat(curso.precio) || 0,
-      profesor: curso.profesor || '',
-      duracion: parseInt(curso.duracion) || 0,
-      tipo_curso: curso.tipo_curso || 'Principiante',
-      publicado: !!curso.publicado,
-      destacado: !!curso.destacado,
-      id_profesor: curso.id_profesor || 3 // Valor por defecto para profesor
-    } : {
-      // Para crear nuevo
-      titulo: '',
-      descripcion: '',
-      imgCurso: '',
-      precio: 0,
-      profesor: '',
-      duracion: 0,
-      tipo_curso: 'Principiante',
-      publicado: false,
-      destacado: false,
-      id_profesor: 3 // Valor por defecto para profesor
-    };
-    
-    // Actualizamos ambos estados con los mismos datos iniciales
-    setEditandoCurso(cursoData);
-    setFormValues(cursoData);
-    setMostrarModal(true);
-    // Reiniciar vista previa de imagen
-    setImagenPreview(null);
-    console.log('Curso a editar:', cursoData);
+  // Utiliza la función `abrirModal` para editar o crear cursos
+  const abrirModal = (curso = null) => {
+    // Evitar reaperturas innecesarias si ya está abierto
+    if (!mostrarModal) {
+      console.log('Abriendo modal con curso:', curso);
+      setCursoSeleccionado(curso);
+      setMostrarModal(true);
+    }
   };
-
-  // Subir imagen del curso
-  const [subiendoImagen, setSubiendoImagen] = useState(false);
-  const [imagenPreview, setImagenPreview] = useState(null);
+  
+  // Manejador para cerrar el modal
+  const cerrarModal = () => {
+    console.log('Cerrando modal');
+    setMostrarModal(false);
+    // Esperar a que se cierre la animación antes de limpiar el curso seleccionado
+    setTimeout(() => {
+      setCursoSeleccionado(null);
+    }, 300);
+  };
   const fileInputRef = React.useRef(null);
-  
-  const handleSubirImagen = async (file) => {
-    if (!file) return;
-    
-    setSubiendoImagen(true);
-    
-    try {
-      // Crear un objeto FormData para enviar el archivo
-      const formData = new FormData();
-      formData.append('imagen', file);
-      
-      // Realizar la petición para subir la imagen
-      const response = await axios.post(
-        'http://localhost/TFG_DAW/backend/controlador/controlador.php?action=subirImagenCurso',
-        formData,
-        { 
-          withCredentials: true,
-          headers: {
-            'Content-Type': 'multipart/form-data'
-          }
-        }
-      );
-      
-      if (response.data.success) {
-        // Actualizar la ruta de la imagen en el estado del curso
-        const rutaImagen = `http://localhost/TFG_DAW/frontend${response.data.ruta}`;
-        // Actualizar en el estado separado para el formulario
-        setFormValues(prev => ({...prev, imgCurso: rutaImagen}));
-        console.log('Imagen subida correctamente:', rutaImagen);
-      } else if (response.data.error) {
-        console.error('Error al subir imagen:', response.data.error);
-        alert('Error al subir la imagen: ' + response.data.error);
-      }
-    } catch (error) {
-      console.error('Error al subir la imagen:', error);
-      alert('Error al subir la imagen. Intente nuevamente.');
-    } finally {
-      setSubiendoImagen(false);
-    }
-  };
-  
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    
-    // Mostrar preview de la imagen
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setImagenPreview(reader.result);
-    };
-    reader.readAsDataURL(file);
-    
-    // Subir la imagen al servidor
-    handleSubirImagen(file);
-  };
-  
-  const handleClickImagenBtn = () => {
-    fileInputRef.current.click();
-  };
-  
-  // Guardar curso (crear o actualizar)
-  const handleGuardarCurso = async () => {
-    if (!formValues.titulo) {
-      alert('El título del curso es obligatorio');
-      return;
-    }
-    
-    try {
-      setLoading(true);
-      
-      // Preparar datos finales a enviar
-      const datosCurso = {
-        ...formValues
-      };
-      
-      // Asegurar que el id_curso se mapea a id para el backend
-      if (formValues.id_curso) {
-        datosCurso.id = formValues.id_curso;
-      }
-      
-      console.log('Enviando datos al servidor:', datosCurso);
-      
-      // Enviar datos al servidor
-      const response = await axios.post(
-        'http://localhost/TFG_DAW/backend/controlador/controlador.php?action=guardarCurso',
-        datosCurso,
-        { withCredentials: true }
-      );
-      
-      if (response.data.success) {
-        // Recargar la lista de cursos para obtener los datos actualizados
-        await cargarCursos();
-        setMostrarModal(false);
-        
-        // Mostrar mensaje de éxito
-        alert(response.data.mensaje);
-      } else {
-        console.error('Error al guardar el curso:', response.data.error);
-        alert('Error al guardar el curso: ' + response.data.error);
-      }
-    } catch (error) {
-      console.error('Error al guardar el curso:', error);
-      alert('Error al guardar el curso. Intente nuevamente.');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleCambioEstado = async (id) => {
     try {
@@ -416,8 +288,172 @@ const AdminCursos = () => {
   );
 
   // Componente modal para editar/crear curso
-  const ModalCurso = () => {
-    if (!mostrarModal) return null;
+  // Modal como componente separado y memorizado para evitar re-renderizados innecesarios
+  const ModalCurso = React.memo(({ curso, onGuardar, onCerrar }) => {
+    // Estado local del formulario dentro del modal
+    const [formData, setFormData] = useState({
+      id_curso: curso?.id || '',
+      titulo: curso?.titulo || '',
+      descripcion: curso?.descripcion || '',
+      contenido: curso?.contenido || '',
+      imagen: curso?.imagen || '',
+      precio: curso?.precio || '',
+      publicado: curso?.publicado === 1,
+      destacado: curso?.destacado === 1
+    });
+    
+    // Estado para la vista previa de imagen
+    const [imagenPreview, setImagenPreview] = useState(
+      curso?.imagen 
+        ? curso.imagen.startsWith('/') 
+          ? `http://localhost/TFG_DAW/frontend${curso.imagen}` 
+          : curso.imagen 
+        : null
+    );
+    
+    // Estado para indicar cuando se está subiendo una imagen
+    const [subiendoImagen, setSubiendoImagen] = useState(false);
+    // Estado para controlar cuando se está guardando
+    const [guardando, setGuardando] = useState(false);
+    
+    // Efecto para actualizar el formulario cuando cambia el curso seleccionado
+    // Se usa un useEffect para separar la inicialización del renderizado
+    useEffect(() => {
+      if (curso) {
+        setFormData({
+          id_curso: curso.id || '',
+          titulo: curso.titulo || '',
+          descripcion: curso.descripcion || '',
+          contenido: curso.contenido || '',
+          publicado: curso.publicado === 1,
+          destacado: curso.destacado === 1,
+          imagen: curso.imagen || '',
+          precio: curso.precio || ''
+        });
+        
+        // Inicializar la vista previa de la imagen
+        if (curso.imagen) {
+          setImagenPreview(curso.imagen.startsWith('/') 
+            ? `http://localhost/TFG_DAW/frontend${curso.imagen}` 
+            : curso.imagen
+          );
+        } else {
+          setImagenPreview(null);
+        }
+      }
+    }, [curso]);
+
+    // Manejador genérico para inputs que actualiza el estado local sin modificar el prop original
+    const handleInputChange = (e) => {
+      const { name, value, type, checked } = e.target;
+      setFormData(prev => ({
+        ...prev,
+        [name]: type === 'checkbox' ? checked : value
+      }));
+    };
+
+    // Manejador para subir imagen
+    const handleSubirImagenModal = async (file) => {
+      if (!file) return;
+      
+      setSubiendoImagen(true);
+      
+      const formDataImg = new FormData();
+      formDataImg.append('imagen', file);
+      
+      try {
+        const response = await axios.post(
+          'http://localhost/TFG_DAW/backend/controlador/controlador.php?action=subirImagenCurso',
+          formDataImg,
+          { 
+            withCredentials: true,
+            headers: {'Content-Type': 'multipart/form-data'}
+          }
+        );
+        
+        if (response.data.success) {
+          console.log('Imagen subida:', response.data.ruta);
+          // Actualizar solo el estado local del formulario
+          setFormData(prev => ({
+            ...prev,
+            imagen: response.data.ruta
+          }));
+        } else {
+          console.error('Error al subir imagen:', response.data.error);
+          alert('Error al subir la imagen: ' + (response.data.error || 'Error desconocido'));
+        }
+      } catch (error) {
+        console.error('Error al subir imagen:', error);
+        alert('Error al subir la imagen. Intente nuevamente.');
+      } finally {
+        setSubiendoImagen(false);
+      }
+    };
+    
+    // Manejador para guardar curso - modificado para manejar correctamente el estado
+    const handleGuardarCurso = async () => {
+      if (!formData.titulo) {
+        alert('El título del curso es obligatorio');
+        return;
+      }
+      
+      // Evitar múltiples clicks
+      if (guardando) return;
+      
+      try {
+        setGuardando(true);
+        
+        // Preparar datos para el servidor - copia explícita para evitar mutaciones
+        const datosCurso = {
+          titulo: formData.titulo,
+          descripcion: formData.descripcion,
+          contenido: formData.contenido,
+          publicado: formData.publicado ? 1 : 0,
+          destacado: formData.destacado ? 1 : 0,
+          imagen: formData.imagen,
+          precio: formData.precio
+        };
+        
+        // Si es edición, asegurarse de que se envía el ID correcto
+        if (formData.id_curso) {
+          datosCurso.id = formData.id_curso;
+        }
+        
+        console.log('Enviando datos al servidor:', datosCurso);
+        
+        const response = await axios.post(
+          'http://localhost/TFG_DAW/backend/controlador/controlador.php?action=guardarCurso',
+          datosCurso,
+          { withCredentials: true }
+        );
+        
+        console.log('Respuesta del servidor:', response.data);
+        
+        if (response.data && response.data.success) {
+          // Llamar onGuardar solo después de confirmar éxito
+          onGuardar();
+          // No necesitamos cerrar el modal aquí, lo hará el componente padre
+          alert(response.data.mensaje || 'Curso guardado con éxito');
+        } else {
+          console.error('Error al guardar el curso:', response.data?.error || 'Error desconocido');
+          alert('Error al guardar el curso: ' + (response.data?.error || 'Error desconocido'));
+        }
+      } catch (error) {
+        console.error('Error al guardar el curso:', error);
+        alert('Error al guardar el curso. Intente nuevamente.');
+      } finally {
+        setGuardando(false);
+      }
+    };
+    
+    // Manejador para el input de archivo
+    const handleFileChangeModal = (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      
+      setImagenPreview(URL.createObjectURL(file));
+      handleSubirImagenModal(file);
+    };
 
     return (
       <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 overflow-y-auto">
@@ -427,7 +463,7 @@ const AdminCursos = () => {
           className="bg-gray-800 rounded-2xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto"
         >
           <h2 className="text-2xl font-bold text-white mb-6">
-            {formValues.id_curso ? 'Editar Curso' : 'Nuevo Curso'}
+            {formData.id_curso ? 'Editar Curso' : 'Nuevo Curso'}
           </h2>
           
           <div className="space-y-4">
@@ -436,11 +472,9 @@ const AdminCursos = () => {
                 <label className="block text-gray-300 mb-2">Título del Curso</label>
                 <input 
                   type="text" 
-                  value={formValues.titulo || ''} 
-                  onChange={(e) => {
-                    const nuevoValor = e.target.value;
-                    setFormValues(prev => ({...prev, titulo: nuevoValor}));
-                  }}
+                  name="titulo"
+                  value={formData.titulo || ''} 
+                  onChange={handleInputChange}
                   className="w-full bg-gray-700 border border-gray-600 rounded-xl p-3 text-white focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all"
                 />
               </div>
@@ -449,11 +483,9 @@ const AdminCursos = () => {
                 <label className="block text-gray-300 mb-2">Descripción</label>
                 <textarea 
                   rows="4"
-                  value={formValues.descripcion || ''} 
-                  onChange={(e) => {
-                    const nuevoValor = e.target.value;
-                    setFormValues(prev => ({...prev, descripcion: nuevoValor}));
-                  }}
+                  name="descripcion"
+                  value={formData.descripcion || ''} 
+                  onChange={handleInputChange}
                   className="w-full bg-gray-700 border border-gray-600 rounded-xl p-3 text-white focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all"
                 />
               </div>
@@ -464,11 +496,9 @@ const AdminCursos = () => {
                   type="number"
                   min="0"
                   step="0.01"
-                  value={formValues.precio || 0} 
-                  onChange={(e) => {
-                    const nuevoValor = parseFloat(e.target.value);
-                    setFormValues(prev => ({...prev, precio: nuevoValor}));
-                  }}
+                  name="precio"
+                  value={formData.precio || 0} 
+                  onChange={handleInputChange}
                   className="w-full bg-gray-700 border border-gray-600 rounded-xl p-3 text-white focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all"
                 />
               </div>
@@ -478,11 +508,9 @@ const AdminCursos = () => {
                 <input 
                   type="number"
                   min="1"
-                  value={formValues.duracion || 1} 
-                  onChange={(e) => {
-                    const nuevoValor = parseInt(e.target.value);
-                    setFormValues(prev => ({...prev, duracion: nuevoValor}));
-                  }}
+                  name="duracion"
+                  value={formData.duracion || 1} 
+                  onChange={handleInputChange}
                   className="w-full bg-gray-700 border border-gray-600 rounded-xl p-3 text-white focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all"
                 />
               </div>
@@ -491,11 +519,9 @@ const AdminCursos = () => {
                 <label className="block text-gray-300 mb-2">Profesor</label>
                 <input 
                   type="text" 
-                  value={formValues.profesor || ''} 
-                  onChange={(e) => {
-                    const nuevoValor = e.target.value;
-                    setFormValues(prev => ({...prev, profesor: nuevoValor}));
-                  }}
+                  name="profesor"
+                  value={formData.profesor || ''} 
+                  onChange={handleInputChange}
                   className="w-full bg-gray-700 border border-gray-600 rounded-xl p-3 text-white focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all"
                 />
               </div>
@@ -503,11 +529,9 @@ const AdminCursos = () => {
               <div>
                 <label className="block text-gray-300 mb-2">Tipo de Curso</label>
                 <select 
-                  value={formValues.tipo_curso || 'Principiante'} 
-                  onChange={(e) => {
-                    const nuevoValor = e.target.value;
-                    setFormValues(prev => ({...prev, tipo_curso: nuevoValor}));
-                  }}
+                  name="tipo_curso"
+                  value={formData.tipo_curso || 'Principiante'} 
+                  onChange={handleInputChange}
                   className="w-full bg-gray-700 border border-gray-600 rounded-xl p-3 text-white focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all"
                 >
                   <option value="Principiante">Principiante</option>
@@ -521,17 +545,15 @@ const AdminCursos = () => {
                 <div className="flex gap-3">
                   <input 
                     type="text" 
-                    value={formValues.imgCurso || ''} 
-                    onChange={(e) => {
-                    const nuevoValor = e.target.value;
-                    setFormValues(prev => ({...prev, imgCurso: nuevoValor}));
-                  }}
+                    name="imgCurso"
+                    value={formData.imgCurso || ''} 
+                    onChange={handleInputChange}
                     className="flex-1 bg-gray-700 border border-gray-600 rounded-xl p-3 text-white focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all"
                     placeholder="Ruta de la imagen o sube una nueva"
                   />
                   <button 
                     type="button"
-                    onClick={handleClickImagenBtn}
+                    onClick={() => fileInputRef.current.click()}
                     className="bg-purple-600 text-white rounded-xl px-4 hover:bg-purple-500 transition-colors flex items-center justify-center"
                     title="Subir imagen"
                     disabled={subiendoImagen}
@@ -547,7 +569,7 @@ const AdminCursos = () => {
                   <input 
                     type="file" 
                     ref={fileInputRef}
-                    onChange={handleFileChange}
+                    onChange={handleFileChangeModal}
                     accept="image/*"
                     className="hidden"
                   />
@@ -556,7 +578,7 @@ const AdminCursos = () => {
                 {/* Vista previa de imagen */}
                 <div className="mt-4">
                   <img 
-                    src={imagenPreview || (formValues.imgCurso ? (formValues.imgCurso.startsWith('http') ? formValues.imgCurso : `http://localhost/TFG_DAW/frontend${formValues.imgCurso.replace('.', '')}`) : 'http://localhost/TFG_DAW/frontend/src/img/imgCursos/default.jpg')} 
+                    src={imagenPreview || (formData.imgCurso ? (formData.imgCurso.startsWith('http') ? formData.imgCurso : `http://localhost/TFG_DAW/frontend${formData.imgCurso.replace('.', '')}`) : 'http://localhost/TFG_DAW/frontend/src/img/imgCursos/default.jpg')} 
                     alt="Vista previa del curso" 
                     className="rounded-xl max-h-48 max-w-full object-contain bg-gray-800 border border-gray-700 p-2"
                   />
@@ -568,8 +590,9 @@ const AdminCursos = () => {
                   <input 
                     type="checkbox" 
                     id="publicado" 
-                    checked={formValues.publicado || false} 
-                    onChange={(e) => setFormValues(prev => ({...prev, publicado: e.target.checked}))}
+                    name="publicado"
+                    checked={formData.publicado || false} 
+                    onChange={handleInputChange}
                     className="w-5 h-5 rounded border-gray-600 text-purple-600 focus:ring-purple-500"
                   />
                   <label htmlFor="publicado" className="ml-2 text-gray-300">Curso publicado</label>
@@ -579,8 +602,9 @@ const AdminCursos = () => {
                   <input 
                     type="checkbox" 
                     id="destacado" 
-                    checked={formValues.destacado || false} 
-                    onChange={(e) => setFormValues(prev => ({...prev, destacado: e.target.checked}))}
+                    name="destacado"
+                    checked={formData.destacado || false} 
+                    onChange={handleInputChange}
                     className="w-5 h-5 rounded border-gray-600 text-purple-600 focus:ring-purple-500"
                   />
                   <label htmlFor="destacado" className="ml-2 text-gray-300">Curso destacado</label>
@@ -588,7 +612,7 @@ const AdminCursos = () => {
               </div>
             </div>
             
-            {formValues.id_curso && (
+            {formData.id_curso && (
               <div className="mt-6 pt-6 border-t border-gray-700">
                 <h3 className="text-xl font-bold text-white mb-4">Módulos y Lecciones</h3>
                 <button className="bg-purple-600/20 border border-purple-600/50 text-purple-400 rounded-xl p-3 w-full hover:bg-purple-600/30 transition-all">
@@ -601,13 +625,15 @@ const AdminCursos = () => {
           <div className="flex gap-3 mt-6">
             <button 
               onClick={handleGuardarCurso}
-              className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl py-3 font-semibold hover:shadow-lg hover:shadow-purple-500/20 transition-all"
+              disabled={guardando || subiendoImagen}
+              className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl py-3 font-semibold hover:shadow-lg hover:shadow-purple-500/20 transition-all disabled:opacity-70 disabled:cursor-not-allowed"
             >
-              Guardar Curso
+              {guardando ? 'Guardando...' : 'Guardar Curso'}
             </button>
             <button 
-              onClick={() => setMostrarModal(false)}
-              className="flex-1 bg-gray-700 text-gray-300 rounded-xl py-3 font-semibold hover:bg-gray-600 transition-all"
+              onClick={onCerrar}
+              disabled={guardando || subiendoImagen}
+              className="flex-1 bg-gray-700 text-gray-300 rounded-xl py-3 font-semibold hover:bg-gray-600 transition-all disabled:opacity-70 disabled:cursor-not-allowed"
             >
               Cancelar
             </button>
@@ -615,6 +641,12 @@ const AdminCursos = () => {
         </motion.div>
       </div>
     );
+  });
+
+  // Manejar carga de cursos después de guardar
+  const handleDespuesDeGuardar = async () => {
+    await cargarCursos();
+    cerrarModal();
   };
 
   return (
@@ -623,7 +655,46 @@ const AdminCursos = () => {
         <div className="flex flex-col lg:flex-row gap-6">
           {/* Sidebar */}
           <div className="lg:w-1/5">
-            <Sidebar />
+            {/* Componente de sidebar definido localmente */}
+            <div className="bg-gray-800 rounded-2xl p-5 sticky top-4">
+              <h2 className="text-xl font-bold text-white mb-5">Panel Admin</h2>
+              <nav className="space-y-2">
+                {[
+                  { name: 'Dashboard', icon: <FaChartBar />, path: '/admin' },
+                  { name: 'Usuarios', icon: <FaUsersCog />, path: '/admin/usuarios' },
+                  { name: 'Cursos', icon: <FaBook />, path: '/admin/cursos' },
+                  { name: 'Comentarios', icon: <FaComments />, path: '/admin/comentarios' },
+                  { name: 'Informes', icon: <FaChartLine />, path: '/admin/informes' },
+                ].map((item, index) => (
+                  <motion.button
+                    key={item.name}
+                    onClick={() => navigate(item.path)}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    className={`flex items-center w-full p-3 rounded-xl transition-all ${
+                      window.location.pathname === item.path 
+                        ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white'
+                        : 'text-gray-300 hover:bg-gray-700/50'
+                    }`}
+                  >
+                    <span className="mr-3">{item.icon}</span>
+                    {item.name}
+                  </motion.button>
+                ))}
+              </nav>
+              
+              <div className="pt-6 mt-6 border-t border-gray-700/50">
+                <div className="flex items-center">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-400 to-pink-600 flex items-center justify-center text-white font-bold">
+                    {userData?.username ? userData.username.charAt(0) : 'A'}
+                  </div>
+                  <div className="ml-3">
+                    <p className="text-white font-semibold">{userData?.username || 'Admin'}</p>
+                    <p className="text-gray-400 text-sm">Administrador</p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
           
           {/* Main Content */}
@@ -752,7 +823,7 @@ const AdminCursos = () => {
                       {/* Acciones */}
                       <div className="grid grid-cols-4 gap-2 mt-4 border-t border-gray-700/50 pt-4">
                         <button 
-                          onClick={() => handleAbrirModal(curso)}
+                          onClick={() => abrirModal(curso)}
                           className="flex items-center justify-center p-2 text-purple-400 hover:bg-purple-500/20 rounded-lg transition-colors"
                           title="Editar curso"
                         >
@@ -812,8 +883,14 @@ const AdminCursos = () => {
         </div>
       </div>
       
-      {/* Modal para editar/crear curso */}
-      <ModalCurso />
+      {/* Modal para editar/crear curso - solo se renderiza cuando mostrarModal es true */}
+      {mostrarModal && (
+        <ModalCurso 
+          curso={cursoSeleccionado} 
+          onGuardar={handleDespuesDeGuardar} 
+          onCerrar={cerrarModal} 
+        />
+      )}
     </div>
   );
 };
