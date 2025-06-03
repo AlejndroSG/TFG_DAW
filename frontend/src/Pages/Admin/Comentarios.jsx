@@ -14,7 +14,8 @@ import {
   FaUsersCog,
   FaBook,
   FaChartLine,
-  FaFlag
+  FaFlag,
+  FaSignOutAlt
 } from 'react-icons/fa';
 
 const AdminComentarios = () => {
@@ -227,6 +228,22 @@ const AdminComentarios = () => {
             <p className="text-gray-400 text-sm">Administrador</p>
           </div>
         </div>
+        
+        {/* Botón de cerrar sesión */}
+        <motion.button
+          onClick={() => {
+            axios.get('http://localhost/TFG_DAW/backend/controlador/controlador.php?action=desconectar', { withCredentials: true })
+              .finally(() => {
+                navigate('/');
+              });
+          }}
+          whileHover={{ scale: 1.03 }}
+          whileTap={{ scale: 0.97 }}
+          className="mt-4 w-full bg-gradient-to-r from-red-500 to-pink-600 text-white rounded-xl py-2 px-4 font-semibold flex items-center justify-center hover:shadow-lg hover:shadow-red-500/20 transition-all"
+        >
+          <FaSignOutAlt className="mr-2" />
+          Cerrar Sesión
+        </motion.button>
       </div>
     </div>
   );
