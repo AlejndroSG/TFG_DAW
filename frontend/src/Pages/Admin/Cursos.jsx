@@ -21,6 +21,20 @@ import {
   FaSignOutAlt
 } from 'react-icons/fa';
 
+// Función auxiliar para formatear URLs de imágenes
+const formatImageUrl = (imgPath) => {
+  if (!imgPath) return 'http://localhost/TFG_DAW/frontend/src/img/imgCursos/default.jpg';
+  if (imgPath.startsWith('http')) return imgPath;
+  
+  // Eliminar ./ al principio si existe
+  const cleanPath = imgPath.startsWith('./') ? imgPath.substring(2) : imgPath;
+  // Asegurarse de que la ruta comience con /
+  const normalizedPath = cleanPath.startsWith('/') ? cleanPath : '/' + cleanPath;
+  
+  return `http://localhost/TFG_DAW/frontend${normalizedPath}`;
+};
+
+// Componente principal de Admin Cursos
 const AdminCursos = () => {
   const navigate = useNavigate();
   const [userData, setUserData] = useState(null);
@@ -291,6 +305,7 @@ const AdminCursos = () => {
   // Componente modal para editar/crear curso
   // Modal como componente separado y memorizado para evitar re-renderizados innecesarios
   const ModalCurso = React.memo(({ curso, onGuardar, onCerrar }) => {
+
     // Estado local del formulario dentro del modal
     const [formData, setFormData] = useState({
       id_curso: curso?.id || '',
@@ -377,7 +392,8 @@ const AdminCursos = () => {
           // Actualizar solo el estado local del formulario
           setFormData(prev => ({
             ...prev,
-            imagen: response.data.ruta
+            imagen: response.data.ruta,
+            imgCurso: response.data.ruta // Asegurarnos de que ambos campos estén actualizados
           }));
         } else {
           console.error('Error al subir imagen:', response.data.error);
@@ -411,7 +427,7 @@ const AdminCursos = () => {
           contenido: formData.contenido,
           publicado: formData.publicado ? 1 : 0,
           destacado: formData.destacado ? 1 : 0,
-          imagen: formData.imagen,
+          imgCurso: formData.imagen, // Corregido para coincidir con el nombre en el backend
           precio: formData.precio
         };
         
@@ -579,7 +595,7 @@ const AdminCursos = () => {
                 {/* Vista previa de imagen */}
                 <div className="mt-4">
                   <img 
-                    src={imagenPreview || (formData.imgCurso ? (formData.imgCurso.startsWith('http') ? formData.imgCurso : `http://localhost/TFG_DAW/frontend${formData.imgCurso.replace('.', '')}`) : 'http://localhost/TFG_DAW/frontend/src/img/imgCursos/default.jpg')} 
+                    src={imagenPreview || formatImageUrl(formData.imgCurso)} 
                     alt="Vista previa del curso" 
                     className="rounded-xl max-h-48 max-w-full object-contain bg-gray-800 border border-gray-700 p-2"
                   />
@@ -767,7 +783,7 @@ const AdminCursos = () => {
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                onClick={() => handleAbrirModal()}
+                onClick={() => abrirModal()}
                 className="bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl px-6 py-3 font-semibold flex items-center justify-center hover:shadow-lg hover:shadow-purple-500/20 transition-all w-full md:w-auto"
               >
                 <FaPlus className="mr-2" />
@@ -789,7 +805,7 @@ const AdminCursos = () => {
                     {/* Imagen del curso */}
                     <div className="relative h-48 overflow-hidden">
                       <img
-                        src={curso.imgCurso ? `http://localhost/TFG_DAW/frontend${curso.imgCurso.replace('.', '')}` : 'http://localhost/TFG_DAW/frontend/src/img/imgCursos/default.jpg'}
+                        src={formatImageUrl(curso.imgCurso)}
                         alt={curso.titulo}
                         className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
                       />

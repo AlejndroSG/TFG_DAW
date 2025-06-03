@@ -18,11 +18,17 @@ const Curso = () => {
   const [cursosInscritos, setCursosInscritos] = useState([]);
 
   const getImageUrl = (relativePath) => {
-    // Si la ruta empieza con ./ o ../, la convertimos a una ruta absoluta
-    if (relativePath?.startsWith('./')) {
-      return relativePath.replace('./', '/');
+    if (!relativePath) {
+      return 'http://localhost/TFG_DAW/frontend/src/img/imgCursos/default.jpg';
     }
-    return relativePath;
+    
+    // Si ya es una URL completa, la devolvemos tal cual
+    if (relativePath.startsWith('http')) {
+      return relativePath;
+    }
+    
+    // Construimos la URL completa para rutas relativas
+    return `http://localhost/TFG_DAW/frontend${relativePath}`;
   };
 
   const tecnologiaImagenes = {

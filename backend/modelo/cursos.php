@@ -159,7 +159,7 @@ class Cursos {
         $precio = isset($datos['precio']) ? $datos['precio'] : 0;
         $duracion = isset($datos['duracion']) ? $datos['duracion'] : 0;
         $tipo_curso = isset($datos['tipo_curso']) ? $datos['tipo_curso'] : 'Básico';
-        $imgCurso = isset($datos['imgCurso']) ? $datos['imgCurso'] : './src/img/imgCursos/default.jpg';
+        $imgCurso = isset($datos['imgCurso']) ? $datos['imgCurso'] : '/src/img/imgCursos/default.jpg';
         
         // Insertar el nuevo curso
         $sentencia = "INSERT INTO cursos (titulo, descripcion, precio, duracion, id_profesor, tipo_Curso, imgCurso) 

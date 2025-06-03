@@ -206,7 +206,7 @@ const Cursos = () => {
                   {/* Imagen del curso con efecto de superposición */}
                   <div className="relative h-52 overflow-hidden">
                     <img
-                      src={curso.imgCurso}
+                      src={curso.imgCurso ? `http://localhost/TFG_DAW/frontend${curso.imgCurso}` : 'http://localhost/TFG_DAW/frontend/src/img/imgCursos/default.jpg'}
                       alt={curso.titulo}
                       className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
                     />
