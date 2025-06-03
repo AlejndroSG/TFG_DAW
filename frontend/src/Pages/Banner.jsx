@@ -106,7 +106,7 @@ const Banner = () => {
       }
     };
 
-    crearMeteoros(20);
+    crearMeteoros(10);
 
     const dibujarMeteoros = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
