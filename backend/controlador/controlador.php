@@ -316,22 +316,197 @@
         echo json_encode($cursos);
     }
 
+    // Función para subir imágenes de cursos
+    function subirImagenCurso() {
+        // Verificar permisos de administrador
+        if (!isset($_SESSION['tipo_usuario'])) {
+            echo json_encode([
+                'error' => 'No hay sesión activa'
+            ]);
+            exit;
+        }
+        
+        $tipo = strtolower($_SESSION['tipo_usuario']);
+        if ($tipo !== 'administrador' && $tipo !== 'admin') {
+            echo json_encode([
+                'error' => 'No tienes permiso para realizar esta acción'
+            ]);
+            exit;
+        }
+        
+        if (!isset($_FILES['imagen']) || $_FILES['imagen']['error'] !== UPLOAD_ERR_OK) {
+            echo json_encode([
+                'error' => 'Error al subir la imagen'
+            ]);
+            exit;
+        }
+        
+        $file = $_FILES['imagen'];
+        $filename = $file['name'];
+        $tmp_name = $file['tmp_name'];
+        $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+        
+        // Validar extensión
+        $valid_extensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+        if (!in_array($ext, $valid_extensions)) {
+            echo json_encode([
+                'error' => 'Formato de imagen no válido. Se permiten: ' . implode(', ', $valid_extensions)
+            ]);
+            exit;
+        }
+        
+        // Generar nombre único
+        $new_filename = uniqid('curso_') . '.' . $ext;
+        $upload_path = '../../frontend/src/img/imgCursos/' . $new_filename;
+        
+        if (move_uploaded_file($tmp_name, $upload_path)) {
+            echo json_encode([
+                'success' => true,
+                'ruta' => '/src/img/imgCursos/' . $new_filename,
+                'mensaje' => 'Imagen subida correctamente'
+            ]);
+        } else {
+            echo json_encode([
+                'error' => 'Error al guardar la imagen'
+            ]);
+        }
+    }
+    
+    // Función para crear o actualizar un curso
+    function guardarCurso() {
+        // Verificar permisos de administrador
+        if (!isset($_SESSION['tipo_usuario'])) {
+            echo json_encode([
+                'error' => 'No hay sesión activa'
+            ]);
+            exit;
+        }
+        
+        $tipo = strtolower($_SESSION['tipo_usuario']);
+        if ($tipo !== 'administrador' && $tipo !== 'admin') {
+            echo json_encode([
+                'error' => 'No tienes permiso para realizar esta acción'
+            ]);
+            exit;
+        }
+        
+        // Obtener datos del cuerpo de la petición
+        $datos = json_decode(file_get_contents('php://input'), true);
+        
+        if (!isset($datos['titulo']) || empty($datos['titulo'])) {
+            echo json_encode([
+                'error' => 'El título del curso es obligatorio'
+            ]);
+            exit;
+        }
+        
+        require_once("../modelo/cursos.php");
+        $modeloCursos = new Cursos();
+        
+        // Si tiene ID, es una actualización
+        if (isset($datos['id']) && !empty($datos['id'])) {
+            $resultado = $modeloCursos->actualizarCurso($datos);
+        } else {
+            // Es un nuevo curso
+            $resultado = $modeloCursos->crearCurso($datos);
+        }
+        
+        echo json_encode($resultado);
+    }
+    
+    // Función para cambiar estado de publicación de un curso
+    function cambiarEstadoCurso() {
+        // Verificar permisos de administrador
+        if (!isset($_SESSION['tipo_usuario'])) {
+            echo json_encode([
+                'error' => 'No hay sesión activa'
+            ]);
+            exit;
+        }
+        
+        $tipo = strtolower($_SESSION['tipo_usuario']);
+        if ($tipo !== 'administrador' && $tipo !== 'admin') {
+            echo json_encode([
+                'error' => 'No tienes permiso para realizar esta acción'
+            ]);
+            exit;
+        }
+        
+        // Obtener datos del cuerpo de la petición
+        $datos = json_decode(file_get_contents('php://input'), true);
+        
+        if (!isset($datos['id']) || empty($datos['id'])) {
+            echo json_encode([
+                'error' => 'ID de curso no proporcionado'
+            ]);
+            exit;
+        }
+        
+        if (!isset($datos['campo']) || !in_array($datos['campo'], ['publicado', 'destacado'])) {
+            echo json_encode([
+                'error' => 'Campo de actualización no válido'
+            ]);
+            exit;
+        }
+        
+        require_once("../modelo/cursos.php");
+        $modeloCursos = new Cursos();
+        $resultado = $modeloCursos->cambiarEstadoCurso($datos['id'], $datos['campo'], $datos['valor']);
+        
+        echo json_encode($resultado);
+    }
+    
+    // Función para eliminar un curso
+    function eliminarCurso() {
+        // Verificar permisos de administrador
+        if (!isset($_SESSION['tipo_usuario'])) {
+            echo json_encode([
+                'error' => 'No hay sesión activa'
+            ]);
+            exit;
+        }
+        
+        $tipo = strtolower($_SESSION['tipo_usuario']);
+        if ($tipo !== 'administrador' && $tipo !== 'admin') {
+            echo json_encode([
+                'error' => 'No tienes permiso para realizar esta acción'
+            ]);
+            exit;
+        }
+        
+        // Obtener datos del cuerpo de la petición
+        $datos = json_decode(file_get_contents('php://input'), true);
+        
+        if (!isset($datos['id']) || empty($datos['id'])) {
+            echo json_encode([
+                'error' => 'ID de curso no proporcionado'
+            ]);
+            exit;
+        }
+        
+        require_once("../modelo/cursos.php");
+        $modeloCursos = new Cursos();
+        $resultado = $modeloCursos->eliminarCurso($datos['id']);
+        
+        echo json_encode($resultado);
+    }
+
     // Si no ha sido iniciado el action
     if(isset($_REQUEST["action"])){
         $action = $_REQUEST["action"];
         
-        // Obtener la función correspondiente
-        $function = $action;
-        
-        // Verificar si la función existe
-        if (function_exists($function)) {
-            $function();
-            exit();
+        // Ejecutar función según la acción
+        if(function_exists($action)){
+            // No es necesario iniciar sesión aquí, ya se inicia al principio del archivo
+            $action();
+        } else {
+            // Si la acción no existe, devolver error 404
+            header("HTTP/1.1 404 Not Found");
+            echo json_encode(["error" => "Acción no válida: " . htmlspecialchars($action)]);
         }
+    } else {
+        // Si no se especificó ninguna acción
+        header("HTTP/1.1 400 Bad Request");
+        echo json_encode(["error" => "No se especificó ninguna acción"]);
     }
-
-    // Si llegamos aquí, es que la acción no existe
-    header("HTTP/1.1 404 Not Found");
-    echo json_encode(["error" => "Acción no válida: " . htmlspecialchars($_REQUEST["action"] ?? '')]);
-    exit();
 ?>

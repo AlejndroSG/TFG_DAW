@@ -27,7 +27,8 @@ const AdminCursos = () => {
   const [cursos, setCursos] = useState([]);
   const [filtro, setFiltro] = useState('');
   const [tipoFiltro, setTipoFiltro] = useState('todos');
-  const [editandoCurso, setEditandoCurso] = useState(null);
+  const [editandoCurso, setEditandoCurso] = useState({});
+  const [formValues, setFormValues] = useState({});
   const [mostrarModal, setMostrarModal] = useState(false);
   const [ordenarPor, setOrdenarPor] = useState('recientes');
 
@@ -93,58 +94,238 @@ const AdminCursos = () => {
   };
 
   const handleAbrirModal = (curso = null) => {
-    setEditandoCurso(curso || {
+    const cursoData = curso ? {
+      // Para editar, asegurarse de usar el campo id_curso como id
+      id_curso: curso.id_curso || curso.id, // Primero intentamos id_curso, luego id
+      titulo: curso.titulo || '',
+      descripcion: curso.descripcion || '',
+      imgCurso: curso.imgCurso || '',
+      precio: parseFloat(curso.precio) || 0,
+      profesor: curso.profesor || '',
+      duracion: parseInt(curso.duracion) || 0,
+      tipo_curso: curso.tipo_curso || 'Principiante',
+      publicado: !!curso.publicado,
+      destacado: !!curso.destacado,
+      id_profesor: curso.id_profesor || 3 // Valor por defecto para profesor
+    } : {
+      // Para crear nuevo
       titulo: '',
       descripcion: '',
-      imgCurso: 'https://placehold.co/600x400/2a2a2a/purple?text=Nuevo+Curso',
+      imgCurso: '',
       precio: 0,
       profesor: '',
       duracion: 0,
       tipo_curso: 'Principiante',
       publicado: false,
-      destacado: false
-    });
+      destacado: false,
+      id_profesor: 3 // Valor por defecto para profesor
+    };
+    
+    // Actualizamos ambos estados con los mismos datos iniciales
+    setEditandoCurso(cursoData);
+    setFormValues(cursoData);
     setMostrarModal(true);
+    // Reiniciar vista previa de imagen
+    setImagenPreview(null);
+    console.log('Curso a editar:', cursoData);
   };
 
-  const handleGuardarCurso = () => {
-    // Actualizar curso existente o crear uno nuevo
-    if (editandoCurso.id) {
-      // Si es un curso existente, actualizarlo en el array
-      setCursos(cursos.map(c => c.id === editandoCurso.id ? editandoCurso : c));
-    } else {
-      // Si es un curso nuevo, agregarlo al array con un id simulado
-      const nuevoId = Math.max(...cursos.map(c => c.id), 0) + 1;
-      const nuevoCurso = {
-        ...editandoCurso,
-        id: nuevoId,
-        fecha_creacion: new Date().toISOString().split('T')[0],
-        estudiantes: 0,
-        valoracion: 0,
-        modulos: 0
-      };
-      setCursos([...cursos, nuevoCurso]);
+  // Subir imagen del curso
+  const [subiendoImagen, setSubiendoImagen] = useState(false);
+  const [imagenPreview, setImagenPreview] = useState(null);
+  const fileInputRef = React.useRef(null);
+  
+  const handleSubirImagen = async (file) => {
+    if (!file) return;
+    
+    setSubiendoImagen(true);
+    
+    try {
+      // Crear un objeto FormData para enviar el archivo
+      const formData = new FormData();
+      formData.append('imagen', file);
+      
+      // Realizar la petición para subir la imagen
+      const response = await axios.post(
+        'http://localhost/TFG_DAW/backend/controlador/controlador.php?action=subirImagenCurso',
+        formData,
+        { 
+          withCredentials: true,
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        }
+      );
+      
+      if (response.data.success) {
+        // Actualizar la ruta de la imagen en el estado del curso
+        const rutaImagen = `http://localhost/TFG_DAW/frontend${response.data.ruta}`;
+        // Actualizar en el estado separado para el formulario
+        setFormValues(prev => ({...prev, imgCurso: rutaImagen}));
+        console.log('Imagen subida correctamente:', rutaImagen);
+      } else if (response.data.error) {
+        console.error('Error al subir imagen:', response.data.error);
+        alert('Error al subir la imagen: ' + response.data.error);
+      }
+    } catch (error) {
+      console.error('Error al subir la imagen:', error);
+      alert('Error al subir la imagen. Intente nuevamente.');
+    } finally {
+      setSubiendoImagen(false);
+    }
+  };
+  
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    // Mostrar preview de la imagen
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImagenPreview(reader.result);
+    };
+    reader.readAsDataURL(file);
+    
+    // Subir la imagen al servidor
+    handleSubirImagen(file);
+  };
+  
+  const handleClickImagenBtn = () => {
+    fileInputRef.current.click();
+  };
+  
+  // Guardar curso (crear o actualizar)
+  const handleGuardarCurso = async () => {
+    if (!formValues.titulo) {
+      alert('El título del curso es obligatorio');
+      return;
     }
     
-    // Cerrar modal
-    setMostrarModal(false);
+    try {
+      setLoading(true);
+      
+      // Preparar datos finales a enviar
+      const datosCurso = {
+        ...formValues
+      };
+      
+      // Asegurar que el id_curso se mapea a id para el backend
+      if (formValues.id_curso) {
+        datosCurso.id = formValues.id_curso;
+      }
+      
+      console.log('Enviando datos al servidor:', datosCurso);
+      
+      // Enviar datos al servidor
+      const response = await axios.post(
+        'http://localhost/TFG_DAW/backend/controlador/controlador.php?action=guardarCurso',
+        datosCurso,
+        { withCredentials: true }
+      );
+      
+      if (response.data.success) {
+        // Recargar la lista de cursos para obtener los datos actualizados
+        await cargarCursos();
+        setMostrarModal(false);
+        
+        // Mostrar mensaje de éxito
+        alert(response.data.mensaje);
+      } else {
+        console.error('Error al guardar el curso:', response.data.error);
+        alert('Error al guardar el curso: ' + response.data.error);
+      }
+    } catch (error) {
+      console.error('Error al guardar el curso:', error);
+      alert('Error al guardar el curso. Intente nuevamente.');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleCambioEstado = (id) => {
-    setCursos(cursos.map(curso => 
-      curso.id === id ? { ...curso, publicado: !curso.publicado } : curso
-    ));
+  const handleCambioEstado = async (id) => {
+    try {
+      const curso = cursos.find(c => c.id === id);
+      if (!curso) return;
+      
+      const nuevoEstado = !curso.publicado;
+      
+      // Enviar solicitud al servidor
+      const response = await axios.post(
+        'http://localhost/TFG_DAW/backend/controlador/controlador.php?action=cambiarEstadoCurso',
+        {
+          id: id,
+          campo: 'publicado',
+          valor: nuevoEstado
+        },
+        { withCredentials: true }
+      );
+      
+      if (response.data.success) {
+        // Actualizar la lista de cursos con los datos actualizados
+        await cargarCursos();
+      } else {
+        console.error('Error al cambiar el estado del curso:', response.data.error);
+        alert('Error al cambiar el estado del curso: ' + response.data.error);
+      }
+    } catch (error) {
+      console.error('Error al cambiar el estado del curso:', error);
+      alert('Error al cambiar el estado del curso. Intente nuevamente.');
+    }
   };
 
-  const handleCambioDestacado = (id) => {
-    setCursos(cursos.map(curso => 
-      curso.id === id ? { ...curso, destacado: !curso.destacado } : curso
-    ));
+  const handleCambioDestacado = async (id) => {
+    try {
+      const curso = cursos.find(c => c.id === id);
+      if (!curso) return;
+      
+      const nuevoEstado = !curso.destacado;
+      
+      // Enviar solicitud al servidor
+      const response = await axios.post(
+        'http://localhost/TFG_DAW/backend/controlador/controlador.php?action=cambiarEstadoCurso',
+        {
+          id: id,
+          campo: 'destacado',
+          valor: nuevoEstado
+        },
+        { withCredentials: true }
+      );
+      
+      if (response.data.success) {
+        // Actualizar la lista de cursos con los datos actualizados
+        await cargarCursos();
+      } else {
+        console.error('Error al cambiar el estado destacado del curso:', response.data.error);
+        alert('Error al cambiar el estado destacado del curso: ' + response.data.error);
+      }
+    } catch (error) {
+      console.error('Error al cambiar el estado destacado del curso:', error);
+      alert('Error al cambiar el estado destacado del curso. Intente nuevamente.');
+    }
   };
 
-  const handleEliminarCurso = (id) => {
+  const handleEliminarCurso = async (id) => {
     if (window.confirm('¿Estás seguro de que deseas eliminar este curso? Esta acción no se puede deshacer.')) {
-      setCursos(cursos.filter(curso => curso.id !== id));
+      try {
+        // Enviar solicitud al servidor
+        const response = await axios.post(
+          'http://localhost/TFG_DAW/backend/controlador/controlador.php?action=eliminarCurso',
+          { id: id },
+          { withCredentials: true }
+        );
+        
+        if (response.data.success) {
+          // Actualizar la lista de cursos eliminando el curso
+          setCursos(cursos.filter(curso => curso.id !== id));
+          alert('Curso eliminado correctamente');
+        } else {
+          console.error('Error al eliminar el curso:', response.data.error);
+          alert('Error al eliminar el curso: ' + response.data.error);
+        }
+      } catch (error) {
+        console.error('Error al eliminar el curso:', error);
+        alert('Error al eliminar el curso. Intente nuevamente.');
+      }
     }
   };
 
@@ -246,7 +427,7 @@ const AdminCursos = () => {
           className="bg-gray-800 rounded-2xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto"
         >
           <h2 className="text-2xl font-bold text-white mb-6">
-            {editandoCurso.id ? 'Editar Curso' : 'Nuevo Curso'}
+            {formValues.id_curso ? 'Editar Curso' : 'Nuevo Curso'}
           </h2>
           
           <div className="space-y-4">
@@ -255,8 +436,11 @@ const AdminCursos = () => {
                 <label className="block text-gray-300 mb-2">Título del Curso</label>
                 <input 
                   type="text" 
-                  value={editandoCurso.titulo || ''} 
-                  onChange={(e) => setEditandoCurso({...editandoCurso, titulo: e.target.value})}
+                  value={formValues.titulo || ''} 
+                  onChange={(e) => {
+                    const nuevoValor = e.target.value;
+                    setFormValues(prev => ({...prev, titulo: nuevoValor}));
+                  }}
                   className="w-full bg-gray-700 border border-gray-600 rounded-xl p-3 text-white focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all"
                 />
               </div>
@@ -265,8 +449,11 @@ const AdminCursos = () => {
                 <label className="block text-gray-300 mb-2">Descripción</label>
                 <textarea 
                   rows="4"
-                  value={editandoCurso.descripcion || ''} 
-                  onChange={(e) => setEditandoCurso({...editandoCurso, descripcion: e.target.value})}
+                  value={formValues.descripcion || ''} 
+                  onChange={(e) => {
+                    const nuevoValor = e.target.value;
+                    setFormValues(prev => ({...prev, descripcion: nuevoValor}));
+                  }}
                   className="w-full bg-gray-700 border border-gray-600 rounded-xl p-3 text-white focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all"
                 />
               </div>
@@ -277,8 +464,11 @@ const AdminCursos = () => {
                   type="number"
                   min="0"
                   step="0.01"
-                  value={editandoCurso.precio || 0} 
-                  onChange={(e) => setEditandoCurso({...editandoCurso, precio: parseFloat(e.target.value)})}
+                  value={formValues.precio || 0} 
+                  onChange={(e) => {
+                    const nuevoValor = parseFloat(e.target.value);
+                    setFormValues(prev => ({...prev, precio: nuevoValor}));
+                  }}
                   className="w-full bg-gray-700 border border-gray-600 rounded-xl p-3 text-white focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all"
                 />
               </div>
@@ -288,8 +478,11 @@ const AdminCursos = () => {
                 <input 
                   type="number"
                   min="1"
-                  value={editandoCurso.duracion || 1} 
-                  onChange={(e) => setEditandoCurso({...editandoCurso, duracion: parseInt(e.target.value)})}
+                  value={formValues.duracion || 1} 
+                  onChange={(e) => {
+                    const nuevoValor = parseInt(e.target.value);
+                    setFormValues(prev => ({...prev, duracion: nuevoValor}));
+                  }}
                   className="w-full bg-gray-700 border border-gray-600 rounded-xl p-3 text-white focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all"
                 />
               </div>
@@ -298,8 +491,11 @@ const AdminCursos = () => {
                 <label className="block text-gray-300 mb-2">Profesor</label>
                 <input 
                   type="text" 
-                  value={editandoCurso.profesor || ''} 
-                  onChange={(e) => setEditandoCurso({...editandoCurso, profesor: e.target.value})}
+                  value={formValues.profesor || ''} 
+                  onChange={(e) => {
+                    const nuevoValor = e.target.value;
+                    setFormValues(prev => ({...prev, profesor: nuevoValor}));
+                  }}
                   className="w-full bg-gray-700 border border-gray-600 rounded-xl p-3 text-white focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all"
                 />
               </div>
@@ -307,8 +503,11 @@ const AdminCursos = () => {
               <div>
                 <label className="block text-gray-300 mb-2">Tipo de Curso</label>
                 <select 
-                  value={editandoCurso.tipo_curso || 'Principiante'} 
-                  onChange={(e) => setEditandoCurso({...editandoCurso, tipo_curso: e.target.value})}
+                  value={formValues.tipo_curso || 'Principiante'} 
+                  onChange={(e) => {
+                    const nuevoValor = e.target.value;
+                    setFormValues(prev => ({...prev, tipo_curso: nuevoValor}));
+                  }}
                   className="w-full bg-gray-700 border border-gray-600 rounded-xl p-3 text-white focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all"
                 >
                   <option value="Principiante">Principiante</option>
@@ -318,20 +517,49 @@ const AdminCursos = () => {
               </div>
               
               <div className="md:col-span-2">
-                <label className="block text-gray-300 mb-2">URL Imagen (Portada)</label>
+                <label className="block text-gray-300 mb-2">Imagen del Curso</label>
                 <div className="flex gap-3">
                   <input 
                     type="text" 
-                    value={editandoCurso.imgCurso || ''} 
-                    onChange={(e) => setEditandoCurso({...editandoCurso, imgCurso: e.target.value})}
+                    value={formValues.imgCurso || ''} 
+                    onChange={(e) => {
+                    const nuevoValor = e.target.value;
+                    setFormValues(prev => ({...prev, imgCurso: nuevoValor}));
+                  }}
                     className="flex-1 bg-gray-700 border border-gray-600 rounded-xl p-3 text-white focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all"
+                    placeholder="Ruta de la imagen o sube una nueva"
                   />
                   <button 
-                    className="bg-purple-600 text-white rounded-xl px-4 hover:bg-purple-500 transition-colors"
-                    title="Seleccionar imagen"
+                    type="button"
+                    onClick={handleClickImagenBtn}
+                    className="bg-purple-600 text-white rounded-xl px-4 hover:bg-purple-500 transition-colors flex items-center justify-center"
+                    title="Subir imagen"
+                    disabled={subiendoImagen}
                   >
-                    <FaImage />
+                    {subiendoImagen ? (
+                      <div className="w-5 h-5 border-2 border-t-transparent border-white border-solid rounded-full animate-spin"></div>
+                    ) : (
+                      <FaImage />
+                    )}
                   </button>
+                  
+                  {/* Input de archivo oculto */}
+                  <input 
+                    type="file" 
+                    ref={fileInputRef}
+                    onChange={handleFileChange}
+                    accept="image/*"
+                    className="hidden"
+                  />
+                </div>
+                
+                {/* Vista previa de imagen */}
+                <div className="mt-4">
+                  <img 
+                    src={imagenPreview || (formValues.imgCurso ? (formValues.imgCurso.startsWith('http') ? formValues.imgCurso : `http://localhost/TFG_DAW/frontend${formValues.imgCurso.replace('.', '')}`) : 'http://localhost/TFG_DAW/frontend/src/img/imgCursos/default.jpg')} 
+                    alt="Vista previa del curso" 
+                    className="rounded-xl max-h-48 max-w-full object-contain bg-gray-800 border border-gray-700 p-2"
+                  />
                 </div>
               </div>
               
@@ -340,8 +568,8 @@ const AdminCursos = () => {
                   <input 
                     type="checkbox" 
                     id="publicado" 
-                    checked={editandoCurso.publicado || false} 
-                    onChange={(e) => setEditandoCurso({...editandoCurso, publicado: e.target.checked})}
+                    checked={formValues.publicado || false} 
+                    onChange={(e) => setFormValues(prev => ({...prev, publicado: e.target.checked}))}
                     className="w-5 h-5 rounded border-gray-600 text-purple-600 focus:ring-purple-500"
                   />
                   <label htmlFor="publicado" className="ml-2 text-gray-300">Curso publicado</label>
@@ -351,8 +579,8 @@ const AdminCursos = () => {
                   <input 
                     type="checkbox" 
                     id="destacado" 
-                    checked={editandoCurso.destacado || false} 
-                    onChange={(e) => setEditandoCurso({...editandoCurso, destacado: e.target.checked})}
+                    checked={formValues.destacado || false} 
+                    onChange={(e) => setFormValues(prev => ({...prev, destacado: e.target.checked}))}
                     className="w-5 h-5 rounded border-gray-600 text-purple-600 focus:ring-purple-500"
                   />
                   <label htmlFor="destacado" className="ml-2 text-gray-300">Curso destacado</label>
@@ -360,7 +588,7 @@ const AdminCursos = () => {
               </div>
             </div>
             
-            {editandoCurso.id && (
+            {formValues.id_curso && (
               <div className="mt-6 pt-6 border-t border-gray-700">
                 <h3 className="text-xl font-bold text-white mb-4">Módulos y Lecciones</h3>
                 <button className="bg-purple-600/20 border border-purple-600/50 text-purple-400 rounded-xl p-3 w-full hover:bg-purple-600/30 transition-all">
@@ -473,7 +701,7 @@ const AdminCursos = () => {
                     {/* Imagen del curso */}
                     <div className="relative h-48 overflow-hidden">
                       <img
-                        src={curso.imgCurso}
+                        src={curso.imgCurso ? `http://localhost/TFG_DAW/frontend${curso.imgCurso.replace('.', '')}` : 'http://localhost/TFG_DAW/frontend/src/img/imgCursos/default.jpg'}
                         alt={curso.titulo}
                         className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
                       />
