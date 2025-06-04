@@ -98,5 +98,81 @@
                 return ["error" => "Error al registrar el usuario: " . $this->conn->error];
             }
         }
+        
+        // Función para actualizar un usuario existente
+        public function actualizarUsuario($datos) {
+            // Verificar si existe un usuario con el mismo email (excepto el usuario actual)
+            $sentencia = "SELECT COUNT(*) FROM usuarios WHERE email = ? AND id_usuario != ?";
+            $consulta = $this->conn->prepare($sentencia);
+            $consulta->bind_param("si", $datos['email'], $datos['id']);
+            $consulta->bind_result($count);
+            $consulta->execute();
+            $consulta->fetch();
+            $consulta->close();
+            
+            if ($count > 0) {
+                return ["error" => "El email ya está en uso por otro usuario"];
+            }
+            
+            // Actualizar el usuario
+            $activo = isset($datos['activo']) && $datos['activo'] ? 1 : 0;
+            $sentencia = "UPDATE usuarios SET nombre = ?, email = ?, tipo_usuario = ? WHERE id_usuario = ?";
+            $consulta = $this->conn->prepare($sentencia);
+            $consulta->bind_param("sssi", $datos['nombre'], $datos['email'], $datos['tipo_usuario'], $datos['id']);
+            
+            if ($consulta->execute()) {
+                $consulta->close();
+                return [
+                    "success" => true,
+                    "mensaje" => "Usuario actualizado correctamente",
+                    "id" => $datos['id'],
+                    "nombre" => $datos['nombre'],
+                    "email" => $datos['email'],
+                    "tipo_usuario" => $datos['tipo_usuario'],
+                    "activo" => (bool)$activo
+                ];
+            } else {
+                $consulta->close();
+                return ["error" => "Error al actualizar el usuario: " . $this->conn->error];
+            }
+        }
+        
+        // Función para crear un nuevo usuario
+        public function crearUsuario($datos) {
+            // Verificar si ya existe un usuario con el mismo nombre o email
+            $sentencia = "SELECT COUNT(*) FROM usuarios WHERE nombre = ? OR email = ?";
+            $consulta = $this->conn->prepare($sentencia);
+            $consulta->bind_param("ss", $datos['nombre'], $datos['email']);
+            $consulta->bind_result($count);
+            $consulta->execute();
+            $consulta->fetch();
+            $consulta->close();
+            
+            if ($count > 0) {
+                return ["error" => "El nombre de usuario o email ya está en uso"];
+            }
+            
+            // Crear el usuario
+            $sentencia = "INSERT INTO usuarios (nombre, email, contraseña, tipo_usuario) VALUES (?, ?, ?, ?)";
+            $consulta = $this->conn->prepare($sentencia);
+            $consulta->bind_param("ssss", $datos['nombre'], $datos['email'], $datos['password'], $datos['tipo_usuario']);
+            
+            if ($consulta->execute()) {
+                $id = $this->conn->insert_id;
+                $consulta->close();
+                return [
+                    "success" => true,
+                    "mensaje" => "Usuario creado correctamente",
+                    "id" => $id,
+                    "nombre" => $datos['nombre'],
+                    "email" => $datos['email'],
+                    "tipo_usuario" => $datos['tipo_usuario'],
+                    "activo" => true
+                ];
+            } else {
+                $consulta->close();
+                return ["error" => "Error al crear el usuario: " . $this->conn->error];
+            }
+        }
     }
 ?>

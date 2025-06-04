@@ -562,6 +562,43 @@
         echo json_encode($resultado);
     }
 
+    // Función para guardar usuario (crear o actualizar)
+    function guardarUsuario() {
+        // Verificar si el usuario tiene permisos de administrador
+        if (!isset($_SESSION['tipo_usuario']) || (strtolower($_SESSION['tipo_usuario']) !== 'administrador' && strtolower($_SESSION['tipo_usuario']) !== 'admin')) {
+            echo json_encode([
+                'error' => 'No tienes permiso para realizar esta acción'
+            ]);
+            return;
+        }
+        
+        // Obtener datos del formulario
+        $datos = json_decode(file_get_contents('php://input'), true);
+        
+        if (!isset($datos['nombre']) || !isset($datos['email']) || !isset($datos['tipo_usuario'])) {
+            echo json_encode(['error' => 'Datos incompletos']);
+            return;
+        }
+        
+        require_once('../modelo/bd.php');
+        $modelo = new db();
+        
+        // Si tiene ID, es una actualización
+        if (isset($datos['id']) && !empty($datos['id'])) {
+            $resultado = $modelo->actualizarUsuario($datos);
+        } else {
+            // Si no tiene ID, es un nuevo usuario
+            // Para nuevos usuarios necesitamos una contraseña
+            if (!isset($datos['password']) || empty($datos['password'])) {
+                echo json_encode(['error' => 'Se requiere contraseña para crear un usuario nuevo']);
+                return;
+            }
+            $resultado = $modelo->crearUsuario($datos);
+        }
+        
+        echo json_encode($resultado);
+    }
+
     // Si no ha sido iniciado el action
     if(isset($_REQUEST["action"])){
         $action = $_REQUEST["action"];

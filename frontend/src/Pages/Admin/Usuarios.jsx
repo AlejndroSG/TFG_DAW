@@ -97,25 +97,53 @@ const AdminUsuarios = () => {
     setMostrarModal(true);
   };
 
-  const handleGuardarUsuario = () => {
-    // Actualizar usuario existente o crear uno nuevo
-    if (editandoUsuario.id) {
-      // Si es un usuario existente, actualizarlo en el array
-      setUsuarios(usuarios.map(u => u.id === editandoUsuario.id ? editandoUsuario : u));
-    } else {
-      // Si es un usuario nuevo, agregarlo al array con un id simulado
-      const nuevoId = Math.max(...usuarios.map(u => u.id), 0) + 1;
-      const nuevoUsuario = {
-        ...editandoUsuario,
-        id: nuevoId,
-        fecha_registro: new Date().toISOString().split('T')[0],
-        cursos_inscritos: 0
-      };
-      setUsuarios([...usuarios, nuevoUsuario]);
+  const handleGuardarUsuario = async () => {
+    try {
+      // Crear una copia del usuario para no modificar el estado mientras enviamos
+      const usuarioData = {...editandoUsuario};
+      
+      // Enviar datos al servidor
+      const response = await axios({
+        method: 'post',
+        url: 'http://localhost/TFG_DAW/backend/controlador/controlador.php?action=guardarUsuario',
+        data: usuarioData,
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        withCredentials: true
+      });
+      
+      if (response.data.error) {
+        alert(`Error: ${response.data.error}`);
+        return;
+      }
+      
+      if (response.data.success) {
+        // Actualizar la lista de usuarios
+        if (editandoUsuario.id) {
+          // Si es un usuario existente, actualizarlo en el array
+          setUsuarios(usuarios.map(u => u.id === editandoUsuario.id ? {
+            ...u,
+            ...response.data,
+            id: editandoUsuario.id // Aseguramos que el id no cambie
+          } : u));
+        } else {
+          // Si es un usuario nuevo, agregarlo al array
+          const nuevoUsuario = {
+            ...response.data,
+            fecha_registro: new Date().toISOString().split('T')[0],
+            cursos_inscritos: 0
+          };
+          setUsuarios([...usuarios, nuevoUsuario]);
+        }
+        
+        // Cerrar modal
+        setMostrarModal(false);
+      }
+    } catch (error) {
+      console.error('Error al guardar usuario:', error);
+      alert(`Error: ${error.message || 'No se pudo guardar el usuario'}`);
     }
-    
-    // Cerrar modal
-    setMostrarModal(false);
   };
 
   const handleCambioEstado = (id) => {
@@ -219,6 +247,37 @@ const AdminUsuarios = () => {
   // Componente modal para editar/crear usuario
   const ModalUsuario = () => {
     if (!mostrarModal) return null;
+    
+    // Estado local para el formulario, evita refrescos innecesarios
+    const [formData, setFormData] = React.useState({
+      ...editandoUsuario
+    });
+    
+    // Manejador genérico para cambios en campos de texto
+    const handleInputChange = (e) => {
+      const { name, value } = e.target;
+      setFormData(prev => ({
+        ...prev,
+        [name]: value
+      }));
+    };
+    
+    // Manejador para checkbox
+    const handleCheckboxChange = (e) => {
+      const { name, checked } = e.target;
+      setFormData(prev => ({
+        ...prev,
+        [name]: checked
+      }));
+    };
+    
+    // Función para guardar los cambios al estado principal
+    const handleSubmit = () => {
+      // Actualizar el estado principal con los datos del formulario
+      setEditandoUsuario(formData);
+      // Llamar a la función para guardar
+      handleGuardarUsuario();
+    };
 
     return (
       <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50">
@@ -228,7 +287,7 @@ const AdminUsuarios = () => {
           className="bg-gray-800 rounded-2xl p-6 w-full max-w-md"
         >
           <h2 className="text-2xl font-bold text-white mb-6">
-            {editandoUsuario.id ? 'Editar Usuario' : 'Nuevo Usuario'}
+            {formData.id ? 'Editar Usuario' : 'Nuevo Usuario'}
           </h2>
           
           <div className="space-y-4">
@@ -236,8 +295,9 @@ const AdminUsuarios = () => {
               <label className="block text-gray-300 mb-2">Nombre</label>
               <input 
                 type="text" 
-                value={editandoUsuario.nombre || ''} 
-                onChange={(e) => setEditandoUsuario({...editandoUsuario, nombre: e.target.value})}
+                name="nombre"
+                value={formData.nombre || ''} 
+                onChange={handleInputChange}
                 className="w-full bg-gray-700 border border-gray-600 rounded-xl p-3 text-white focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all"
               />
             </div>
@@ -246,8 +306,9 @@ const AdminUsuarios = () => {
               <label className="block text-gray-300 mb-2">Email</label>
               <input 
                 type="email" 
-                value={editandoUsuario.email || ''} 
-                onChange={(e) => setEditandoUsuario({...editandoUsuario, email: e.target.value})}
+                name="email"
+                value={formData.email || ''} 
+                onChange={handleInputChange}
                 className="w-full bg-gray-700 border border-gray-600 rounded-xl p-3 text-white focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all"
               />
             </div>
@@ -255,8 +316,9 @@ const AdminUsuarios = () => {
             <div>
               <label className="block text-gray-300 mb-2">Tipo de Usuario</label>
               <select 
-                value={editandoUsuario.tipo_usuario || 'estudiante'} 
-                onChange={(e) => setEditandoUsuario({...editandoUsuario, tipo_usuario: e.target.value})}
+                name="tipo_usuario"
+                value={formData.tipo_usuario || 'estudiante'} 
+                onChange={handleInputChange}
                 className="w-full bg-gray-700 border border-gray-600 rounded-xl p-3 text-white focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all"
               >
                 <option value="estudiante">Estudiante</option>
@@ -269,14 +331,29 @@ const AdminUsuarios = () => {
               <input 
                 type="checkbox" 
                 id="activo" 
-                checked={editandoUsuario.activo || false} 
-                onChange={(e) => setEditandoUsuario({...editandoUsuario, activo: e.target.checked})}
+                name="activo"
+                checked={formData.activo || false} 
+                onChange={handleCheckboxChange}
                 className="w-5 h-5 rounded border-gray-600 text-purple-600 focus:ring-purple-500"
               />
               <label htmlFor="activo" className="ml-2 text-gray-300">Usuario activo</label>
             </div>
             
-            {editandoUsuario.id && (
+            {!formData.id && (
+              <div>
+                <label className="block text-gray-300 mb-2">Contraseña</label>
+                <input
+                  type="password"
+                  name="password"
+                  value={formData.password || ''}
+                  onChange={handleInputChange}
+                  className="w-full bg-gray-700 border border-gray-600 rounded-xl p-3 text-white focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all"
+                  placeholder="Contraseña para el nuevo usuario"
+                />
+              </div>
+            )}
+            
+            {formData.id && (
               <div>
                 <label className="block text-gray-300 mb-2">Contraseña</label>
                 <button 
@@ -290,7 +367,7 @@ const AdminUsuarios = () => {
           
           <div className="flex gap-3 mt-6">
             <button 
-              onClick={handleGuardarUsuario}
+              onClick={handleSubmit}
               className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl py-3 font-semibold hover:shadow-lg hover:shadow-purple-500/20 transition-all"
             >
               Guardar
