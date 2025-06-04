@@ -75,5 +75,114 @@ class Inscripciones {
         $consulta->close();
         return $inscripciones;
     }
+    
+    // Obtener todos los usuarios inscritos en un curso específico
+    public function obtenerUsuariosPorCurso($id_curso) {
+        try {
+            // Verificamos primero que el curso exista
+            $sentenciaVerificar = "SELECT id_curso FROM cursos WHERE id_curso = ?";
+            $consultaVerificar = $this->conn->prepare($sentenciaVerificar);
+            
+            if ($consultaVerificar === false) {
+                return ["error" => "Error en la consulta de verificación: " . $this->conn->error];
+            }
+            
+            $consultaVerificar->bind_param("i", $id_curso);
+            $consultaVerificar->execute();
+            $consultaVerificar->store_result();
+            
+            if ($consultaVerificar->num_rows === 0) {
+                $consultaVerificar->close();
+                return ["error" => "El curso especificado no existe"];
+            }
+            $consultaVerificar->close();
+            
+            // Ahora obtenemos los usuarios inscritos
+            $sentencia = "SELECT u.id_usuario, u.nombre, u.nombre AS username, u.email, i.id_inscripcion, i.fecha_inscripcion 
+                        FROM inscripciones i 
+                        JOIN usuarios u ON i.id_usuario = u.id_usuario 
+                        WHERE i.id_curso = ? 
+                        ORDER BY i.fecha_inscripcion DESC";
+            
+            $consulta = $this->conn->prepare($sentencia);
+            
+            if ($consulta === false) {
+                return ["error" => "Error en la consulta: " . $this->conn->error];
+            }
+            
+            $consulta->bind_param("i", $id_curso);
+            $consulta->execute();
+            
+            $resultado = $consulta->get_result();
+            $usuarios = array();
+            
+            while($fila = $resultado->fetch_assoc()) {
+                $usuarios[] = array(
+                    "id_usuario" => $fila["id_usuario"],
+                    "nombre" => $fila["nombre"],
+                    "username" => $fila["username"],
+                    "email" => $fila["email"],
+                    "id_inscripcion" => $fila["id_inscripcion"],
+                    "fecha_inscripcion" => $fila["fecha_inscripcion"]
+                );
+            }
+            
+            $consulta->close();
+            return $usuarios;
+            
+        } catch (Exception $e) {
+            return ["error" => "Error al obtener usuarios inscritos: " . $e->getMessage()];
+        }
+    }
+    
+    // Eliminar la inscripción de un usuario a un curso
+    public function eliminarInscripcion($id_usuario, $id_curso) {
+        try {
+            // Verificar que la inscripción existe
+            $sentenciaVerificar = "SELECT id_inscripcion FROM inscripciones WHERE id_usuario = ? AND id_curso = ?";
+            $consultaVerificar = $this->conn->prepare($sentenciaVerificar);
+            
+            if ($consultaVerificar === false) {
+                return ["success" => false, "error" => "Error en la consulta de verificación: " . $this->conn->error];
+            }
+            
+            $consultaVerificar->bind_param("ii", $id_usuario, $id_curso);
+            $consultaVerificar->execute();
+            $consultaVerificar->store_result();
+            
+            if ($consultaVerificar->num_rows === 0) {
+                $consultaVerificar->close();
+                return ["success" => false, "error" => "No se encontró la inscripción"];
+            }
+            $consultaVerificar->close();
+            
+            // Eliminar la inscripción
+            $sentencia = "DELETE FROM inscripciones WHERE id_usuario = ? AND id_curso = ?";
+            $consulta = $this->conn->prepare($sentencia);
+            
+            if ($consulta === false) {
+                return ["success" => false, "error" => "Error en la consulta de eliminación: " . $this->conn->error];
+            }
+            
+            $consulta->bind_param("ii", $id_usuario, $id_curso);
+            $resultado = $consulta->execute();
+            
+            if ($resultado) {
+                $filas_afectadas = $consulta->affected_rows;
+                $consulta->close();
+                
+                if ($filas_afectadas > 0) {
+                    return ["success" => true, "message" => "Inscripción eliminada correctamente"];
+                } else {
+                    return ["success" => false, "error" => "No se pudo eliminar la inscripción"];
+                }
+            } else {
+                $consulta->close();
+                return ["success" => false, "error" => "Error al eliminar la inscripción: " . $this->conn->error];
+            }
+        } catch (Exception $e) {
+            return ["success" => false, "error" => "Error al eliminar la inscripción: " . $e->getMessage()];
+        }
+    }
 }
 ?>

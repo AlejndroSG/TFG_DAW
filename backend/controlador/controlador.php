@@ -490,6 +490,77 @@
         
         echo json_encode($resultado);
     }
+    
+    // Función para obtener los usuarios inscritos en un curso específico
+    function obtenerUsuariosPorCurso() {
+        // Verificar permisos de administrador
+        if (!isset($_SESSION['tipo_usuario'])) {
+            echo json_encode([
+                'error' => 'No hay sesión activa'
+            ]);
+            exit;
+        }
+        
+        $tipo = strtolower($_SESSION['tipo_usuario']);
+        if ($tipo !== 'administrador' && $tipo !== 'admin') {
+            echo json_encode([
+                'error' => 'No tienes permiso para realizar esta acción'
+            ]);
+            exit;
+        }
+        
+        // Obtener datos del cuerpo de la petición
+        $datos = json_decode(file_get_contents('php://input'), true);
+        
+        if (!isset($datos['id_curso']) || empty($datos['id_curso'])) {
+            echo json_encode([
+                'error' => 'ID de curso no proporcionado'
+            ]);
+            exit;
+        }
+        
+        require_once("../modelo/inscripciones.php");
+        $inscripciones = new Inscripciones();
+        $usuarios = $inscripciones->obtenerUsuariosPorCurso($datos['id_curso']);
+        
+        echo json_encode($usuarios);
+    }
+    
+    // Función para eliminar la inscripción de un usuario a un curso
+    function eliminarInscripcion() {
+        // Verificar permisos de administrador
+        if (!isset($_SESSION['tipo_usuario'])) {
+            echo json_encode([
+                'error' => 'No hay sesión activa'
+            ]);
+            exit;
+        }
+        
+        $tipo = strtolower($_SESSION['tipo_usuario']);
+        if ($tipo !== 'administrador' && $tipo !== 'admin') {
+            echo json_encode([
+                'error' => 'No tienes permiso para realizar esta acción'
+            ]);
+            exit;
+        }
+        
+        // Obtener datos del cuerpo de la petición
+        $datos = json_decode(file_get_contents('php://input'), true);
+        
+        if (!isset($datos['id_usuario']) || empty($datos['id_usuario']) || 
+            !isset($datos['id_curso']) || empty($datos['id_curso'])) {
+            echo json_encode([
+                'error' => 'Datos incompletos para eliminar inscripción'
+            ]);
+            exit;
+        }
+        
+        require_once("../modelo/inscripciones.php");
+        $inscripciones = new Inscripciones();
+        $resultado = $inscripciones->eliminarInscripcion($datos['id_usuario'], $datos['id_curso']);
+        
+        echo json_encode($resultado);
+    }
 
     // Si no ha sido iniciado el action
     if(isset($_REQUEST["action"])){

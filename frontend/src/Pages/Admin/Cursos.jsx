@@ -18,7 +18,10 @@ import {
   FaFilter,
   FaImage,
   FaStar,
-  FaSignOutAlt
+  FaSignOutAlt,
+  FaUsers,
+  FaTimes,
+  FaUserMinus
 } from 'react-icons/fa';
 
 // Función auxiliar para formatear URLs de imágenes
@@ -46,6 +49,11 @@ const AdminCursos = () => {
   const [cursoSeleccionado, setCursoSeleccionado] = useState(null);
   const [mostrarModal, setMostrarModal] = useState(false);
   const [ordenarPor, setOrdenarPor] = useState('recientes');
+  // Estados para la gestión de usuarios inscritos
+  const [mostrarModalUsuarios, setMostrarModalUsuarios] = useState(false);
+  const [cursoUsuarios, setCursoUsuarios] = useState(null);
+  const [usuariosInscritos, setUsuariosInscritos] = useState([]);
+  const [loadingUsuarios, setLoadingUsuarios] = useState(false);
 
   useEffect(() => {
     const comprobarSesion = async () => {
@@ -126,6 +134,79 @@ const AdminCursos = () => {
     setTimeout(() => {
       setCursoSeleccionado(null);
     }, 300);
+  };
+  
+  // Función para abrir el modal de usuarios inscritos
+  const abrirModalUsuarios = async (curso) => {
+    if (!curso) return;
+    
+    setCursoUsuarios(curso);
+    setMostrarModalUsuarios(true);
+    await cargarUsuariosInscritos(curso.id);
+  };
+  
+  // Función para cerrar el modal de usuarios inscritos
+  const cerrarModalUsuarios = () => {
+    setMostrarModalUsuarios(false);
+    setTimeout(() => {
+      setCursoUsuarios(null);
+      setUsuariosInscritos([]);
+    }, 300);
+  };
+  
+  // Función para cargar los usuarios inscritos en un curso
+  const cargarUsuariosInscritos = async (cursoId) => {
+    try {
+      setLoadingUsuarios(true);
+      const response = await axios.post(
+        'http://localhost/TFG_DAW/backend/controlador/controlador.php?action=obtenerUsuariosPorCurso',
+        { id_curso: cursoId },
+        { withCredentials: true }
+      );
+      
+      if (Array.isArray(response.data)) {
+        setUsuariosInscritos(response.data);
+        console.log('Usuarios inscritos:', response.data);
+      } else if (response.data.error) {
+        console.error('Error al cargar usuarios inscritos:', response.data.error);
+      } else {
+        console.error('Formato de respuesta inesperado:', response.data);
+      }
+    } catch (error) {
+      console.error('Error al cargar los usuarios inscritos:', error);
+    } finally {
+      setLoadingUsuarios(false);
+    }
+  };
+  
+  // Función para eliminar la inscripción de un usuario a un curso
+  const eliminarInscripcion = async (usuarioId, cursoId) => {
+    if (window.confirm('¿Estás seguro de que deseas eliminar la inscripción de este usuario? Esta acción no se puede deshacer.')) {
+      try {
+        const response = await axios.post(
+          'http://localhost/TFG_DAW/backend/controlador/controlador.php?action=eliminarInscripcion',
+          { 
+            id_usuario: usuarioId,
+            id_curso: cursoId 
+          },
+          { withCredentials: true }
+        );
+        
+        if (response.data.success) {
+          // Actualizar la lista de usuarios inscritos
+          await cargarUsuariosInscritos(cursoId);
+          // Actualizar el contador de estudiantes en la lista de cursos
+          await cargarCursos();
+          alert('Inscripción eliminada correctamente');
+        } else {
+          console.error('Error al eliminar la inscripción:', response.data.error);
+          alert('Error al eliminar la inscripción: ' + response.data.error);
+        }
+      } catch (error) {
+        console.error('Error al eliminar la inscripción:', error);
+        alert('Error al eliminar la inscripción. Intente nuevamente.');
+      }
+    }
   };
   const fileInputRef = React.useRef(null);
 
@@ -854,7 +935,7 @@ const AdminCursos = () => {
                       </div>
                       
                       {/* Acciones */}
-                      <div className="grid grid-cols-4 gap-2 mt-4 border-t border-gray-700/50 pt-4">
+                      <div className="grid grid-cols-5 gap-2 mt-4 border-t border-gray-700/50 pt-4">
                         <button 
                           onClick={() => abrirModal(curso)}
                           className="flex items-center justify-center p-2 text-purple-400 hover:bg-purple-500/20 rounded-lg transition-colors"
@@ -883,6 +964,13 @@ const AdminCursos = () => {
                           title={curso.destacado ? 'Quitar destacado' : 'Destacar'}
                         >
                           <FaStar />
+                        </button>
+                        <button 
+                          onClick={() => abrirModalUsuarios(curso)}
+                          className="flex items-center justify-center p-2 text-blue-400 hover:bg-blue-500/20 rounded-lg transition-colors"
+                          title="Gestionar usuarios inscritos"
+                        >
+                          <FaUsers />
                         </button>
                         <button 
                           onClick={() => handleEliminarCurso(curso.id)}
@@ -923,6 +1011,81 @@ const AdminCursos = () => {
           onGuardar={handleDespuesDeGuardar} 
           onCerrar={cerrarModal} 
         />
+      )}
+      
+      {/* Modal para gestionar usuarios inscritos */}
+      {mostrarModalUsuarios && cursoUsuarios && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 overflow-y-auto">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-gray-800 rounded-2xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+          >
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-bold text-white">
+                Usuarios inscritos en {cursoUsuarios.titulo}
+              </h2>
+              <button 
+                onClick={cerrarModalUsuarios}
+                className="p-2 text-gray-400 hover:text-white transition-colors"
+              >
+                <FaTimes size={20} />
+              </button>
+            </div>
+            
+            {loadingUsuarios ? (
+              <div className="flex justify-center items-center py-8">
+                <div className="w-10 h-10 border-2 border-t-transparent border-purple-600 border-solid rounded-full animate-spin"></div>
+              </div>
+            ) : (
+              <div>
+                {usuariosInscritos.length > 0 ? (
+                  <div className="space-y-4">
+                    {usuariosInscritos.map((usuario) => (
+                      <div 
+                        key={usuario.id_usuario} 
+                        className="bg-gray-700/50 rounded-xl p-4 flex justify-between items-center"
+                      >
+                        <div className="flex items-center">
+                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-400 to-pink-600 flex items-center justify-center text-white font-bold mr-3">
+                            {usuario.nombre && usuario.nombre[0] || usuario.username && usuario.username[0] || '?'}
+                          </div>
+                          <div>
+                            <p className="font-semibold text-white">{usuario.nombre || usuario.username}</p>
+                            <p className="text-sm text-gray-300">{usuario.email}</p>
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => eliminarInscripcion(usuario.id_usuario, cursoUsuarios.id)}
+                          className="p-2 text-red-400 hover:bg-red-500/20 rounded-lg transition-colors flex items-center"
+                          title="Eliminar inscripción"
+                        >
+                          <FaUserMinus className="mr-1" /> Eliminar inscripción
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="bg-gray-700/30 rounded-xl p-6 text-center text-gray-400">
+                    No hay usuarios inscritos en este curso
+                  </div>
+                )}
+              </div>
+            )}
+            
+            <div className="mt-6 pt-4 border-t border-gray-700/50">
+              <div className="flex justify-between items-center">
+                <span className="text-gray-300">{usuariosInscritos.length} usuarios inscritos</span>
+                <button 
+                  onClick={cerrarModalUsuarios}
+                  className="px-4 py-2 bg-gray-700 text-gray-300 rounded-xl font-medium hover:bg-gray-600 transition-all"
+                >
+                  Cerrar
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        </div>
       )}
     </div>
   );
