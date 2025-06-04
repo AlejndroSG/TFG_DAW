@@ -80,9 +80,16 @@ const Curso = () => {
         setUserData(respuesta.data);
         // Si el usuario está autenticado, obtener sus cursos inscritos
         obtenerCursosInscritos();
+      } else {
+        // Usuario no autenticado, no mostrar error
+        setUserData(null);
+        setInscrito(false);
       }
     } catch (error) {
       console.error('Error al comprobar sesión:', error);
+      // En caso de error, asumimos que el usuario no está autenticado
+      setUserData(null);
+      setInscrito(false);
     }
   };
   
@@ -226,30 +233,47 @@ const Curso = () => {
                     <div className="text-gray-400">/ curso completo</div>
                   </div>
                   <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3">
-                    <motion.button
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={() => navigate(`/curso-visor/${id}`)}
-                      className="px-8 py-3 bg-gradient-to-r from-purple-500 to-purple-700 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-purple-500/20 transition-all duration-300 flex items-center justify-center"
-                    >
-                      <FaPlay className="mr-2" size={14} /> Acceder al Curso
-                    </motion.button>
-                    {!inscrito && (
+                    {userData ? (
+                      // Interfaz para usuarios autenticados
+                      <>
+                        <motion.button
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={() => navigate(`/curso-visor/${id}`)}
+                          className="px-8 py-3 bg-gradient-to-r from-purple-500 to-purple-700 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-purple-500/20 transition-all duration-300 flex items-center justify-center"
+                        >
+                          <FaPlay className="mr-2" size={14} /> Acceder al Curso
+                        </motion.button>
+                        {!inscrito ? (
+                          <motion.button
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={() => navigate(`/pago/${id}`)}
+                            className="px-8 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-purple-500/20 transition-all duration-300"
+                          >
+                            Inscribirse Ahora
+                          </motion.button>
+                        ) : (
+                          <motion.div
+                            className="px-8 py-3 bg-green-600/20 text-green-400 rounded-xl font-semibold flex items-center justify-center border border-green-500/30"
+                          >
+                            <FaCheck className="mr-2" size={14} /> Ya inscrito
+                          </motion.div>
+                        )}
+                      </>
+                    ) : (
+                      // Interfaz para usuarios NO autenticados
                       <motion.button
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
-                        onClick={() => navigate(`/pago/${id}`)}
+                        onClick={() => {
+                          // Emitir evento para abrir el modal de login
+                          window.dispatchEvent(new CustomEvent('openLogin'));
+                        }}
                         className="px-8 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-purple-500/20 transition-all duration-300"
                       >
-                        Inscribirse Ahora
+                        Iniciar sesión para inscribirse
                       </motion.button>
-                    )}
-                    {inscrito && (
-                      <motion.div
-                        className="px-8 py-3 bg-green-600/20 text-green-400 rounded-xl font-semibold flex items-center justify-center border border-green-500/30"
-                      >
-                        <FaCheck className="mr-2" size={14} /> Ya inscrito
-                      </motion.div>
                     )}
                   </div>
                 </motion.div>

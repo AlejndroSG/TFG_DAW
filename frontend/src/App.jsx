@@ -14,6 +14,7 @@ import VisorCurso from './Pages/VisorCurso'
 import Pago from './Pages/Pago'
 import Perfil from './Pages/Perfil'
 import AdminIndex from './Pages/Admin'
+import ProtectedRoute from './components/ProtectedRoute'
 
 function App() {
   return (
@@ -29,11 +30,11 @@ function App() {
             <Route path="/sobre-nosotros" element={<SobreNosotros/>}/>
             <Route path="/contacto" element={<Contacto/>}/>
             <Route path="/curso/:id" element={<Curso/>}/>
-            <Route path="/curso-visor/:cursoId" element={<VisorCurso/>}/>
-            <Route path="/pago/:cursoId" element={<Pago/>}/>
-            <Route path="/perfil" element={<Perfil/>}/>
+            <Route path="/curso-visor/:cursoId" element={<ProtectedRoute><VisorCurso/></ProtectedRoute>}/>
+            <Route path="/pago/:cursoId" element={<ProtectedRoute><Pago/></ProtectedRoute>}/>
+            <Route path="/perfil" element={<ProtectedRoute><Perfil/></ProtectedRoute>}/>
           </Route>
-          <Route path="/admin/*" element={<AdminIndex/>}/>
+          <Route path="/admin/*" element={<ProtectedRoute requiredRole="administrador"><AdminIndex/></ProtectedRoute>}/>
         </Routes>
       </BrowserRouter>
       <Toaster 
