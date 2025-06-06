@@ -131,7 +131,7 @@ const VisorCurso = () => {
         if (!estaInscrito) {
           setMensaje({
             tipo: 'advertencia',
-            texto: 'No estás inscrito en este curso. Algunas secciones estarán bloqueadas.'
+            texto: 'No estás inscrito en este curso. Es necesario inscribirse para acceder al contenido.'
           });
         }
       }
@@ -166,6 +166,7 @@ const VisorCurso = () => {
             rol: 'Instructor'
           },
           precio: response.data.precio,
+          duracion: response.data.duracion, // Añadir duración del curso desde el backend
           valoracion: 4.8,
           numValoraciones: 125,
           fechaActualizacion: '2025-05-16',
@@ -177,9 +178,9 @@ const VisorCurso = () => {
               progreso: 0,
               // Solo la primera lección está disponible para usuarios no autenticados
               lecciones: [
-                { id: 1, titulo: 'Bienvenida y presentación (Vista previa)', duracion: '03:00', completada: false, vistaPrevia: !modoVistaPreviaSinLogin ? false : true },
-                { id: 2, titulo: 'Requisitos previos', duracion: '08:45', completada: false, bloqueada: modoVistaPreviaSinLogin },
-                { id: 3, titulo: 'Configuración del entorno', duracion: '12:20', completada: false, bloqueada: modoVistaPreviaSinLogin }
+                { id: 1, titulo: 'Bienvenida y presentación', duracion: '03:00', completada: false, bloqueada: !haComprado },
+                { id: 2, titulo: 'Requisitos previos', duracion: '08:45', completada: false, bloqueada: !haComprado },
+                { id: 3, titulo: 'Configuración del entorno', duracion: '12:20', completada: false, bloqueada: !haComprado }
               ]
             },
             {
@@ -187,29 +188,28 @@ const VisorCurso = () => {
               titulo: 'Fundamentos básicos',
               completado: usuarioAutenticado ? true : false,
               progreso: usuarioAutenticado ? 100 : 0,
-              // Bloqueado para usuarios sin sesión
-              bloqueado: modoVistaPreviaSinLogin,
+              bloqueado: !haComprado,
               lecciones: [
                 { 
                   id: 4, 
                   titulo: 'Conceptos fundamentales', 
                   duracion: '15:10', 
                   completada: usuarioAutenticado ? true : false,
-                  bloqueada: modoVistaPreviaSinLogin 
+                  bloqueada: !haComprado 
                 },
                 { 
                   id: 5, 
                   titulo: 'Primeros ejemplos prácticos', 
                   duracion: '18:30', 
                   completada: usuarioAutenticado ? true : false,
-                  bloqueada: modoVistaPreviaSinLogin 
+                  bloqueada: !haComprado 
                 },
                 { 
                   id: 6, 
                   titulo: 'Ejercicios guiados', 
                   duracion: '22:15', 
                   completada: usuarioAutenticado ? true : false,
-                  bloqueada: modoVistaPreviaSinLogin 
+                  bloqueada: !haComprado 
                 }
               ]
             },
@@ -218,28 +218,28 @@ const VisorCurso = () => {
               titulo: 'Técnicas avanzadas',
               completado: usuarioAutenticado ? false : false,
               progreso: usuarioAutenticado ? 33 : 0,
-              bloqueado: modoVistaPreviaSinLogin,
+              bloqueado: !haComprado,
               lecciones: [
                 { 
                   id: 7, 
                   titulo: 'Patrones avanzados', 
                   duracion: '20:45', 
                   completada: usuarioAutenticado ? true : false,
-                  bloqueada: modoVistaPreviaSinLogin 
+                  bloqueada: !haComprado 
                 },
                 { 
                   id: 8, 
                   titulo: 'Optimización y buenas prácticas', 
                   duracion: '25:30', 
                   completada: false,
-                  bloqueada: modoVistaPreviaSinLogin 
+                  bloqueada: !haComprado 
                 },
                 { 
                   id: 9, 
                   titulo: 'Casos de estudio reales', 
                   duracion: '30:00', 
                   completada: false,
-                  bloqueada: modoVistaPreviaSinLogin 
+                  bloqueada: !haComprado 
                 }
               ]
             },
@@ -248,28 +248,28 @@ const VisorCurso = () => {
               titulo: 'Proyecto final',
               completado: false,
               progreso: 0,
-              bloqueado: modoVistaPreviaSinLogin || !haComprado,
+              bloqueado: !haComprado,
               lecciones: [
                 { 
                   id: 10, 
                   titulo: 'Planificación del proyecto', 
                   duracion: '15:20', 
                   completada: false, 
-                  bloqueada: modoVistaPreviaSinLogin || !haComprado 
+                  bloqueada: !haComprado 
                 },
                 { 
                   id: 11, 
                   titulo: 'Desarrollo guiado', 
                   duracion: '35:45', 
                   completada: false, 
-                  bloqueada: modoVistaPreviaSinLogin || !haComprado 
+                  bloqueada: !haComprado 
                 },
                 { 
                   id: 12, 
                   titulo: 'Pruebas y despliegue', 
                   duracion: '25:10', 
                   completada: false, 
-                  bloqueada: modoVistaPreviaSinLogin || !haComprado 
+                  bloqueada: !haComprado 
                 }
               ]
             }
@@ -280,28 +280,28 @@ const VisorCurso = () => {
               titulo: 'Documentación de referencia', 
               tipo: 'pdf', 
               tamano: '2.4 MB',
-              bloqueado: modoVistaPreviaSinLogin || !haComprado
+              bloqueado: !haComprado
             },
             { 
               id: 2, 
               titulo: 'Código fuente de ejemplos', 
               tipo: 'zip', 
               tamano: '4.8 MB',
-              bloqueado: modoVistaPreviaSinLogin || !haComprado
+              bloqueado: !haComprado
             },
             { 
               id: 3, 
               titulo: 'Plantillas de proyecto', 
               tipo: 'zip', 
               tamano: '1.7 MB',
-              bloqueado: modoVistaPreviaSinLogin
+              bloqueado: !haComprado
             },
             { 
               id: 4, 
               titulo: 'Muestra gratuita del curso', 
               tipo: 'pdf', 
               tamano: '0.8 MB',
-              bloqueado: false
+              bloqueado: !haComprado // Incluso las muestras gratuitas requieren inscripción
             }
           ],
           preguntas: [
@@ -799,8 +799,19 @@ const VisorCurso = () => {
                           {curso.tipo_curso || 'Todos los niveles'}
                         </span>
                         <span className="bg-pink-600/20 text-pink-400 text-xs px-3 py-1 rounded-full border border-pink-600/30">
-                          {console.log(curso)}
-                          {curso.duracion || '0'} horas de contenido
+                          {(() => {
+                            // Formatear la duración según el valor y unidad
+                            const duracion = curso.duracion;
+                            if (!duracion) return '0 horas de contenido';
+                            
+                            // Si ya viene en formato "X horas" o similar, usarlo directamente
+                            if (typeof duracion === 'string' && (duracion.includes('h') || duracion.includes('min'))) {
+                              return `${duracion} de contenido`;
+                            }
+                            
+                            // Si es un número, formatearlo como horas
+                            return `${duracion} horas de contenido`;
+                          })()}
                         </span>
                         <span className="bg-gray-700/30 text-gray-300 text-xs px-3 py-1 rounded-full border border-gray-700">
                           Actualizado {curso.fechaActualizacion}
