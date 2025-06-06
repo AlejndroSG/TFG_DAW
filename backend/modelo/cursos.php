@@ -10,7 +10,11 @@ class Cursos {
     }
 
     public function obtenerCursos() {
-        $sentencia = "SELECT cursos.id_curso, cursos.titulo, cursos.descripcion, cursos.precio, cursos.duracion, cursos.tipo_Curso, usuarios.nombre, cursos.imgCurso FROM cursos, usuarios WHERE cursos.id_profesor = usuarios.id_usuario";
+        // Modificamos la consulta para filtrar solo cursos publicados
+        $sentencia = "SELECT cursos.id_curso, cursos.titulo, cursos.descripcion, cursos.precio, cursos.duracion, cursos.tipo_Curso, usuarios.nombre, cursos.imgCurso 
+                     FROM cursos, usuarios 
+                     WHERE cursos.id_profesor = usuarios.id_usuario 
+                     AND cursos.publicado = 1";
         $consulta = $this->conn->prepare($sentencia);
         $consulta->bind_result($id, $titulo, $descripcion, $precio, $duracion, $tipo_curso, $profesor, $imgCurso);
         $consulta->execute();
@@ -289,74 +293,94 @@ class Cursos {
             return ['error' => 'Campo no válido para actualizar'];
         }
         
-        // Verificar si existe la columna en la tabla
         try {
-            // Si la columna no existe, la agregamos
-            $verificar = "SHOW COLUMNS FROM cursos LIKE '$campo'";
-            $resultado = $this->conn->query($verificar);
-            
-            if ($resultado->num_rows == 0) {
-                $alter = "ALTER TABLE cursos ADD COLUMN $campo TINYINT(1) NOT NULL DEFAULT 0";
-                $this->conn->query($alter);
+            // Verificamos y convertimos el valor a entero (0 o 1)
+            $valor_bool = (int)$valor;
+            if ($valor_bool !== 0 && $valor_bool !== 1) {
+                $valor_bool = ($valor_bool) ? 1 : 0; // Asegurarse que sea 0 o 1
             }
             
-            // Actualizar el estado
-            $valor_bool = $valor ? 1 : 0;
+            // Primero verificamos que el curso exista
+            $check = "SELECT id_curso FROM cursos WHERE id_curso = ?";
+            $stmt_check = $this->conn->prepare($check);
+            $stmt_check->bind_param("i", $id);
+            $stmt_check->execute();
+            $stmt_check->store_result();
+            
+            if ($stmt_check->num_rows === 0) {
+                $stmt_check->close();
+                return ['success' => false, 'error' => 'El curso no existe'];
+            }
+            $stmt_check->close();
+            
+            // Actualizar el estado en la base de datos
             $sentencia = "UPDATE cursos SET $campo = ? WHERE id_curso = ?";
             $stmt = $this->conn->prepare($sentencia);
             $stmt->bind_param("ii", $valor_bool, $id);
+            $resultado = $stmt->execute();
             
-            if ($stmt->execute()) {
+            if (!$resultado) {
                 $stmt->close();
-                return [
-                    'success' => true,
-                    'mensaje' => 'Estado actualizado correctamente',
-                    'id' => $id,
-                    'campo' => $campo,
-                    'valor' => $valor
-                ];
-            } else {
-                $stmt->close();
-                return ['error' => 'Error al actualizar el estado: ' . $this->conn->error];
+                return ['success' => false, 'error' => 'Error al actualizar: ' . $this->conn->error];
             }
-        } catch (Exception $e) {
-            return ['error' => 'Error al actualizar el estado: ' . $e->getMessage()];
-        }
-    }
-    
-    // Eliminar un curso
-    public function eliminarCurso($id) {
-        // Primero eliminar las inscripciones asociadas
-        $sentencia = "DELETE FROM inscripciones WHERE id_curso = ?";
-        $stmt = $this->conn->prepare($sentencia);
-        $stmt->bind_param("i", $id);
-        $stmt->execute();
-        $stmt->close();
-        
-        // Luego eliminar el curso
-        $sentencia = "DELETE FROM cursos WHERE id_curso = ?";
-        $stmt = $this->conn->prepare($sentencia);
-        $stmt->bind_param("i", $id);
-        
-        if ($stmt->execute()) {
+            
+            // Verificar si se actualizó algún registro
             $filas_afectadas = $stmt->affected_rows;
             $stmt->close();
             
             if ($filas_afectadas > 0) {
                 return [
                     'success' => true,
-                    'mensaje' => 'Curso eliminado correctamente',
-                    'id' => $id
+                    'mensaje' => 'Estado del curso actualizado correctamente',
+                    'id' => $id,
+                    'campo' => $campo,
+                    'valor' => $valor_bool
                 ];
             } else {
-                return ['error' => 'No se encontró el curso especificado'];
+                // Si no se modificó ninguna fila, puede ser porque el valor ya era el mismo
+                return [
+                    'success' => true,
+                    'mensaje' => 'No hubo cambios, el curso ya tenía ese estado',
+                    'id' => $id,
+                    'campo' => $campo,
+                    'valor' => $valor_bool
+                ];
             }
-        } else {
-            $stmt->close();
-            return ['error' => 'Error al eliminar el curso: ' . $this->conn->error];
+        } catch (Exception $e) {
+            return ['success' => false, 'error' => 'Error al actualizar el estado: ' . $e->getMessage()];
         }
     }
     
+    // Eliminar un curso
+    public function eliminarCurso($id_curso) {
+        try {
+            // Primero eliminamos las inscripciones asociadas al curso
+            $sentencia = "DELETE FROM inscripciones WHERE id_curso = ?";
+            $consulta = $this->conn->prepare($sentencia);
+            $consulta->bind_param("i", $id_curso);
+            $consulta->execute();
+            $consulta->close();
+            
+            // Luego eliminamos el curso
+            $sentencia = "DELETE FROM cursos WHERE id_curso = ?";
+            $consulta = $this->conn->prepare($sentencia);
+            $consulta->bind_param("i", $id_curso);
+            $consulta->execute();
+            $afectadas = $consulta->affected_rows;
+            $consulta->close();
+            
+            if ($afectadas > 0) {
+                return ["success" => true, "mensaje" => "Curso eliminado correctamente"];
+            } else {
+                return ["success" => false, "error" => "No se pudo eliminar el curso"];
+            }
+        } catch (Exception $e) {
+            return ["success" => false, "error" => $e->getMessage()];
+        }
+    }
+    
+    // Esta implementación ya existe al inicio del archivo, no es necesaria aquí
+
     // Obtener un curso específico por ID con detalles adicionales
     public function obtenerCursoDetalle($id) {
         $sentencia = "

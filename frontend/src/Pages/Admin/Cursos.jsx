@@ -145,6 +145,48 @@ const AdminCursos = () => {
     await cargarUsuariosInscritos(curso.id);
   };
   
+  // Esta implementación se encuentra más abajo en el código
+  
+  // Función para cambiar el estado de visibilidad (publicado/no publicado) de un curso
+  const handleCambioEstado = async (cursoId) => {
+    try {
+      // Primero actualizamos la UI optimistamente para una experiencia más fluida
+      const cursoIndex = cursos.findIndex(c => c.id === cursoId);
+      if (cursoIndex === -1) return;
+      
+      // Crear una copia del array de cursos
+      const nuevosCursos = [...cursos];
+      // Invertir el estado de publicación
+      const nuevoEstado = nuevosCursos[cursoIndex].publicado === 1 ? 0 : 1;
+      nuevosCursos[cursoIndex].publicado = nuevoEstado;
+      // Actualizar el estado local inmediatamente
+      setCursos(nuevosCursos);
+      
+      // Enviar la actualización al servidor con el formato correcto que espera el backend
+      const response = await axios.post(
+        'http://localhost/TFG_DAW/backend/controlador/controlador.php?action=cambiarEstadoCurso',
+        { 
+          id: cursoId,
+          campo: 'publicado',
+          valor: nuevoEstado
+        },
+        { withCredentials: true }
+      );
+      
+      if (response.data.success) {
+        console.log(`Curso ${cursoId} ahora está ${nuevoEstado === 1 ? 'publicado' : 'despublicado'}`);
+      } else {
+        console.error('Error al cambiar la visibilidad del curso:', response.data.error);
+        // Si hay un error, revertimos el cambio cargando los datos actuales
+        cargarCursos();
+      }
+    } catch (error) {
+      console.error('Error al cambiar la visibilidad del curso:', error);
+      // Recargar en caso de error para asegurar que los datos sean correctos
+      cargarCursos();
+    }
+  };
+  
   // Función para cerrar el modal de usuarios inscritos
   const cerrarModalUsuarios = () => {
     setMostrarModalUsuarios(false);
@@ -210,36 +252,7 @@ const AdminCursos = () => {
   };
   const fileInputRef = React.useRef(null);
 
-  const handleCambioEstado = async (id) => {
-    try {
-      const curso = cursos.find(c => c.id === id);
-      if (!curso) return;
-      
-      const nuevoEstado = !curso.publicado;
-      
-      // Enviar solicitud al servidor
-      const response = await axios.post(
-        'http://localhost/TFG_DAW/backend/controlador/controlador.php?action=cambiarEstadoCurso',
-        {
-          id: id,
-          campo: 'publicado',
-          valor: nuevoEstado
-        },
-        { withCredentials: true }
-      );
-      
-      if (response.data.success) {
-        // Actualizar la lista de cursos con los datos actualizados
-        await cargarCursos();
-      } else {
-        console.error('Error al cambiar el estado del curso:', response.data.error);
-        alert('Error al cambiar el estado del curso: ' + response.data.error);
-      }
-    } catch (error) {
-      console.error('Error al cambiar el estado del curso:', error);
-      alert('Error al cambiar el estado del curso. Intente nuevamente.');
-    }
-  };
+  // La implementación de handleCambioEstado ya se encuentra más arriba en el código
 
   const handleCambioDestacado = async (id) => {
     try {
