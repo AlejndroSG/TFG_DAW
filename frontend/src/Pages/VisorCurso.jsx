@@ -679,6 +679,7 @@ const VisorCurso = () => {
                     titulo={leccionActual.titulo || ''}
                     bloqueado={(leccionActual.bloqueada && !haComprado) || false}
                     leccion={leccionActual}
+                    cursoId={curso.id}
                     onComplete={() => actualizarProgreso(moduloActual?.id, leccionActual?.id)}
                   />
                   

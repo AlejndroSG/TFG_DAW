@@ -357,7 +357,7 @@ const PasarelaPago = ({ curso, onClose, onPaymentComplete }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-gradient-to-b from-black/90 to-purple-900/70 backdrop-blur-md flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 flex items-center justify-center z-0 p-4 bg-gray-900">
       <motion.div 
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}

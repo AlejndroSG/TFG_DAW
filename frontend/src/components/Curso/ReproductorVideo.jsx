@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { 
   FaPlay, 
   FaPause, 
@@ -13,7 +14,8 @@ import {
   FaListUl
 } from 'react-icons/fa';
 
-const ReproductorVideo = ({ leccion, bloqueado = false, videoUrl = null, onComplete = () => {} }) => {
+const ReproductorVideo = ({ leccion, bloqueado = false, videoUrl = null, onComplete = () => {}, cursoId = null }) => {
+  const navigate = useNavigate();
   const videoRef = useRef(null);
   const progressRef = useRef(null);
   const containerRef = useRef(null);
@@ -239,6 +241,7 @@ const ReproductorVideo = ({ leccion, bloqueado = false, videoUrl = null, onCompl
             Matricúlate en este curso para acceder a todas las lecciones.
           </p>
           <motion.button
+            onClick={() => navigate(`/pago/${cursoId}`)}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-purple-500/20 transition-all"
