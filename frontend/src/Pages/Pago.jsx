@@ -187,7 +187,10 @@ const Pago = () => {
                 <>
                   <div className="relative h-40 rounded-xl overflow-hidden mb-4">
                     <img 
-                      src={curso.imgCurso} 
+                      src={curso.imgCurso ? 
+                        (curso.imgCurso.startsWith('http') ? curso.imgCurso : `http://localhost/TFG_DAW/frontend${curso.imgCurso}`) : 
+                        'http://localhost/TFG_DAW/frontend/src/img/imgCursos/default.jpg'
+                      } 
                       alt={curso.titulo}
                       className="w-full h-full object-cover" 
                     />

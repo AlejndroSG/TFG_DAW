@@ -357,11 +357,11 @@ const PasarelaPago = ({ curso, onClose, onPaymentComplete }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-gradient-to-b from-black/90 to-purple-900/70 backdrop-blur-md flex items-center justify-center z-50 p-4">
       <motion.div 
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="bg-gray-900 rounded-2xl p-6 w-full max-w-md border border-gray-700/50"
+        className="bg-gray-900/95 backdrop-blur-sm rounded-2xl p-6 w-full max-w-md border border-purple-500/20 shadow-lg shadow-purple-500/10"
       >
         {/* Encabezado del modal */}
         {paso !== 3 && (
