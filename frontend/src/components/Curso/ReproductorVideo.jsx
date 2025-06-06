@@ -13,7 +13,7 @@ import {
   FaListUl
 } from 'react-icons/fa';
 
-const ReproductorVideo = ({ leccion, bloqueado = false, onComplete = () => {} }) => {
+const ReproductorVideo = ({ leccion, bloqueado = false, videoUrl = null, onComplete = () => {} }) => {
   const videoRef = useRef(null);
   const progressRef = useRef(null);
   const containerRef = useRef(null);
@@ -34,10 +34,9 @@ const ReproductorVideo = ({ leccion, bloqueado = false, onComplete = () => {} })
   // Controladores de temporizador para ocultar controles
   const hideControlsTimerRef = useRef(null);
   
-  // Simulador de URL de video (en un caso real, vendría de tu backend)
-  const videoUrl = !bloqueado 
-    ? 'https://player.vimeo.com/external/369906533.sd.mp4?s=56153d60c46dfc3956fc7d065a109a378675e7b8&profile_id=165&oauth2_token_id=57447761'
-    : null;
+  // Si no se proporciona una URL específica, usamos una URL predeterminada
+  // Asegurarnos que siempre tenemos un valor válido para videoSrc y que nunca sea undefined
+  const videoSrc = !bloqueado && (videoUrl || 'https://player.vimeo.com/external/369906533.sd.mp4?s=56153d60c46dfc3956fc7d065a109a378675e7b8&profile_id=165&oauth2_token_id=57447761');
   
   // Simular carga de video
   useEffect(() => {
@@ -265,14 +264,35 @@ const ReproductorVideo = ({ leccion, bloqueado = false, onComplete = () => {} })
         </div>
       )}
       
-      <video
-        ref={videoRef}
-        src={videoUrl}
-        className="w-full h-full object-contain"
-        onClick={toggleReproduccion}
-        onPlay={() => setReproduciendo(true)}
-        onPause={() => setReproduciendo(false)}
-      />
+      {videoSrc ? (
+        <video
+          ref={videoRef}
+          src={videoSrc}
+          className="w-full h-full object-cover rounded-t-xl"
+          preload="auto"
+          playsInline
+          onPlay={() => setReproduciendo(true)}
+          onPause={() => setReproduciendo(false)}
+          onEnded={() => {
+            setReproduciendo(false);
+            // Marcar como completado
+            if (!completado) {
+              setCompletado(true);
+              onComplete();
+            }
+          }}
+        />
+      ) : (
+        <div className="w-full h-full flex items-center justify-center bg-gray-800 text-white">
+          <div className="text-center p-6">
+            <FaLock size={40} className="mx-auto mb-4 text-pink-500" />
+            <h3 className="text-xl font-bold mb-2">Contenido bloqueado</h3>
+            <p className="text-gray-300">
+              Este video está disponible al comprar el curso completo.
+            </p>
+          </div>
+        </div>
+      )}
       
       {/* Overlay para controles */}
       <motion.div 

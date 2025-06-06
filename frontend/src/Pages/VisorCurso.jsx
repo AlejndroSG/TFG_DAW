@@ -6,6 +6,8 @@ import { FaArrowLeft, FaLightbulb, FaEdit, FaDownload, FaStar, FaShare, FaLock, 
 import ProgresoModulos from '../components/Curso/ProgresoModulos';
 import ReproductorVideo from '../components/Curso/ReproductorVideo';
 import axios from 'axios';
+// Importar datos de videos para el curso de IA
+import videosIA from '../data/videosIA';
 
 // Componente para contenido bloqueado
 const ContenidoBloqueado = ({ onClick, titulo }) => (
@@ -67,10 +69,16 @@ const VisorCurso = () => {
   const [haComprado, setHaComprado] = useState(false);
   const [usuarioAutenticado, setUsuarioAutenticado] = useState(false);
   const [modoVistaPreviaSinLogin, setModoVistaPreviaSinLogin] = useState(false);
+  const [videoActualUrl, setVideoActualUrl] = useState(null);
+  const [esCursoIA, setEsCursoIA] = useState(false);
   
   useEffect(() => {
     comprobarSesion();
     obtenerDatosCurso();
+    
+    // Comprobar si este es el curso de IA basado en el ID
+    // Si el ID del curso coincide con el de Introducción a la IA
+    setEsCursoIA(cursoId === videosIA.cursoId);
   }, [cursoId, navigate]);
   
   useEffect(() => {
@@ -667,9 +675,11 @@ const VisorCurso = () => {
               {leccionActual && (
                 <>
                   <ReproductorVideo 
-                    videoUrl="https://www.youtube.com/embed/dQw4w9WgXcQ" 
-                    titulo={leccionActual.titulo}
-                    bloqueado={leccionActual.bloqueada && !haComprado}
+                    videoUrl={esCursoIA && leccionActual ? videosIA.videos.find(v => Number(v.id) === Number(leccionActual.id))?.videoUrl || null : null} 
+                    titulo={leccionActual.titulo || ''}
+                    bloqueado={(leccionActual.bloqueada && !haComprado) || false}
+                    leccion={leccionActual}
+                    onComplete={() => actualizarProgreso(moduloActual?.id, leccionActual?.id)}
                   />
                   
                   {(!haComprado && moduloActual && moduloActual.id > 1) || modoVistaPreviaSinLogin ? (
