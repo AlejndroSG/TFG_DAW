@@ -69,18 +69,51 @@ const Pago = () => {
   
   const handleCompletarPago = async () => {
     try {
-      // Registrar la inscripción en la base de datos
+      // Mostrar estado de inicio del proceso
+      console.log('Iniciando proceso de inscripción y pago para el curso:', cursoId);
+      console.log('Datos del curso:', curso);
+      setError('');
+      
+      // Datos para registrar la inscripción y el pago
       const formData = new FormData();
       formData.append('id_curso', cursoId);
       
+      // Si el curso tiene precio, también añadimos la información del pago
+      if (curso && curso.precio) {
+        const precioNum = parseFloat(curso.precio);
+        formData.append('precio', precioNum);
+        formData.append('metodo_pago', 'tarjeta'); // Por defecto, asumimos pago con tarjeta
+        formData.append('registrar_pago', 'true'); // Flag para indicar que se debe registrar el pago (como string para evitar problemas)
+        
+        console.log('Datos del pago:', {
+          precio: precioNum,
+          metodo_pago: 'tarjeta',
+          registrar_pago: 'true'
+        });
+      } else {
+        console.log('El curso no tiene precio definido, no se registrará pago');
+      }
+      
+      console.log('Enviando solicitud de inscripción...');
       const response = await axios.post(
         'http://localhost/TFG_DAW/backend/controlador/controlador.php?action=inscribirCurso',
         formData,
         { withCredentials: true }
       );
       
-      if (response.data.success) {
-        console.log('Inscripción completada:', response.data);
+      console.log('Respuesta completa recibida:', response);
+      
+      if (response.data && response.data.success) {
+        console.log('Inscripción completada con éxito:', response.data);
+        
+        // Verificar si hubo éxito en el pago o algún problema
+        if (response.data.pago) {
+          console.log('Pago registrado correctamente:', response.data.pago);
+        } else if (response.data.error_pago) {
+          console.warn('La inscripción fue exitosa pero hubo un problema con el pago:', response.data.error_pago);
+          // Aunque hubo problema en el pago, la inscripción fue exitosa, así que continuamos
+        }
+        
         setCompletado(true);
         
         // Después de 3 segundos, redirigimos al curso
@@ -89,8 +122,9 @@ const Pago = () => {
         }, 3000);
       } else {
         // Maneja los diferentes formatos de respuesta de error
-        const mensajeError = response.data.message || response.data.error || 'Error al procesar la inscripción';
+        const mensajeError = response.data?.message || response.data?.error || 'Error al procesar la inscripción';
         console.error('Error en la inscripción:', mensajeError);
+        console.error('Datos completos de error:', response.data);
         setError(mensajeError);
       }
     } catch (error) {

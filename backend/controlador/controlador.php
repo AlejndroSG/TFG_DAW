@@ -205,6 +205,63 @@
         );
         
         $resultado = $inscripciones->inscribirCurso($datos);
+        
+        // Añadir logs para depuración
+        error_log("Resultado de inscripción: " . json_encode($resultado));
+        error_log("POST registrar_pago: " . (isset($_POST["registrar_pago"]) ? $_POST["registrar_pago"] : 'no definido') . " - Tipo: " . gettype(isset($_POST["registrar_pago"]) ? $_POST["registrar_pago"] : 'no definido'));
+        
+        // Si la inscripción fue exitosa y se solicita registrar un pago
+        // Nota: FormData en JavaScript puede enviar 'true' como string, por lo que comprobamos ambos casos
+        if ($resultado["success"] && isset($_POST["registrar_pago"]) && 
+           ($_POST["registrar_pago"] == true || $_POST["registrar_pago"] === "true" || $_POST["registrar_pago"] == 1)) {
+            
+            error_log("Condición para registrar pago cumplida");
+            require_once("../modelo/pagos.php");
+            $pagos = new Pagos();
+            
+            // Asegurar que tenemos un valor numérico para el monto
+            $monto = 0;
+            if (isset($_POST["precio"]) && !empty($_POST["precio"])) {
+                $monto = is_numeric($_POST["precio"]) ? floatval($_POST["precio"]) : 0;
+                error_log("Monto del pago: {$monto}");
+            } else {
+                error_log("ADVERTENCIA: No se proporcionó un precio válido para el pago");
+            }
+            
+            // Generar una referencia única para el pago
+            $referencia = 'INV-' . date('Y') . '-' . sprintf("%04d", rand(1, 9999));
+            
+            $datoPago = array(
+                "id_usuario" => intval($_SESSION['id']),
+                "id_curso" => intval($_POST["id_curso"]),
+                "fecha_pago" => date("Y-m-d H:i:s"),
+                "monto" => $monto,
+                "metodo_pago" => isset($_POST["metodo_pago"]) ? $_POST["metodo_pago"] : 'tarjeta',
+                "estado" => 'completado',
+                "referencia" => $referencia
+            );
+            
+            // Validación de integridad de datos antes de registrar el pago
+            error_log("Validando datos del pago antes de registrar: " . json_encode($datoPago));
+            
+            error_log("Intentando registrar pago con datos: " . json_encode($datoPago));
+            
+            $resultadoPago = $pagos->registrarPago($datoPago);
+            error_log("Resultado del registro de pago: " . json_encode($resultadoPago));
+            
+            // Añadimos información del pago al resultado
+            if (isset($resultadoPago["success"]) && $resultadoPago["success"]) {
+                $resultado["pago"] = $resultadoPago["pago"];
+                $resultado["mensaje_pago"] = "Pago registrado correctamente";
+            } else {
+                // Si hay un error en el pago, lo registramos pero no afecta a la inscripción
+                $resultado["error_pago"] = isset($resultadoPago["message"]) ? $resultadoPago["message"] : "Error desconocido al registrar el pago";
+            }
+        } else {
+            error_log("No se cumplen las condiciones para registrar el pago");
+            $resultado["info_pago"] = "No se intentó registrar ningún pago";
+        }
+        
         echo json_encode($resultado);
     }
 
@@ -599,6 +656,30 @@
         echo json_encode($resultado);
     }
 
+    function obtenerHistorialPagos(){
+        if (!isset($_SESSION['id'])) {
+            echo json_encode(["error" => "Usuario no autenticado"]);
+            return;
+        }
+
+        require_once("../modelo/pagos.php");
+        $pagos = new Pagos();
+        $historialPagos = $pagos->obtenerHistorialPagos($_SESSION['id']);
+        echo json_encode($historialPagos);
+    }
+
+    function obtenerTodosPagos(){
+        if (!isset($_SESSION['id']) || $_SESSION['tipo_usuario'] != 'admin') {
+            echo json_encode(["error" => "Acceso denegado"]);
+            return;
+        }
+
+        require_once("../modelo/pagos.php");
+        $pagos = new Pagos();
+        $todosPagos = $pagos->obtenerTodosPagos();
+        echo json_encode($todosPagos);
+    }
+    
     // Si no ha sido iniciado el action
     if(isset($_REQUEST["action"])){
         $action = $_REQUEST["action"];

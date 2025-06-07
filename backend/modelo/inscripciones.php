@@ -7,19 +7,39 @@ class Inscripciones {
     public function __construct() {
         $bd = new db();
         $this->conn = $bd->getConn();
+        
+        // Verificar y crear la tabla al instanciar el objeto
+        $this->crearTablaSiNoExiste();
     }
 
     public function inscribirCurso($datos) {
         try {
+            // Registrar detalles para depuración
+            error_log("Intentando inscribir usuario en curso con datos: " . json_encode($datos));
+            
+            // Verificar que la tabla inscripciones existe
+            $this->crearTablaSiNoExiste();
+            
             // Comprobar si el usuario ya está inscrito en el curso
             $sentenciaVerificar = "SELECT id_inscripcion FROM inscripciones WHERE id_usuario = ? AND id_curso = ?";
             $consultaVerificar = $this->conn->prepare($sentenciaVerificar);
-            $consultaVerificar->bind_param("ii", $datos["id_usuario"], $datos["id_curso"]);
+            
+            if ($consultaVerificar === false) {
+                error_log("Error al preparar consulta de verificación: " . $this->conn->error);
+                return ["success" => false, "message" => "Error al verificar inscripción existente"];
+            }
+            
+            // Convertir valores a enteros para asegurar tipo correcto
+            $id_usuario = intval($datos["id_usuario"]);
+            $id_curso = intval($datos["id_curso"]);
+            
+            $consultaVerificar->bind_param("ii", $id_usuario, $id_curso);
             $consultaVerificar->execute();
             $consultaVerificar->store_result();
             
             // Si ya existe la inscripción, devolver un mensaje
             if ($consultaVerificar->num_rows > 0) {
+                error_log("Usuario ya inscrito en este curso");
                 $consultaVerificar->close();
                 return ["success" => false, "message" => "Ya estás inscrito en este curso"];
             }
@@ -28,10 +48,19 @@ class Inscripciones {
             // Insertar nuevo registro en la tabla inscripciones
             $sentencia = "INSERT INTO inscripciones (id_usuario, id_curso, fecha_inscripcion) VALUES (?, ?, ?)";
             $consulta = $this->conn->prepare($sentencia);
+            
+            if ($consulta === false) {
+                error_log("Error al preparar consulta de inserción: " . $this->conn->error);
+                return ["success" => false, "message" => "Error al preparar la inscripción"];
+            }
+            
+            $fecha = $datos["fecha_inscripcion"];
+            error_log("Binding parameters: usuario={$id_usuario}, curso={$id_curso}, fecha={$fecha}");
+            
             $consulta->bind_param("iis", 
-                $datos["id_usuario"], 
-                $datos["id_curso"], 
-                $datos["fecha_inscripcion"]
+                $id_usuario, 
+                $id_curso, 
+                $fecha
             );
             $resultado = $consulta->execute();
             
@@ -48,6 +77,7 @@ class Inscripciones {
                 return ["success" => false, "message" => "Error al procesar la inscripción: " . $this->conn->error];
             }
         } catch (Exception $e) {
+            error_log("Excepción en inscribirCurso: " . $e->getMessage());
             return ["success" => false, "message" => "Error al procesar la inscripción: " . $e->getMessage()];
         }
     }
@@ -182,6 +212,48 @@ class Inscripciones {
             }
         } catch (Exception $e) {
             return ["success" => false, "error" => "Error al eliminar la inscripción: " . $e->getMessage()];
+        }
+    }
+    
+    /**
+     * Verifica si la tabla inscripciones existe y la crea si no
+     * Este método es especialmente útil para la primera instalación
+     */
+    private function crearTablaSiNoExiste() {
+        // Verificar si la tabla ya existe
+        $sentencia = "SHOW TABLES LIKE 'inscripciones'";
+        $resultado = $this->conn->query($sentencia);
+        
+        if ($resultado->num_rows == 0) {
+            // La tabla no existe, crearla
+            error_log("Creando tabla inscripciones...");
+            $sql = "CREATE TABLE inscripciones (
+                id_inscripcion INT(11) AUTO_INCREMENT PRIMARY KEY,
+                id_usuario INT(11) NOT NULL,
+                id_curso INT(11) NOT NULL,
+                fecha_inscripcion DATETIME NOT NULL,
+                FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario) ON DELETE CASCADE,
+                FOREIGN KEY (id_curso) REFERENCES cursos(id_curso) ON DELETE CASCADE
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4";
+            
+            if ($this->conn->query($sql) === FALSE) {
+                error_log("Error al crear la tabla inscripciones: " . $this->conn->error);
+                // Intentar crear una versión simplificada sin claves foráneas
+                $sql_simple = "CREATE TABLE inscripciones (
+                    id_inscripcion INT(11) AUTO_INCREMENT PRIMARY KEY,
+                    id_usuario INT(11) NOT NULL,
+                    id_curso INT(11) NOT NULL,
+                    fecha_inscripcion DATETIME NOT NULL
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4";
+                
+                if ($this->conn->query($sql_simple) === FALSE) {
+                    error_log("Error al crear la tabla simplificada de inscripciones: " . $this->conn->error);
+                } else {
+                    error_log("Tabla inscripciones creada con éxito (versión sin claves foráneas)");
+                }
+            } else {
+                error_log("Tabla inscripciones creada con éxito");
+            }
         }
     }
 }

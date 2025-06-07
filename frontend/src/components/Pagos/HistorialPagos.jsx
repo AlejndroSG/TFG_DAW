@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { FaDownload, FaSearch, FaFilter, FaCalendarAlt, FaCreditCard, FaPaypal } from 'react-icons/fa';
+import axios from 'axios';
 
 const HistorialPagos = () => {
   const [pagos, setPagos] = useState([]);
@@ -9,53 +10,39 @@ const HistorialPagos = () => {
   const [periodo, setPeriodo] = useState('todos');
 
   useEffect(() => {
-    // En un caso real, aquí cargarías los pagos del usuario desde tu API:
-    // const cargarPagos = async () => {
-    //   try {
-    //     const respuesta = await axios.get('http://localhost/TFG_DAW/backend/controlador/controlador.php?action=obtenerHistorialPagos', { withCredentials: true });
-    //     setPagos(respuesta.data);
-    //   } catch (error) {
-    //     console.error('Error al cargar historial de pagos:', error);
-    //   } finally {
-    //     setLoading(false);
-    //   }
-    // };
-    // cargarPagos();
-    
-    // Simulamos datos para la demo
-    setTimeout(() => {
-      const pagosMock = [
-        {
-          id: 'INV-2024-001',
-          curso: 'JavaScript Avanzado',
-          fecha: '2024-10-15',
-          monto: 49.99,
-          metodo: 'tarjeta',
-          estado: 'completado',
-          factura: '#link-a-factura-1'
-        },
-        {
-          id: 'INV-2024-002',
-          curso: 'React Native Masterclass',
-          fecha: '2024-11-05',
-          monto: 59.99,
-          metodo: 'paypal',
-          estado: 'completado',
-          factura: '#link-a-factura-2'
-        },
-        {
-          id: 'INV-2024-003',
-          curso: 'Python para Data Science',
-          fecha: '2024-11-10',
-          monto: 39.99,
-          metodo: 'tarjeta',
-          estado: 'completado',
-          factura: '#link-a-factura-3'
+    // Cargar los pagos del usuario desde la API
+    const cargarPagos = async () => {
+      try {
+        const respuesta = await axios.get('http://localhost/TFG_DAW/backend/controlador/controlador.php?action=obtenerHistorialPagos', 
+          { withCredentials: true }
+        );
+        
+        if (Array.isArray(respuesta.data)) {
+          // Formateamos los datos para ajustarse a la estructura que necesitamos
+          const pagosFormateados = respuesta.data.map(pago => ({
+            id: pago.referencia || `PAGO-${pago.id_pago}`,
+            curso: pago.curso_titulo || 'Curso',
+            fecha: pago.fecha_pago,
+            monto: parseFloat(pago.monto),
+            metodo: pago.metodo_pago,
+            estado: pago.estado,
+            factura: `#${pago.id_pago}`,
+            id_pago: pago.id_pago
+          }));
+          setPagos(pagosFormateados);
+        } else {
+          console.error('Formato de respuesta inesperado:', respuesta.data);
+          setPagos([]);
         }
-      ];
-      setPagos(pagosMock);
-      setLoading(false);
-    }, 1000);
+      } catch (error) {
+        console.error('Error al cargar historial de pagos:', error);
+        setPagos([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    cargarPagos();
   }, []);
 
   const handleDescargarFactura = (idFactura) => {
