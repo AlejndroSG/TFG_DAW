@@ -151,16 +151,39 @@
             echo json_encode(["error" => "Usuario no autenticado"]);
             return;
         }
+        
+        error_log("Obteniendo cursos inscritos para usuario ID: {$_SESSION['id']}");
 
-        require_once("../modelo/cursos.php");
-        $cursos = new Cursos();
-        $misCursos = array();
-        $misCursos = $cursos->obtenerMisCursos($_SESSION['id']);
-        echo json_encode($misCursos);
+        require_once("../modelo/inscripciones.php");
+        $inscripcionesModel = new Inscripciones();
+        
+        try {
+            $misCursos = $inscripcionesModel->obtenerCursosUsuario($_SESSION['id']);
+            
+            // Verificar si hay un error en la respuesta
+            if (isset($misCursos['error'])) {
+                error_log("Error al obtener cursos inscritos: {$misCursos['error']}");
+                echo json_encode(["error" => $misCursos['error']]);
+                return;
+            }
+            
+            error_log("Se encontraron " . count($misCursos) . " cursos inscritos para el usuario ID: {$_SESSION['id']}");
+            echo json_encode($misCursos);
+        } catch (Exception $e) {
+            error_log("Excepción al obtener cursos inscritos: " . $e->getMessage());
+            echo json_encode(["error" => "Error al procesar la solicitud: " . $e->getMessage()]);
+        }
     }
 
     function obtenerCurso(){
-        if (!isset($_POST["id"])) {
+        // Comprobar si se recibe id_curso (nuevo formato) o id (formato antiguo)
+        if (isset($_POST["id_curso"])) {
+            $id_curso = $_POST["id_curso"];
+            error_log("obtenerCurso: Recibido id_curso=$id_curso");
+        } else if (isset($_POST["id"])) {
+            $id_curso = $_POST["id"];
+            error_log("obtenerCurso: Recibido id=$id_curso (formato antiguo)");
+        } else {
             echo json_encode(["error" => "Datos de curso incompletos"]);
             return;
         }
@@ -168,7 +191,7 @@
         require_once("../modelo/cursos.php");
         $cursos = new Cursos();
         $curso = array();
-        $curso = $cursos->obtenerCurso($_POST["id"]);
+        $curso = $cursos->obtenerCurso($id_curso);
         error_log('Datos del curso: ' . print_r($curso, true));
         echo json_encode($curso);
     }
@@ -680,10 +703,73 @@
         echo json_encode($todosPagos);
     }
     
+    // Función para verificar inscripción directamente
+    function verificarInscripcionDirecta() {
+        // Verificar si el usuario tiene permisos de administrador
+        if (!isset($_SESSION['tipo_usuario']) || (strtolower($_SESSION['tipo_usuario']) !== 'administrador' && strtolower($_SESSION['tipo_usuario']) !== 'admin')) {
+            echo json_encode([
+                'error' => 'No tienes permiso para realizar esta acción'
+            ]);
+            return;
+        }
+        
+        // Obtener datos del formulario
+        $datos = json_decode(file_get_contents('php://input'), true);
+        
+        if (!isset($datos['id_usuario']) || !isset($datos['id_curso'])) {
+            echo json_encode(['error' => 'Datos incompletos']);
+            return;
+        }
+        
+        require_once("../modelo/inscripciones.php");
+        $inscripciones = new Inscripciones();
+        $resultado = $inscripciones->verificarInscripcionDirecta($datos['id_usuario'], $datos['id_curso']);
+        
+        echo json_encode($resultado);
+    }
+
+    function verificarInscripcion() {
+        // Verificar que el usuario esté autenticado
+        if (!isset($_SESSION['id'])) {
+            error_log("verificarInscripcion: Usuario no autenticado");
+            echo json_encode(["error" => "Usuario no autenticado"]);
+            return;
+        }
+        
+        // Obtener id_curso
+        if (!isset($_POST['id_curso'])) {
+            error_log("verificarInscripcion: id_curso no proporcionado");
+            echo json_encode(["error" => "ID de curso no proporcionado"]);
+            return;
+        }
+        
+        $id_curso = $_POST['id_curso'];
+        $id_usuario = $_SESSION['id'];
+        
+        error_log("verificarInscripcion: Comprobando inscripción para usuario=$id_usuario, curso=$id_curso");
+        
+        require_once("../modelo/inscripciones.php");
+        $inscripcionesModel = new Inscripciones();
+        
+        // Verificar inscripción directamente
+        $resultado = $inscripcionesModel->verificarInscripcion($id_usuario, $id_curso);
+        
+        error_log("verificarInscripcion: Resultado = ". json_encode($resultado));
+        echo json_encode($resultado);
+    }
+
     // Si no ha sido iniciado el action
     if(isset($_REQUEST["action"])){
-        $action = $_REQUEST["action"];
+        $action = $_GET["action"];
         
+        // Mensajes de depuración
+        error_log("CONTROLADOR: Action: " . $action);
+        error_log("CONTROLADOR: POST data: " . json_encode($_POST));
+        
+        if (isset($_SESSION['id'])) {
+            error_log("CONTROLADOR: Usuario en sesión ID: " . $_SESSION['id']);
+        }
+
         // Ejecutar función según la acción
         if(function_exists($action)){
             // No es necesario iniciar sesión aquí, ya se inicia al principio del archivo

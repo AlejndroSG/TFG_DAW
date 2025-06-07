@@ -44,7 +44,8 @@ const Pago = () => {
         
         // Obtener datos reales del curso desde la API
         const identifier = new FormData();
-        identifier.append('id', cursoId);
+        identifier.append('id_curso', cursoId); // Cambiado de 'id' a 'id_curso' para coincidir con el backend
+        console.log('Solicitando curso con ID:', cursoId);
         const response = await axios.post(
           `http://localhost/TFG_DAW/backend/controlador/controlador.php?action=obtenerCurso`,
           identifier,

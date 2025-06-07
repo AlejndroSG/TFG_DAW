@@ -119,16 +119,41 @@ const VisorCurso = () => {
   
   const verificarInscripcion = async () => {
     try {
+      console.log('Verificando inscripción para el curso ID:', cursoId);
       const response = await axios.get(
         'http://localhost/TFG_DAW/backend/controlador/controlador.php?action=obtenerMisCursos',
         { withCredentials: true }
       );
       
-      if (response.data && !response.data.error) {
-        const estaInscrito = response.data.some(curso => curso.id == cursoId);
+      console.log('Respuesta de obtenerMisCursos:', response.data);
+      
+      if (response.data && !response.data.error && Array.isArray(response.data)) {
+        // Convertir cursoId a diferentes formatos para comparación robusta
+        const cursoIdNum = parseInt(cursoId);
+        const cursoIdStr = String(cursoId);
+        
+        // Verificar inscripción de manera más completa
+        const estaInscrito = response.data.some(curso => {
+          // Extraer el ID del curso en diferentes formatos posibles
+          const id = curso.id_curso || curso.id;
+          if (!id) return false;
+          
+          const idNum = parseInt(id);
+          const idStr = String(id);
+          
+          console.log(`Comparando: Curso en lista=${idStr}(${idNum}) vs CursoActual=${cursoIdStr}(${cursoIdNum})`);
+          return idNum === cursoIdNum || idStr === cursoIdStr;
+        });
+        
+        console.log('¿Usuario inscrito en este curso?', estaInscrito);
         setHaComprado(estaInscrito);
         
-        if (!estaInscrito) {
+        if (estaInscrito) {
+          setMensaje({
+            tipo: 'exito',
+            texto: '¡Tienes acceso completo a este curso!'
+          });
+        } else {
           setMensaje({
             tipo: 'advertencia',
             texto: 'No estás inscrito en este curso. Es necesario inscribirse para acceder al contenido.'
@@ -137,6 +162,7 @@ const VisorCurso = () => {
       }
     } catch (error) {
       console.error('Error al verificar inscripción:', error);
+      setHaComprado(false);
     }
   };
   
@@ -176,25 +202,44 @@ const VisorCurso = () => {
               titulo: 'Introducción al curso',
               completado: false,
               progreso: 0,
-              // Solo la primera lección está disponible para usuarios no autenticados
+              // Si el usuario está inscrito, todas las lecciones están disponibles
               lecciones: [
-                { id: 1, titulo: 'Bienvenida y presentación', duracion: '03:00', completada: false, bloqueada: !haComprado },
-                { id: 2, titulo: 'Requisitos previos', duracion: '08:45', completada: false, bloqueada: !haComprado },
-                { id: 3, titulo: 'Configuración del entorno', duracion: '12:20', completada: false, bloqueada: !haComprado }
+                { 
+                  id: 1, 
+                  titulo: 'Bienvenida y presentación', 
+                  duracion: '03:00', 
+                  completada: false, 
+                  bloqueada: !haComprado 
+                },
+                { 
+                  id: 2, 
+                  titulo: 'Requisitos previos', 
+                  duracion: '08:45', 
+                  completada: false, 
+                  bloqueada: !haComprado 
+                },
+                { 
+                  id: 3, 
+                  titulo: 'Configuración del entorno', 
+                  duracion: '12:20', 
+                  completada: false, 
+                  bloqueada: !haComprado 
+                }
               ]
             },
             {
               id: 2,
               titulo: 'Fundamentos básicos',
-              completado: usuarioAutenticado ? true : false,
-              progreso: usuarioAutenticado ? 100 : 0,
+              // Si está inscrito, podemos habilitar el progreso
+              completado: haComprado ? true : false,
+              progreso: haComprado ? 100 : 0,
               bloqueado: !haComprado,
               lecciones: [
                 { 
                   id: 4, 
                   titulo: 'Conceptos fundamentales', 
                   duracion: '15:10', 
-                  completada: usuarioAutenticado ? true : false,
+                  completada: haComprado ? true : false,
                   bloqueada: !haComprado 
                 },
                 { 
@@ -1053,18 +1098,18 @@ const VisorCurso = () => {
             <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-700/50">
               <h2 className="text-xl font-bold text-white mb-6">Contenido del curso</h2>
               
-              {!haComprado && (
-                <div className="mb-6 p-4 bg-gray-900/60 rounded-xl border border-gray-700">
-                  <div className="flex items-center mb-3">
-                    <div className="bg-purple-600/20 p-2 rounded-full mr-3">
-                      <FaRegClock className="text-purple-400" size={16} />
-                    </div>
-                    <h3 className="text-white font-medium">Acceso de prueba</h3>
-                  </div>
-                  <p className="text-gray-400 text-sm mb-3">Tienes acceso gratuito al primer módulo del curso. Inscríbete para acceder a:</p>
-                  <ul className="space-y-2">
+              {!haComprado ? (
+                <div className="bg-gray-800/50 rounded-xl p-6 border border-gray-700 mb-6 relative overflow-hidden">
+                  <div className="absolute top-0 left-0 w-2 h-full bg-gradient-to-b from-purple-500 to-pink-500"></div>
+                  <h3 className="text-lg font-bold text-white mb-3 flex items-center">
+                    <FaGem className="text-pink-400 mr-3" /> Desbloquea acceso completo
+                  </h3>
+                  <p className="text-gray-300 mb-4">
+                    Inscríbete en este curso para obtener acceso completo a todas las lecciones y recursos adicionales.
+                  </p>
+                  <ul className="space-y-2 mb-5">
                     <li className="flex items-center text-gray-300 text-sm">
-                      <FaCheck className="text-green-400 mr-2" size={12} /> Todos los módulos y lecciones
+                      <FaCheck className="text-green-400 mr-2" size={12} /> Acceso a todo el contenido del curso
                     </li>
                     <li className="flex items-center text-gray-300 text-sm">
                       <FaCheck className="text-green-400 mr-2" size={12} /> Recursos y materiales descargables
@@ -1081,6 +1126,27 @@ const VisorCurso = () => {
                   >
                     Inscribirme ahora
                   </motion.button>
+                </div>
+              ) : (
+                <div className="bg-green-800/20 rounded-xl p-6 border border-green-700/50 mb-6 relative overflow-hidden">
+                  <div className="absolute top-0 left-0 w-2 h-full bg-gradient-to-b from-green-500 to-teal-500"></div>
+                  <h3 className="text-lg font-bold text-white mb-3 flex items-center">
+                    <FaCrown className="text-yellow-400 mr-3" /> Acceso Completo Desbloqueado
+                  </h3>
+                  <p className="text-gray-300 mb-4">
+                    ¡Estás inscrito en este curso! Disfruta de acceso completo a todas las lecciones y recursos.
+                  </p>
+                  <ul className="space-y-2 mb-2">
+                    <li className="flex items-center text-gray-300 text-sm">
+                      <FaCheck className="text-green-400 mr-2" size={12} /> Acceso completo a todas las lecciones
+                    </li>
+                    <li className="flex items-center text-gray-300 text-sm">
+                      <FaCheck className="text-green-400 mr-2" size={12} /> Descarga de todos los recursos adicionales
+                    </li>
+                    <li className="flex items-center text-gray-300 text-sm">
+                      <FaCheck className="text-green-400 mr-2" size={12} /> Asistencia y soporte prioritario
+                    </li>
+                  </ul>
                 </div>
               )}
               

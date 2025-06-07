@@ -7,8 +7,12 @@ import {FaClock, FaChalkboardTeacher, FaBookReader, FaStar, FaPlay, FaCheck } fr
 const Curso = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  
+  // Crear el FormData usando el nombre correcto del parámetro
   const identifier = new FormData();
-  identifier.append('id', id);
+  identifier.append('id_curso', id); // Usar id_curso en lugar de id para el backend
+  
+  console.log('ID del curso desde URL:', id);
   
   const [curso, setCurso] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -76,10 +80,12 @@ const Curso = () => {
         { withCredentials: true }
       );
       
+      console.log('Respuesta comprobar sesión:', respuesta.data);
+      
       if (respuesta.data && respuesta.data.username) {
         setUserData(respuesta.data);
-        // Si el usuario está autenticado, obtener sus cursos inscritos
-        obtenerCursosInscritos();
+        // Si el usuario está autenticado, verificamos directamente si está inscrito en este curso
+        verificarInscripcion();
       } else {
         // Usuario no autenticado, no mostrar error
         setUserData(null);
@@ -93,22 +99,73 @@ const Curso = () => {
     }
   };
   
+  // Método optimizado para verificar directamente inscripción
+  const verificarInscripcion = async () => {
+    try {
+      console.log('Verificando inscripción directa para curso ID:', id);
+      
+      // Crear FormData con el id del curso
+      const formData = new FormData();
+      formData.append('id_curso', id);
+      
+      const respuesta = await axios.post(
+        'http://localhost/TFG_DAW/backend/controlador/controlador.php?action=verificarInscripcion',
+        formData,
+        { withCredentials: true }
+      );
+      
+      console.log('Respuesta verificación directa:', respuesta.data);
+      
+      // Actualizar estado según respuesta
+      if (respuesta.data && respuesta.data.inscrito === true) {
+        console.log('¡USUARIO INSCRITO! Mostrando interfaz de inscrito');
+        setInscrito(true);
+      } else {
+        console.log('Usuario NO inscrito. Mostrando interfaz de no inscrito');
+        setInscrito(false);
+      }
+    } catch (error) {
+      console.error('Error al verificar inscripción:', error);
+      setInscrito(false);
+    }
+  };
+  
   const obtenerCursosInscritos = async () => {
     try {
+      console.log('Obteniendo cursos inscritos para página de detalle, ID del curso actual:', id);
       const response = await axios.get(
         'http://localhost/TFG_DAW/backend/controlador/controlador.php?action=obtenerMisCursos',
         { withCredentials: true }
       );
       
-      if (response.data && !response.data.error) {
+      console.log('Respuesta de obtenerMisCursos:', response.data);
+      
+      if (response.data && !response.data.error && Array.isArray(response.data)) {
         setCursosInscritos(response.data);
         
-        // Comprobar si el usuario está inscrito en este curso
-        const estaInscrito = response.data.some(curso => curso.id == id);
+        // Comprobar si el usuario está inscrito en este curso (múltiples comparaciones para mayor seguridad)
+        const idNumerico = parseInt(id);
+        const estaInscrito = response.data.some(curso => {
+          const cursoId = curso.id_curso || curso.id; // Intentar con id_curso primero, luego con id
+          const cursoIdNum = parseInt(cursoId);
+          
+          const coincide = 
+            cursoIdNum === idNumerico || 
+            String(cursoIdNum) === String(idNumerico);
+            
+          console.log(`Comparando curso ${curso.titulo} [ID: ${cursoId}] con curso actual [ID: ${id}]: coincide=${coincide}`);
+          return coincide;
+        });
+        
+        console.log('¿El usuario está inscrito en este curso?', estaInscrito);
         setInscrito(estaInscrito);
+      } else {
+        console.log('No se obtuvieron cursos inscritos o el formato no es correcto');
+        setInscrito(false);
       }
     } catch (error) {
       console.error('Error al obtener cursos inscritos:', error);
+      setInscrito(false);
     }
   };
 
@@ -165,6 +222,19 @@ const Curso = () => {
             className="max-w-6xl mx-auto"
           >
             {/* Hero Section */}
+            {userData && !inscrito && (
+              <div className="bg-yellow-600/20 border border-yellow-500/30 rounded-xl p-4 mb-6 flex items-center">
+                <div className="text-yellow-400 mr-3 text-xl">⚠️</div>
+                <div className="text-yellow-300">No estás inscrito en este curso. Es necesario inscribirse para acceder al contenido.</div>
+                <button 
+                  onClick={() => document.querySelector('#inscripcion-section').scrollIntoView({ behavior: 'smooth' })}
+                  className="ml-auto bg-yellow-600/30 hover:bg-yellow-600/50 text-yellow-200 px-4 py-2 rounded-lg text-sm transition-colors duration-300"
+                >
+                  Inscribirse
+                </button>
+              </div>
+            )}
+            
             <div className="relative rounded-3xl overflow-hidden mb-12 bg-gradient-to-br from-purple-600/10 to-pink-600/10 border border-gray-800">
               <div className="absolute inset-0 bg-gradient-to-br from-purple-600/20 to-pink-600/20 backdrop-blur-sm"></div>
               <div className="relative z-10 p-8 md:p-12">
@@ -223,6 +293,7 @@ const Curso = () => {
                   </motion.div>
                 </div>
                 <motion.div 
+                  id="inscripcion-section"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.7 }}
@@ -236,14 +307,26 @@ const Curso = () => {
                     {userData ? (
                       // Interfaz para usuarios autenticados
                       <>
-                        <motion.button
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
-                          onClick={() => navigate(`/curso-visor/${id}`)}
-                          className="px-8 py-3 bg-gradient-to-r from-purple-500 to-purple-700 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-purple-500/20 transition-all duration-300 flex items-center justify-center"
-                        >
-                          <FaPlay className="mr-2" size={14} /> Acceder al Curso
-                        </motion.button>
+                        {inscrito ? (
+                          <motion.button
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={() => navigate(`/curso-visor/${id}`)}
+                            className="px-8 py-3 bg-gradient-to-r from-purple-500 to-purple-700 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-purple-500/20 transition-all duration-300 flex items-center justify-center"
+                          >
+                            <FaPlay className="mr-2" size={14} /> Acceder al Curso
+                          </motion.button>
+                        ) : (
+                          <motion.button
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={() => alert('Necesitas inscribirte a este curso para acceder al contenido')}
+                            className="px-8 py-3 bg-gray-500 text-white rounded-xl font-semibold transition-all duration-300 flex items-center justify-center opacity-70"
+                            disabled
+                          >
+                            <FaPlay className="mr-2" size={14} /> Acceder al Curso
+                          </motion.button>
+                        )}
                         {!inscrito ? (
                           <motion.button
                             whileHover={{ scale: 1.05 }}

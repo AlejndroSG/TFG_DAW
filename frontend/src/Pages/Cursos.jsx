@@ -17,18 +17,25 @@ const Cursos = () => {
   useEffect(() => {
     const comprobarSesion = async () => {
       try {
+        console.log('Verificando sesión del usuario...');
         const respuesta = await axios.get(
           'http://localhost/TFG_DAW/backend/controlador/controlador.php?action=comprobarSesion',
           { withCredentials: true }
         );
         
         if (respuesta.data && respuesta.data.username) {
+          console.log('Usuario con sesión activa:', respuesta.data);
           setUserData(respuesta.data);
           // Si el usuario ha iniciado sesión, obtener sus cursos inscritos
-          obtenerCursosInscritos();
+          console.log('Usuario autenticado, obteniendo cursos inscritos...');
+          await obtenerCursosInscritos();
+        } else {
+          console.log('No hay sesión de usuario activa');
+          setCursosInscritos([]);
         }
       } catch (error) {
         console.error('Error al comprobar sesión:', error);
+        setCursosInscritos([]);
       }
     };
 
@@ -38,18 +45,35 @@ const Cursos = () => {
   // Función para obtener los cursos en los que el usuario está inscrito
   const obtenerCursosInscritos = async () => {
     try {
+      console.log('Obteniendo cursos inscritos del usuario...');
       const response = await axios.get(
         'http://localhost/TFG_DAW/backend/controlador/controlador.php?action=obtenerMisCursos',
         { withCredentials: true }
       );
       
+      console.log('Respuesta completa de obtenerMisCursos:', response.data);
+      
       if (Array.isArray(response.data)) {
         // Extraer solo los IDs de los cursos inscritos para facilitar la comparación
-        const idsInscritos = response.data.map(curso => curso.id);
+        const idsInscritos = response.data.map(curso => {
+          console.log('Curso inscrito individual:', curso);
+          // Manejar diferentes formatos de ID
+          const id = curso.id_curso || curso.id || curso.curso_id;
+          if (id) {
+            return parseInt(id);
+          } else {
+            console.warn('Curso sin ID válido:', curso);
+            return null;
+          }
+        }).filter(id => id !== null); // Filtrar IDs nulos
+        
+        console.log('IDs de cursos inscritos (parseados):', idsInscritos);
         setCursosInscritos(idsInscritos);
+      } else {
+        console.warn('La respuesta de cursos inscritos no es un array:', response.data);
       }
     } catch (error) {
-      console.error('Error al obtener cursos inscritos:', error);
+      console.error('Error al obtener cursos inscritos:', error.response?.data || error.message);
     }
   };
 
@@ -61,15 +85,28 @@ const Cursos = () => {
         { withCredentials: true }
       );
       
+      console.log('Respuesta obtenerCursos (raw):', response.data);
+      
       // Verificar si la respuesta es un array
       if (Array.isArray(response.data)) {
-        setCursos(response.data);
+        // Procesar cada curso para asegurar que id_curso exista
+        const cursosProcesados = response.data.map(curso => {
+          // Si el curso tiene id pero no id_curso, usar id como id_curso
+          if (!curso.id_curso && curso.id) {
+            console.log(`Curso ${curso.titulo}: usando id=${curso.id} como id_curso`);
+            return { ...curso, id_curso: curso.id };
+          }
+          return curso;
+        });
+        
+        console.log('Cursos procesados:', cursosProcesados);
+        setCursos(cursosProcesados);
         setError(null);
         setMios(false);
       } else {
+        console.error('La respuesta de obtenerCursos no es un array:', response.data);
         setError('Error al obtener los cursos');
         setCursos([]);
-        setMios(false);
       }
     } catch (error) {
       console.error('Error al obtener los cursos:', error);
@@ -85,6 +122,8 @@ const Cursos = () => {
     obtenerCursos();
   }, []);
 
+
+
   const misCursos = async () => {
     try {
       setLoading(true);
@@ -92,11 +131,44 @@ const Cursos = () => {
         'http://localhost/TFG_DAW/backend/controlador/controlador.php?action=obtenerMisCursos',
         { withCredentials: true }
       );
-      setCursos(response.data);
-      setError(null);
-      setMios(true);
+      console.log('Mis cursos obtenidos (raw):', response.data);
+      
+      if (Array.isArray(response.data)) {
+        // Procesar cada curso para garantizar que id_curso exista
+        const cursosProcesados = response.data.map(curso => {
+          // Crear una copia del curso para trabajar
+          const cursoFinal = { ...curso };
+          
+          // Verificar si tenemos id_curso, y si no, usar id si está disponible
+          if (!cursoFinal.id_curso && cursoFinal.id) {
+            console.log(`Curso ${cursoFinal.titulo}: usando id=${cursoFinal.id} como id_curso`);
+            cursoFinal.id_curso = cursoFinal.id;
+          }
+          
+          // Asegurar que id_curso sea numérico para comparaciones consistentes
+          if (cursoFinal.id_curso) {
+            cursoFinal.id_curso = parseInt(cursoFinal.id_curso);
+          } else {
+            console.warn(`Curso sin ID válido:`, cursoFinal);
+            // Asignar un ID temporal para evitar errores
+            cursoFinal.id_curso = Math.floor(Math.random() * -1000); // ID negativo para identificarlo como temporal
+          }
+          
+          return cursoFinal;
+        });
+        
+        console.log('Mis cursos procesados:', cursosProcesados);
+        setCursos(cursosProcesados);
+        setError(null);
+        setMios(true);
+      } else {
+        console.error('La respuesta de obtenerMisCursos no es un array:', response.data);
+        setError('Error al obtener tus cursos inscritos');
+        setCursos([]);
+      }
     } catch (error) {
-      setError('No se pudieron cargar los cursos. Por favor, intenta más tarde.');
+      console.error('Error al obtener mis cursos:', error);
+      setError('No se pudieron cargar tus cursos. Por favor, intenta más tarde.');
       setCursos([]);
     } finally {
       setLoading(false);
@@ -196,10 +268,38 @@ const Cursos = () => {
             {cursos.length > 0 ? 
               cursos.map((curso, index) => (
                 <motion.div
-                  key={curso.id}
+                  key={curso.id_curso || `curso-${index}`}
                   initial={{ opacity: 0, y: 30 }}
                   animate={{ opacity: 1, y: 0 }}
-                  onClick={() => navigate(`/curso/${curso.id}`)}
+                  onClick={() => {
+                    // Extraer ID del curso actual en diferentes formatos
+                    const cursoId = curso.id_curso || curso.id;
+                    const cursoIdNum = parseInt(cursoId);
+                    const cursoIdStr = String(cursoId);
+                    
+                    // Verificar si el usuario está inscrito al curso
+                    let inscrito = false;
+                    if (userData && Array.isArray(cursosInscritos) && cursosInscritos.length > 0) {
+                      for (const inscritoId of cursosInscritos) {
+                        const inscritoIdNum = parseInt(inscritoId);
+                        const inscritoIdStr = String(inscritoId);
+                        
+                        if (inscritoIdNum === cursoIdNum || inscritoIdStr === cursoIdStr) {
+                          inscrito = true;
+                          break;
+                        }
+                      }
+                    }
+                    
+                    // Navegar a la vista correcta según el estado de inscripción
+                    if (inscrito) {
+                      console.log(`Redirigiendo al usuario a la vista de curso para inscritos: /curso-visor/${curso.id_curso}`);
+                      navigate(`/curso-visor/${curso.id_curso}`);
+                    } else {
+                      console.log(`Redirigiendo al usuario a la vista normal de curso: /curso/${curso.id_curso}`);
+                      navigate(`/curso/${curso.id_curso}`);
+                    }
+                  }}
                   transition={{ delay: index * 0.1, duration: 0.5 }}
                   className="group relative bg-gray-800/50 backdrop-blur-sm rounded-2xl overflow-hidden border border-gray-700/50 hover:border-purple-500/50 hover:shadow-lg hover:shadow-purple-500/10 transition-all duration-300"
                 >
@@ -269,36 +369,69 @@ const Cursos = () => {
                           whileTap={{ scale: 0.95 }}
                           onClick={(e) => {
                             e.stopPropagation();
-                            navigate(`/curso-visor/${curso.id}`);
+                            navigate(`/curso-visor/${curso.id_curso}`);
                           }}
                           className="px-4 py-2 bg-gray-800 border border-purple-500/30 text-purple-400 rounded-xl font-medium hover:bg-gray-700 hover:text-purple-300 transition-all duration-300"
                         >
                           Ver curso
                         </motion.button>
-                        {/* Mostrar el botón de inscripción solo si el usuario no está inscrito en este curso */}
-                        {(!userData || (userData && !cursosInscritos.includes(curso.id))) && (
-                          <motion.button
-                            whileHover={{ scale: 1.05, boxShadow: "0 10px 25px -5px rgba(124, 58, 237, 0.5)" }}
-                            whileTap={{ scale: 0.95 }}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              navigate(`/pago/${curso.id}`);
-                            }}
-                            className="px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-600 text-white rounded-xl font-semibold hover:opacity-95 transition-all duration-300 flex items-center"
-                          >
-                            Inscribirse
-                          </motion.button>
-                        )}
-                        {/* Mostrar un botón de 'Ya inscrito' cuando el usuario está inscrito */}
-                        {userData && cursosInscritos.includes(curso.id) && (
-                          <motion.button
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                            className="px-4 py-2 bg-gray-700 text-gray-300 rounded-xl font-medium cursor-default flex items-center"
-                          >
-                            <span className="mr-2">✓</span> Ya inscrito
-                          </motion.button>
-                        )}
+                        {/* Botones de inscripción o ya inscrito */}
+                        {(() => {
+                          // Extraer ID del curso actual en diferentes formatos
+                          const cursoId = curso.id_curso || curso.id;
+                          const cursoIdNum = parseInt(cursoId);
+                          const cursoIdStr = String(cursoId);
+                          
+                          // Verificar si el usuario está inscrito al curso - usando comprobación directa con los IDs
+                          let inscrito = false;
+                          if (userData && Array.isArray(cursosInscritos) && cursosInscritos.length > 0) {
+                            for (const inscritoId of cursosInscritos) {
+                              const inscritoIdNum = parseInt(inscritoId);
+                              const inscritoIdStr = String(inscritoId);
+                              
+                              if (inscritoIdNum === cursoIdNum || inscritoIdStr === cursoIdStr) {
+                                inscrito = true;
+                                break;
+                              }
+                            }
+                          }
+                          
+                          console.log(`Curso ${cursoIdStr} - ${curso.titulo}: Inscrito=${inscrito} (ID=${cursoIdNum}, cursosInscritos=${JSON.stringify(cursosInscritos)})`);
+                          
+                          // Usamos la variable inscrito para determinar qué botón mostrar
+                          
+                          if (!userData || !inscrito) {
+                            return (
+                              <motion.button
+                                whileHover={{ scale: 1.05, boxShadow: "0 10px 25px -5px rgba(124, 58, 237, 0.5)" }}
+                                whileTap={{ scale: 0.95 }}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  if (!curso.id_curso) {
+                                    console.error('Error: ID de curso indefinido', curso);
+                                    alert('Error: No se pudo determinar el ID del curso');
+                                    return;
+                                  }
+                                  console.log('Navegando a pago con curso ID:', curso.id_curso);
+                                  navigate(`/pago/${curso.id_curso}`);
+                                }}
+                                className="px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-600 text-white rounded-xl font-semibold hover:opacity-95 transition-all duration-300 flex items-center"
+                              >
+                                Inscribirse
+                              </motion.button>
+                            );
+                          } else {
+                            return (
+                              <motion.button
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                className="px-4 py-2 bg-gray-700 text-gray-300 rounded-xl font-medium cursor-default flex items-center"
+                              >
+                                <span className="mr-2">✓</span> Ya inscrito
+                              </motion.button>
+                            );
+                          }
+                        })()}
                       </div>
                     </div>
                   </div>

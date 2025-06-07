@@ -6,6 +6,7 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import HistorialPagos from '../components/Pagos/HistorialPagos';
 import Suscripciones from '../components/Pagos/Suscripciones';
+import MisCursos from '../components/Cursos/MisCursos';
 
 const Perfil = () => {
   const [userData, setUserData] = useState(null);
@@ -437,24 +438,7 @@ const Perfil = () => {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="max-w-4xl mx-auto"
           >
-            <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-8 shadow-lg border border-gray-700/50">
-              <div className="flex items-center border-b border-purple-500/30 pb-4 mb-6">
-                <span className="bg-gradient-to-r from-purple-500 to-pink-600 rounded-full p-2 mr-3">
-                  <FaBook className="w-5 h-5 text-white" />
-                </span>
-                <h2 className="text-2xl font-semibold text-white">Mis Cursos</h2>
-              </div>
-              
-              {/* Este sería tu componente de cursos del usuario, que ya deberías tener implementado */}
-              <div className="text-center py-10">
-                <p className="text-gray-400">Aquí irían tus cursos inscritos.</p>
-                <button 
-                  className="mt-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-2 rounded-xl font-semibold hover:shadow-lg hover:shadow-purple-500/20 transition-all duration-300"
-                >
-                  Ir a mis cursos
-                </button>
-              </div>
-            </div>
+            <MisCursos />
           </motion.div>
         )}
         
