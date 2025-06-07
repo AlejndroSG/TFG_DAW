@@ -174,6 +174,31 @@ const Informes = () => {
               <div className="h-1 w-20 bg-gradient-to-r from-purple-600 to-pink-600 mt-2 rounded-full"></div>
             </motion.h1>
             
+            {/* Tarjeta de estadísticas totales */}
+            {!loadingData && !error && (
+              <motion.div 
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+                className="mb-6"
+              >
+                <div className="bg-gradient-to-r from-purple-600/30 to-pink-600/30 backdrop-blur-sm rounded-2xl border border-purple-500/30 p-6 shadow-lg">
+                  <div className="flex flex-col md:flex-row justify-between items-center">
+                    <div>
+                      <h3 className="text-xl font-semibold text-white">Resumen de Ventas</h3>
+                      <p className="text-gray-300 text-sm">Total de ingresos generados</p>
+                    </div>
+                    <div className="mt-4 md:mt-0 text-center bg-gray-800/50 px-6 py-3 rounded-xl shadow-inner">
+                      <span className="text-sm text-gray-400">INGRESOS TOTALES</span>
+                      <div className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+                        {ventas.reduce((total, venta) => total + parseFloat(venta.valor), 0).toFixed(2)}€
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+            
             {/* Estado de carga o error */}
             {loadingData && (
               <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-6 flex items-center justify-center">

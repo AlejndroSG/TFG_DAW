@@ -76,12 +76,30 @@
                 $curso = $infoCurso && $infoCurso->num_rows > 0 ? $infoCurso->fetch_assoc() : null;
                 
                 // Obtener datos del usuario
-                $infoUsuario = $this->conn->query("SELECT username as nombre_usuario FROM usuarios WHERE id = $id_usuario");
+                $query_usuario = "SELECT nombre FROM usuarios WHERE id_usuario = $id_usuario";
+                error_log("Ejecutando consulta de usuario: $query_usuario");
+                $infoUsuario = $this->conn->query($query_usuario);
+                
                 $usuario = $infoUsuario && $infoUsuario->num_rows > 0 ? $infoUsuario->fetch_assoc() : null;
+                
+                // Depurar datos del usuario
+                if ($usuario) {
+                    error_log("Datos del usuario ID $id_usuario: " . print_r($usuario, true));
+                } else {
+                    error_log("No se encontró el usuario con ID $id_usuario");
+                }
                 
                 $titulo_curso = $curso ? $curso['titulo'] : "Curso #$id_curso";
                 $precio = $curso ? floatval($curso['precio']) : 0;
-                $nombre_usuario = $usuario ? $usuario['nombre_usuario'] : "Usuario #$id_usuario";
+                
+                // Usar el nombre del usuario si existe
+                if ($usuario && !empty($usuario['nombre'])) {
+                    $nombre_usuario = $usuario['nombre'];
+                    error_log("Usando nombre de usuario: $nombre_usuario");
+                } else {
+                    $nombre_usuario = "Usuario #$id_usuario";
+                    error_log("Usuario no encontrado o sin nombre, usando: $nombre_usuario");
+                }
                 
                 $datos[] = [
                     "id" => $inscripcion["id_inscripcion"],
