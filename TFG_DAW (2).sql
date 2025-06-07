@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 16-05-2025 a las 13:04:34
+-- Tiempo de generación: 07-06-2025 a las 18:38:15
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.0.30
 
@@ -35,17 +35,20 @@ CREATE TABLE `cursos` (
   `duracion` int(11) DEFAULT NULL COMMENT 'Duración en horas',
   `id_profesor` int(11) DEFAULT NULL,
   `tipo_Curso` varchar(100) NOT NULL,
-  `imgCurso` varchar(300) NOT NULL
+  `imgCurso` varchar(300) NOT NULL,
+  `publicado` tinyint(1) NOT NULL DEFAULT 0,
+  `destacado` tinyint(1) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Volcado de datos para la tabla `cursos`
 --
 
-INSERT INTO `cursos` (`id_curso`, `titulo`, `descripcion`, `precio`, `duracion`, `id_profesor`, `tipo_Curso`, `imgCurso`) VALUES
-(1, 'Introducción a la IA', 'Curso básico sobre inteligencia artificial', 49.99, 20, 3, 'Básico', './src/img/imgCursos/IA.jpg'),
-(2, 'Machine Learning Avanzado', 'Técnicas avanzadas de aprendizaje automático', 99.99, 40, 3, 'Avanzado', './src/img/imgCursos/MachineLearning.jpg'),
-(3, 'Desarrollo Web con Python', 'Creación de aplicaciones web con Flask y Django', 79.99, 30, 3, 'Intermedio', './src/img/imgCursos/django.png');
+INSERT INTO `cursos` (`id_curso`, `titulo`, `descripcion`, `precio`, `duracion`, `id_profesor`, `tipo_Curso`, `imgCurso`, `publicado`, `destacado`) VALUES
+(1, 'Introducción a la IA', 'Curso básico sobre inteligencia artificial', 49.99, 20, 3, 'Básico', './src/img/imgCursos/IA.jpg', 1, 1),
+(2, 'Machine Learning Avanzado', 'Técnicas avanzadas de aprendizaje automático', 99.99, 40, 3, 'Avanzado', './src/img/imgCursos/MachineLearning.jpg', 1, 0),
+(3, 'Desarrollo Web con Python', 'Creación de aplicaciones web con Flask y Django', 79.99, 30, 3, 'Intermedio', './src/img/imgCursos/django.png', 1, 0),
+(7, 'Salvador', '', 300.00, 0, 3, 'Básico', '/src/img/imgCursos/curso_683f7eb5438eb.png', 1, 0);
 
 -- --------------------------------------------------------
 
@@ -57,16 +60,21 @@ CREATE TABLE `inscripciones` (
   `id_inscripcion` int(11) NOT NULL,
   `id_usuario` int(11) NOT NULL,
   `id_curso` int(11) NOT NULL,
-  `fecha_inscripcion` date NOT NULL DEFAULT curdate()
+  `fecha_inscripcion` date NOT NULL DEFAULT curdate(),
+  `estado` varchar(50) DEFAULT 'activo',
+  `progreso` int(11) DEFAULT 0,
+  `completado` tinyint(1) DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Volcado de datos para la tabla `inscripciones`
 --
 
-INSERT INTO `inscripciones` (`id_inscripcion`, `id_usuario`, `id_curso`, `fecha_inscripcion`) VALUES
-(5, 1, 1, '2025-05-16'),
-(6, 1, 2, '2025-05-16');
+INSERT INTO `inscripciones` (`id_inscripcion`, `id_usuario`, `id_curso`, `fecha_inscripcion`, `estado`, `progreso`, `completado`) VALUES
+(24, 5, 1, '2025-06-07', 'activo', 0, 0),
+(25, 5, 2, '2025-06-07', 'activo', 0, 0),
+(26, 5, 3, '2025-06-07', 'activo', 0, 0),
+(27, 1, 1, '2025-06-07', 'activo', 0, 0);
 
 -- --------------------------------------------------------
 
@@ -77,19 +85,28 @@ INSERT INTO `inscripciones` (`id_inscripcion`, `id_usuario`, `id_curso`, `fecha_
 CREATE TABLE `pagos` (
   `id_pago` int(11) NOT NULL,
   `id_usuario` int(11) NOT NULL,
+  `id_curso` int(11) NOT NULL,
   `monto` decimal(10,2) NOT NULL,
   `fecha_pago` date NOT NULL DEFAULT curdate(),
-  `metodo_pago` enum('Tarjeta','PayPal','Transferencia') NOT NULL
+  `metodo_pago` enum('Tarjeta','PayPal','Transferencia') NOT NULL,
+  `estado` varchar(50) NOT NULL,
+  `referencia` varchar(50) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Volcado de datos para la tabla `pagos`
 --
 
-INSERT INTO `pagos` (`id_pago`, `id_usuario`, `monto`, `fecha_pago`, `metodo_pago`) VALUES
-(1, 1, 20.00, '2025-03-10', 'Tarjeta'),
-(2, 2, 40.00, '2025-03-10', 'PayPal'),
-(3, 1, 80.00, '2025-03-10', 'Transferencia');
+INSERT INTO `pagos` (`id_pago`, `id_usuario`, `id_curso`, `monto`, `fecha_pago`, `metodo_pago`, `estado`, `referencia`) VALUES
+(1, 1, 0, 20.00, '2025-03-10', 'Tarjeta', '', ''),
+(2, 2, 0, 40.00, '2025-03-10', 'PayPal', '', ''),
+(3, 1, 0, 80.00, '2025-03-10', 'Transferencia', '', ''),
+(4, 5, 3, 79.99, '2025-06-07', 'Tarjeta', 'completado', 'INV-2025-4317'),
+(5, 5, 7, 300.00, '2025-06-07', 'Tarjeta', 'completado', 'INV-2025-2269'),
+(6, 5, 1, 49.99, '2025-06-07', 'Tarjeta', 'completado', 'INV-2025-7839'),
+(7, 5, 2, 99.99, '2025-06-07', 'Tarjeta', 'completado', 'INV-2025-5842'),
+(8, 5, 3, 79.99, '2025-06-07', 'Tarjeta', 'completado', 'INV-2025-6559'),
+(9, 1, 1, 49.99, '2025-06-07', 'Tarjeta', 'completado', 'INV-2025-1969');
 
 -- --------------------------------------------------------
 
@@ -136,7 +153,8 @@ INSERT INTO `usuarios` (`id_usuario`, `nombre`, `email`, `contraseña`, `tipo_us
 (0, 'admin', 'admin@example.com', 'admin', 'Administrador', NULL),
 (1, 'Juan Pérez', 'juan@example.com', 'juan123', 'Estudiante', 1),
 (2, 'María López', 'maria@example.com', 'segura456', 'Estudiante', 2),
-(3, 'Carlos Sánchez', 'carlos@example.com', 'profesor789', 'Profesor', NULL);
+(3, 'Carlos Sánchez', 'carlos@example.com', 'profesor789', 'Profesor', NULL),
+(5, 'alejandro', 'alejandro@gmail.com', 'alejandro', 'Estudiante', NULL);
 
 --
 -- Índices para tablas volcadas
@@ -186,19 +204,19 @@ ALTER TABLE `usuarios`
 -- AUTO_INCREMENT de la tabla `cursos`
 --
 ALTER TABLE `cursos`
-  MODIFY `id_curso` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id_curso` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT de la tabla `inscripciones`
 --
 ALTER TABLE `inscripciones`
-  MODIFY `id_inscripcion` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id_inscripcion` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=28;
 
 --
 -- AUTO_INCREMENT de la tabla `pagos`
 --
 ALTER TABLE `pagos`
-  MODIFY `id_pago` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id_pago` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT de la tabla `planes`
@@ -210,7 +228,7 @@ ALTER TABLE `planes`
 -- AUTO_INCREMENT de la tabla `usuarios`
 --
 ALTER TABLE `usuarios`
-  MODIFY `id_usuario` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id_usuario` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- Restricciones para tablas volcadas

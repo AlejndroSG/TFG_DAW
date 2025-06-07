@@ -197,7 +197,7 @@ const Banner = () => {
   return (
     <>
       <div 
-        className="relative w-full min-h-screen pt-16 sm:pt-20 md:pt-0 flex flex-col items-center justify-center bg-gray-900 overflow-hidden" 
+        className="relative md:px-8 w-full min-h-screen pt-16 sm:pt-20 md:pt-0 flex flex-col items-center justify-center bg-gray-900 overflow-hidden" 
         onMouseMove={handleMouseMove}
       >
         {/* Efecto de brillos y partículas */}
