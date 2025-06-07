@@ -152,9 +152,35 @@ const AdminUsuarios = () => {
     ));
   };
 
-  const handleEliminarUsuario = (id) => {
+  const handleEliminarUsuario = async (id) => {
     if (window.confirm('¿Estás seguro de que deseas eliminar este usuario? Esta acción no se puede deshacer.')) {
-      setUsuarios(usuarios.filter(usuario => usuario.id !== id));
+      try {
+        // Enviar solicitud al backend para eliminar el usuario
+        const response = await axios({
+          method: 'post',
+          url: 'http://localhost/TFG_DAW/backend/controlador/controlador.php?action=eliminarUsuario',
+          data: { id: id },
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          withCredentials: true
+        });
+        
+        // Verificar respuesta
+        if (response.data.error) {
+          alert(`Error: ${response.data.error}`);
+          return;
+        }
+        
+        if (response.data.success) {
+          // Eliminar el usuario del estado local solo si la eliminación en el backend fue exitosa
+          setUsuarios(usuarios.filter(usuario => usuario.id !== id));
+          alert('Usuario eliminado correctamente');
+        }
+      } catch (error) {
+        console.error('Error al eliminar usuario:', error);
+        alert(`Error: ${error.message || 'No se pudo eliminar el usuario'}`);
+      }
     }
   };
 

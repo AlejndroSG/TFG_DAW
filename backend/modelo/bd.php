@@ -174,5 +174,65 @@
                 return ["error" => "Error al crear el usuario: " . $this->conn->error];
             }
         }
+        
+        // Función para eliminar un usuario
+        public function eliminarUsuario($id_usuario) {
+            // Log para diagnóstico
+            error_log("Modelo - eliminarUsuario: ID recibido = $id_usuario, tipo: " . gettype($id_usuario));
+            
+            // Convertir a entero para asegurar compatibilidad
+            $id_usuario = intval($id_usuario);
+            error_log("Modelo - eliminarUsuario: ID convertido = $id_usuario");
+            
+            // Verificar si el usuario existe con el ID proporcionado
+            $sentencia = "SELECT id_usuario FROM usuarios WHERE id_usuario = ?";
+            $consulta = $this->conn->prepare($sentencia);
+            $consulta->bind_param("i", $id_usuario);
+            $consulta->execute();
+            $consulta->store_result(); // Almacenar los resultados para verificar num_rows
+            
+            if ($consulta->num_rows == 0) {
+                error_log("Modelo - eliminarUsuario: El usuario con ID $id_usuario no existe");
+                $consulta->close();
+                return ["error" => "El usuario con ID $id_usuario no existe"];
+            }
+            
+            $consulta->close();
+            
+            // Eliminar inscripciones del usuario (para evitar errores de integridad referencial)
+            $sentencia = "DELETE FROM inscripciones WHERE id_usuario = ?";
+            $consulta = $this->conn->prepare($sentencia);
+            $consulta->bind_param("i", $id_usuario);
+            $result_inscripciones = $consulta->execute();
+            $affected_inscripciones = $consulta->affected_rows;
+            $consulta->close();
+            
+            error_log("Modelo - eliminarUsuario: Eliminación de inscripciones exitosa = " . ($result_inscripciones ? 'true' : 'false') . 
+                     ", filas afectadas: $affected_inscripciones");
+            
+            // Eliminar el usuario
+            $sentencia = "DELETE FROM usuarios WHERE id_usuario = ?";
+            $consulta = $this->conn->prepare($sentencia);
+            $consulta->bind_param("i", $id_usuario);
+            $result_usuario = $consulta->execute();
+            $affected_usuarios = $consulta->affected_rows;
+            $consulta->close();
+            
+            error_log("Modelo - eliminarUsuario: Eliminación de usuario exitosa = " . ($result_usuario ? 'true' : 'false') . 
+                     ", filas afectadas: $affected_usuarios");
+            
+            if ($result_usuario) {
+                return [
+                    "success" => true,
+                    "mensaje" => "Usuario eliminado correctamente",
+                    "id" => $id_usuario
+                ];
+            } else {
+                return [
+                    "error" => "Error al eliminar el usuario: " . $this->conn->error,
+                    "id" => $id_usuario
+                ];
+            }
+        }
     }
 ?>

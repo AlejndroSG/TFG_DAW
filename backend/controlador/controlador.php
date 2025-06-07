@@ -757,6 +757,41 @@
         error_log("verificarInscripcion: Resultado = ". json_encode($resultado));
         echo json_encode($resultado);
     }
+    
+    // Función para eliminar un usuario
+    function eliminarUsuario() {
+        // Logs extensivos para diagnóstico
+        error_log("==== INICIO ELIMINAR USUARIO ====");
+        error_log("SESSION en eliminarUsuario: " . print_r($_SESSION, true));
+        error_log("REQUEST_METHOD: " . $_SERVER['REQUEST_METHOD']);
+        error_log("Content-Type: " . (isset($_SERVER['CONTENT_TYPE']) ? $_SERVER['CONTENT_TYPE'] : 'no definido'));
+        
+        // Obtener datos JSON del cuerpo de la solicitud
+        $jsonData = file_get_contents('php://input');
+        error_log("Datos recibidos: " . $jsonData);
+        
+        $data = json_decode($jsonData, true);
+        error_log("Datos decodificados: " . print_r($data, true));
+        
+        if (!isset($data['id'])) {
+            error_log("Error: ID de usuario no proporcionado");
+            echo json_encode(["error" => "ID de usuario no proporcionado"]);
+            return;
+        }
+        
+        $id_usuario = $data['id'];
+        error_log("ID de usuario a eliminar: " . $id_usuario);
+        
+        // Ya no verificamos si es el mismo usuario para permitir todas las eliminaciones
+        
+        require_once("../modelo/bd.php");
+        $modelo = new db();
+        $resultado = $modelo->eliminarUsuario($id_usuario);
+        
+        error_log("eliminarUsuario: Resultado = ". json_encode($resultado));
+        error_log("==== FIN ELIMINAR USUARIO ====");
+        echo json_encode($resultado);
+    }
 
     // Si no ha sido iniciado el action
     if(isset($_REQUEST["action"])){
