@@ -792,6 +792,61 @@
         error_log("==== FIN ELIMINAR USUARIO ====");
         echo json_encode($resultado);
     }
+    
+    // Función para obtener estadísticas de ventas con filtro de usuario opcional
+    function obtenerEstadisticasVentas() {
+        // Verificar autenticación del usuario
+        if (!isset($_SESSION['id'])) {
+            echo json_encode(["error" => "No has iniciado sesión"]);
+            return;
+        }
+        
+        // Obtener parámetros de la solicitud
+        $fecha_inicio = isset($_GET['fecha_inicio']) ? $_GET['fecha_inicio'] : null;
+        $fecha_fin = isset($_GET['fecha_fin']) ? $_GET['fecha_fin'] : null;
+        $id_usuario = isset($_GET['id_usuario']) ? intval($_GET['id_usuario']) : null;
+        
+        error_log("obtenerEstadisticasVentas: fecha_inicio=$fecha_inicio, fecha_fin=$fecha_fin, id_usuario=$id_usuario");
+        
+        // Cargar el modelo de estadísticas
+        require_once("../modelo/estadisticas.php");
+        $estadisticas = new Estadisticas();
+        
+        // Obtener estadísticas de ventas
+        $datos = $estadisticas->obtenerEstadisticasVentas($fecha_inicio, $fecha_fin, $id_usuario);
+        
+        // Devolver resultados
+        echo json_encode($datos);
+    }
+    
+    // Función para obtener lista de usuarios para filtro en panel de estadísticas
+    function obtenerUsuariosFiltro() {
+        // Verificar autenticación del usuario
+        if (!isset($_SESSION['id'])) {
+            echo json_encode(["error" => "No has iniciado sesión"]);
+            return;
+        }
+        
+        // Verificar si es administrador
+        require_once("../modelo/bd.php");
+        $bd = new BaseDatos();
+        $usuario = $bd->obtenerUsuarioPorId($_SESSION['id']);
+        
+        if (!$usuario || ($usuario['tipo_usuario'] !== 'administrador' && $usuario['tipo_usuario'] !== 'admin')) {
+            echo json_encode(["error" => "No tienes permisos para realizar esta acción"]);
+            return;
+        }
+        
+        // Cargar el modelo de estadísticas
+        require_once("../modelo/estadisticas.php");
+        $estadisticas = new Estadisticas();
+        
+        // Obtener lista de usuarios
+        $usuarios = $estadisticas->obtenerUsuariosFiltro();
+        
+        // Devolver resultados
+        echo json_encode($usuarios);
+    }
 
     // Si no ha sido iniciado el action
     if(isset($_REQUEST["action"])){

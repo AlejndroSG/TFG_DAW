@@ -2,15 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
 import axios from 'axios';
 import { motion } from 'framer-motion';
-import {
-  FaChartBar,
-  FaBook,
-  FaChartLine,
-  FaUsersCog,
-  FaComments,
-  FaSignOutAlt,
-  FaSpinner
-} from 'react-icons/fa';
+import { FaSpinner } from 'react-icons/fa';
 
 const Informes = () => {
   const navigate = useNavigate();
@@ -93,77 +85,12 @@ const Informes = () => {
     return <Navigate to="/" />;
   }
 
-  // Menú de navegación lateral (mismo que en Dashboard)
-  const Sidebar = () => (
-    <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-6 flex flex-col h-full">
-      <h2 className="text-2xl font-bold text-white mb-8">Panel Admin</h2>
-      
-      <nav className="space-y-2 flex-1">
-        {[
-          { name: 'Dashboard', icon: <FaChartBar />, path: '/admin' },
-          { name: 'Usuarios', icon: <FaUsersCog />, path: '/admin/usuarios' },
-          { name: 'Cursos', icon: <FaBook />, path: '/admin/cursos' },
-          { name: 'Comentarios', icon: <FaComments />, path: '/admin/comentarios' },
-          { name: 'Informes', icon: <FaChartLine />, path: '/admin/informes' },
-        ].map((item) => (
-          <motion.button
-            key={item.name}
-            onClick={() => navigate(item.path)}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            className={`flex items-center w-full p-3 rounded-xl transition-all ${
-              window.location.pathname === item.path 
-                ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white'
-                : 'text-gray-300 hover:bg-gray-700/50'
-            }`}
-          >
-            <span className="mr-3">{item.icon}</span>
-            {item.name}
-          </motion.button>
-        ))}
-      </nav>
-      
-      <div className="pt-6 mt-6 border-t border-gray-700/50">
-        <div className="flex items-center">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-400 to-pink-600 flex items-center justify-center text-white font-bold">
-            {userData.username.charAt(0)}
-          </div>
-          <div className="ml-3">
-            <p className="text-white font-semibold">{userData.username}</p>
-            <p className="text-gray-400 text-sm">Administrador</p>
-          </div>
-        </div>
-        
-        {/* Botón de cerrar sesión */}
-        <motion.button
-          onClick={() => {
-            axios.get('http://localhost/TFG_DAW/backend/controlador/controlador.php?action=desconectar', { withCredentials: true })
-              .finally(() => {
-                navigate('/');
-              });
-          }}
-          whileHover={{ scale: 1.03 }}
-          whileTap={{ scale: 0.97 }}
-          className="mt-4 w-full bg-gradient-to-r from-red-500 to-pink-600 text-white rounded-xl py-2 px-4 font-semibold flex items-center justify-center hover:shadow-lg hover:shadow-red-500/20 transition-all"
-        >
-          <FaSignOutAlt className="mr-2" />
-          Cerrar Sesión
-        </motion.button>
-      </div>
-    </div>
-  );
-
   return (
     <div className="min-h-screen bg-gray-900 py-8">
       <div className="container mx-auto px-4">
-        <div className="flex flex-col lg:flex-row gap-6">
-          {/* Sidebar */}
-          <div className="lg:w-1/5">
-            <Sidebar />
-          </div>
-          
+        <div className="flex flex-col">
           {/* Main Content */}
-          <div className="lg:w-4/5 space-y-6">
+          <div className="w-full space-y-6">
             <motion.h1
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
