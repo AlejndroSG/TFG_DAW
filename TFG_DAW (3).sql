@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 07-06-2025 a las 18:38:15
+-- Tiempo de generación: 08-06-2025 a las 21:02:04
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.0.30
 
@@ -71,10 +71,10 @@ CREATE TABLE `inscripciones` (
 --
 
 INSERT INTO `inscripciones` (`id_inscripcion`, `id_usuario`, `id_curso`, `fecha_inscripcion`, `estado`, `progreso`, `completado`) VALUES
-(24, 5, 1, '2025-06-07', 'activo', 0, 0),
 (25, 5, 2, '2025-06-07', 'activo', 0, 0),
 (26, 5, 3, '2025-06-07', 'activo', 0, 0),
-(27, 1, 1, '2025-06-07', 'activo', 0, 0);
+(27, 1, 1, '2025-06-07', 'activo', 0, 0),
+(28, 5, 1, '2025-06-08', 'activo', 0, 0);
 
 -- --------------------------------------------------------
 
@@ -106,7 +106,8 @@ INSERT INTO `pagos` (`id_pago`, `id_usuario`, `id_curso`, `monto`, `fecha_pago`,
 (6, 5, 1, 49.99, '2025-06-07', 'Tarjeta', 'completado', 'INV-2025-7839'),
 (7, 5, 2, 99.99, '2025-06-07', 'Tarjeta', 'completado', 'INV-2025-5842'),
 (8, 5, 3, 79.99, '2025-06-07', 'Tarjeta', 'completado', 'INV-2025-6559'),
-(9, 1, 1, 49.99, '2025-06-07', 'Tarjeta', 'completado', 'INV-2025-1969');
+(9, 1, 1, 49.99, '2025-06-07', 'Tarjeta', 'completado', 'INV-2025-1969'),
+(10, 5, 1, 49.99, '2025-06-08', 'Tarjeta', 'completado', 'INV-2025-2105');
 
 -- --------------------------------------------------------
 
@@ -142,19 +143,20 @@ CREATE TABLE `usuarios` (
   `email` varchar(100) NOT NULL,
   `contraseña` varchar(255) NOT NULL,
   `tipo_usuario` enum('Estudiante','Profesor','Administrador') NOT NULL,
-  `id_plan` int(11) DEFAULT NULL
+  `id_plan` int(11) DEFAULT NULL,
+  `cookie_consent` tinyint(1) DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Volcado de datos para la tabla `usuarios`
 --
 
-INSERT INTO `usuarios` (`id_usuario`, `nombre`, `email`, `contraseña`, `tipo_usuario`, `id_plan`) VALUES
-(0, 'admin', 'admin@example.com', 'admin', 'Administrador', NULL),
-(1, 'Juan Pérez', 'juan@example.com', 'juan123', 'Estudiante', 1),
-(2, 'María López', 'maria@example.com', 'segura456', 'Estudiante', 2),
-(3, 'Carlos Sánchez', 'carlos@example.com', 'profesor789', 'Profesor', NULL),
-(5, 'alejandro', 'alejandro@gmail.com', 'alejandro', 'Estudiante', NULL);
+INSERT INTO `usuarios` (`id_usuario`, `nombre`, `email`, `contraseña`, `tipo_usuario`, `id_plan`, `cookie_consent`) VALUES
+(0, 'admin', 'admin@example.com', 'admin', 'Administrador', NULL, 0),
+(1, 'Juan Pérez', 'juan@example.com', 'juan123', 'Estudiante', 1, 0),
+(2, 'María López', 'maria@example.com', 'segura456', 'Estudiante', 2, 0),
+(3, 'Carlos Sánchez', 'carlos@example.com', 'profesor789', 'Profesor', NULL, 0),
+(5, 'alejandro', 'alejandro@gmail.com', 'alejandro', 'Estudiante', NULL, 0);
 
 --
 -- Índices para tablas volcadas
@@ -210,13 +212,13 @@ ALTER TABLE `cursos`
 -- AUTO_INCREMENT de la tabla `inscripciones`
 --
 ALTER TABLE `inscripciones`
-  MODIFY `id_inscripcion` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=28;
+  MODIFY `id_inscripcion` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=29;
 
 --
 -- AUTO_INCREMENT de la tabla `pagos`
 --
 ALTER TABLE `pagos`
-  MODIFY `id_pago` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `id_pago` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT de la tabla `planes`

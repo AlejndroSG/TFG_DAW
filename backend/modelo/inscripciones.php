@@ -140,7 +140,7 @@ class Inscripciones {
             
             $sentencia = "SELECT u.*, i.fecha_inscripcion, i.progreso, i.completado 
                         FROM inscripciones i
-                        JOIN usuarios u ON i.id_usuario = u.id
+                        JOIN usuarios u ON i.id_usuario = u.id_usuario
                         WHERE i.id_curso = ?
                         ORDER BY i.fecha_inscripcion DESC";
             

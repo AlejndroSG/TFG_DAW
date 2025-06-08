@@ -200,9 +200,9 @@ const AdminCursos = () => {
   const cargarUsuariosInscritos = async (cursoId) => {
     try {
       setLoadingUsuarios(true);
-      const response = await axios.post(
-        'http://localhost/TFG_DAW/backend/controlador/controlador.php?action=obtenerUsuariosPorCurso',
-        { id_curso: cursoId },
+      // Cambiamos a petición GET para pasar el id_curso como parámetro en la URL
+      const response = await axios.get(
+        `http://localhost/TFG_DAW/backend/controlador/controlador.php?action=obtenerUsuariosPorCurso&id_curso=${cursoId}`,
         { withCredentials: true }
       );
       
@@ -225,12 +225,9 @@ const AdminCursos = () => {
   const eliminarInscripcion = async (usuarioId, cursoId) => {
     if (window.confirm('¿Estás seguro de que deseas eliminar la inscripción de este usuario? Esta acción no se puede deshacer.')) {
       try {
-        const response = await axios.post(
-          'http://localhost/TFG_DAW/backend/controlador/controlador.php?action=eliminarInscripcion',
-          { 
-            id_usuario: usuarioId,
-            id_curso: cursoId 
-          },
+        // Cambiamos a petición GET para pasar los parámetros en la URL
+        const response = await axios.get(
+          `http://localhost/TFG_DAW/backend/controlador/controlador.php?action=eliminarInscripcion&id_usuario=${usuarioId}&id_curso=${cursoId}`,
           { withCredentials: true }
         );
         

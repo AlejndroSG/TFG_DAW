@@ -589,10 +589,22 @@
             exit;
         }
         
-        // Obtener datos del cuerpo de la petición
-        $datos = json_decode(file_get_contents('php://input'), true);
+        // Obtener ID del curso (ya sea por GET o POST)
+        $id_curso = null;
         
-        if (!isset($datos['id_curso']) || empty($datos['id_curso'])) {
+        // Verificar si viene por GET
+        if (isset($_GET['id_curso']) && !empty($_GET['id_curso'])) {
+            $id_curso = $_GET['id_curso'];
+        } else {
+            // Verificar si viene en el cuerpo JSON (POST)
+            $datos = json_decode(file_get_contents('php://input'), true);
+            if (isset($datos['id_curso']) && !empty($datos['id_curso'])) {
+                $id_curso = $datos['id_curso'];
+            }
+        }
+        
+        // Comprobar que tenemos un ID de curso
+        if ($id_curso === null) {
             echo json_encode([
                 'error' => 'ID de curso no proporcionado'
             ]);
@@ -601,7 +613,7 @@
         
         require_once("../modelo/inscripciones.php");
         $inscripciones = new Inscripciones();
-        $usuarios = $inscripciones->obtenerUsuariosPorCurso($datos['id_curso']);
+        $usuarios = $inscripciones->obtenerUsuariosPorCurso($id_curso);
         
         echo json_encode($usuarios);
     }
@@ -624,11 +636,27 @@
             exit;
         }
         
-        // Obtener datos del cuerpo de la petición
-        $datos = json_decode(file_get_contents('php://input'), true);
+        // Obtener ID de usuario y curso (ya sea por GET o POST)
+        $id_usuario = null;
+        $id_curso = null;
         
-        if (!isset($datos['id_usuario']) || empty($datos['id_usuario']) || 
-            !isset($datos['id_curso']) || empty($datos['id_curso'])) {
+        // Verificar si vienen por GET
+        if (isset($_GET['id_usuario']) && !empty($_GET['id_usuario']) && 
+            isset($_GET['id_curso']) && !empty($_GET['id_curso'])) {
+            $id_usuario = $_GET['id_usuario'];
+            $id_curso = $_GET['id_curso'];
+        } else {
+            // Verificar si vienen en el cuerpo JSON (POST)
+            $datos = json_decode(file_get_contents('php://input'), true);
+            if (isset($datos['id_usuario']) && !empty($datos['id_usuario']) && 
+                isset($datos['id_curso']) && !empty($datos['id_curso'])) {
+                $id_usuario = $datos['id_usuario'];
+                $id_curso = $datos['id_curso'];
+            }
+        }
+        
+        // Comprobar que tenemos ambos IDs
+        if ($id_usuario === null || $id_curso === null) {
             echo json_encode([
                 'error' => 'Datos incompletos para eliminar inscripción'
             ]);
@@ -637,7 +665,7 @@
         
         require_once("../modelo/inscripciones.php");
         $inscripciones = new Inscripciones();
-        $resultado = $inscripciones->eliminarInscripcion($datos['id_usuario'], $datos['id_curso']);
+        $resultado = $inscripciones->eliminarInscripcion($id_usuario, $id_curso);
         
         echo json_encode($resultado);
     }
