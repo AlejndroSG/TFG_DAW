@@ -1,0 +1,124 @@
+<?php
+    // Configurar cookies antes de cualquier salida
+    ini_set('session.cookie_lifetime', '86400');    // 24 horas
+    ini_set('session.gc_maxlifetime', '86400');     // 24 horas
+    ini_set('session.use_strict_mode', '1');        // Modo estricto para seguridad
+    ini_set('session.cookie_httponly', '1');        // Prevenir acceso JS a la cookie
+    ini_set('session.use_only_cookies', '1');       // Solo usar cookies para sesiones
+    ini_set('session.cookie_samesite', 'Lax');      // Configuración más compatible
+    
+    session_start();
+    
+    header("Access-Control-Allow-Origin: http://localhost:5173");
+    header("Access-Control-Allow-Credentials: true");
+    header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
+    header("Access-Control-Allow-Headers: Content-Type, Accept");
+    header("Content-Type: application/json; charset=UTF-8");
+
+    if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
+        exit(0);
+    }
+
+    function comprobarSesion(){
+        // Log para depurar la sesión actual
+        error_log('SESSION en comprobarSesion: ' . print_r($_SESSION, true));
+        error_log('SESSION ID: ' . session_id());
+        
+        $response = array(
+            'id' => isset($_SESSION['id']) ? $_SESSION['id'] : null,
+            'username' => isset($_SESSION['username']) ? $_SESSION['username'] : null,
+            'tipo_usuario' => isset($_SESSION['tipo_usuario']) ? $_SESSION['tipo_usuario'] : null,
+            'sessionId' => session_id()
+        );
+        
+        echo json_encode($response);
+    }
+    
+    // Aquí van todas las demás funciones existentes
+    // ...
+    
+    // Función para verificar si el usuario ha aceptado las cookies
+    function checkCookieConsent() {
+        require_once("../modelo/cookies.php");
+        $cookiesManager = new CookiesManager();
+        
+        $hasConsent = $cookiesManager->verificarConsentimiento();
+        
+        echo json_encode(["hasConsent" => $hasConsent]);
+    }
+    
+    // Función para establecer el consentimiento de cookies
+    function setCookieConsent() {
+        // Obtener datos del POST en formato JSON
+        $inputJSON = file_get_contents('php://input');
+        $input = json_decode($inputJSON, TRUE);
+        
+        if (!isset($input['consent'])) {
+            echo json_encode(["error" => "Falta el parámetro de consentimiento"]);
+            return;
+        }
+        
+        require_once("../modelo/cookies.php");
+        $cookiesManager = new CookiesManager();
+        
+        $result = $cookiesManager->establecerConsentimiento($input['consent']);
+        
+        echo json_encode(["success" => $result]);
+    }
+    
+    // Función para obtener lista de usuarios para filtro en panel de estadísticas
+    function obtenerUsuariosFiltro() {
+        // Verificar autenticación del usuario
+        if (!isset($_SESSION['id'])) {
+            echo json_encode(["error" => "No has iniciado sesión"]);
+            return;
+        }
+        
+        // Verificar si es administrador
+        require_once("../modelo/bd.php");
+        $bd = new BaseDatos();
+        $usuario = $bd->obtenerUsuarioPorId($_SESSION['id']);
+        
+        if (!$usuario || ($usuario['tipo_usuario'] !== 'administrador' && $usuario['tipo_usuario'] !== 'admin')) {
+            echo json_encode(["error" => "No tienes permisos para realizar esta acción"]);
+            return;
+        }
+        
+        // Cargar el modelo de estadísticas
+        require_once("../modelo/estadisticas.php");
+        $estadisticas = new Estadisticas();
+        
+        // Obtener lista de usuarios
+        $usuarios = $estadisticas->obtenerUsuariosFiltro();
+        
+        // Devolver resultados
+        echo json_encode($usuarios);
+    }
+    
+    // Si no ha sido iniciado el action
+    if(isset($_REQUEST["action"])){
+        $action = $_GET["action"];
+        
+        // Mensajes de depuración
+        error_log("CONTROLADOR: Action: " . $action);
+        error_log("CONTROLADOR: POST data: " . json_encode($_POST));
+        
+        if (isset($_SESSION['id'])) {
+            error_log("CONTROLADOR: Usuario en sesión ID: " . $_SESSION['id']);
+        }
+
+        // Ejecutar función según la acción
+        if(function_exists($action)){
+            // No es necesario iniciar sesión aquí, ya se inicia al principio del archivo
+            $action();
+        } else {
+            // Si la acción no existe, devolver error 404
+            header("HTTP/1.1 404 Not Found");
+            echo json_encode(["error" => "Acción no válida: " . htmlspecialchars($action)]);
+        }
+    } else {
+        // Si no se especificó ninguna acción
+        header("HTTP/1.1 400 Bad Request");
+        echo json_encode(["error" => "No se especificó ninguna acción"]);
+    }
+?>

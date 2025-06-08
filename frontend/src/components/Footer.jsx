@@ -87,9 +87,9 @@ const Footer = () => {
           {/* Logo y descripción */}
           <motion.div className="md:w-1/3 space-y-6" variants={itemVariants}>
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 p-0.5 shadow-lg shadow-purple-500/20 flex items-center justify-center">
-                <div className="rounded-full bg-gray-900 w-full h-full flex items-center justify-center">
-                  <FaBrain className="text-xl text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600" />
+              <div className="w-12 h-12 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 p-0.5 shadow-lg shadow-purple-500/20 flex items-center justify-center overflow-hidden">
+                <div className="rounded-full bg-gray-900 w-full h-full flex items-center justify-center overflow-hidden">
+                  <img src="/src/img/Logo_LearnIA.png" alt="LearnIA Logo" className="object-contain w-9 h-9" />
                 </div>
               </div>
               <h3 className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-pink-600 text-transparent bg-clip-text">

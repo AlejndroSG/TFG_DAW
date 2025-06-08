@@ -218,8 +218,8 @@ const Header = () => {
               <Link to="/" className="flex items-center gap-3">
                 <div className="relative">
                   <div className="absolute -inset-1 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full opacity-70 blur-sm animate-pulse"></div>
-                  <div className="relative flex items-center justify-center h-10 w-10 rounded-full bg-gray-900 border border-purple-500/30">
-                    <FaGraduationCap className="text-2xl text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600" />
+                  <div className="relative flex items-center justify-center h-10 w-10 overflow-hidden">
+                    <img src="/src/img/Logo_LearnIA.png" alt="LearnIA Logo" className="object-contain w-full h-full" />
                   </div>
                 </div>
                 <div className="flex flex-col">

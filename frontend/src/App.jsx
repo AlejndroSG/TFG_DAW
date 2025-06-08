@@ -3,6 +3,7 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
 import Plantilla from './layout/Plantilla'
 import Banner from './Pages/Banner'
+import CookieConsent from './components/CookieConsent'
 import Login from './Pages/Login'
 import Cursos from './Pages/Cursos'
 import Blog from './Pages/Blog'
@@ -59,6 +60,7 @@ function App() {
           },
         }}
       />
+      <CookieConsent />
     </>
   )
 }
