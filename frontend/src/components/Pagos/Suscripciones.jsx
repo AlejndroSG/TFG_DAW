@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { FaCrown, FaCheck, FaTimes, FaChevronDown, FaChevronUp, FaCreditCard, FaUserGraduate } from 'react-icons/fa';
+import { FaCrown, FaCheck, FaTimes, FaChevronDown, FaChevronUp, FaCreditCard, FaUserGraduate, FaRocket, FaGem, FaBuilding } from 'react-icons/fa';
 import PasarelaPago from './PasarelaPago';
 
 const Suscripciones = () => {
@@ -60,56 +60,69 @@ const Suscripciones = () => {
     setMostrarModal(false);
   };
 
-  // Planes disponibles
+  // Planes disponibles - Alineados con la página de inicio
   const planes = [
     {
-      id: 'mensual',
-      nombre: 'Premium Mensual',
-      precio: 19.99,
+      id: 'basico',
+      nombre: 'Plan Básico',
+      precio: 0,
+      intervalo: 'siempre',
+      caracteristicas: [
+        'Acceso a cursos básicos',
+        'Proyectos guiados',
+        'Comunidad de estudiantes',
+        'Certificados básicos',
+        'Soporte por email'
+      ],
+      noIncluido: [
+        'Mentoría personalizada',
+        'Proyectos avanzados',
+        'Certificados premium',
+        'Acceso prioritario'
+      ],
+      popular: false,
+      color: 'from-purple-400 to-purple-600',
+      icono: FaRocket
+    },
+    {
+      id: 'pro',
+      nombre: 'Plan Pro',
+      precio: 29.99,
       intervalo: 'mensual',
       caracteristicas: [
-        'Acceso a todos los cursos',
-        'Certificados descargables',
-        'Soporte prioritario',
-        'Contenido exclusivo',
-        'Cancela cuando quieras'
+        'Todo del Plan Básico',
+        'Mentoría personalizada',
+        'Proyectos avanzados',
+        'Certificados premium',
+        'Acceso prioritario',
+        'Soporte 24/7',
+        'Recursos exclusivos',
+        'Comunidad premium'
       ],
-      popular: false,
-      color: 'from-purple-500 to-purple-700'
-    },
-    {
-      id: 'anual',
-      nombre: 'Premium Anual',
-      precio: 199.99,
-      precioMensual: 16.67,
-      intervalo: 'anual',
-      caracteristicas: [
-        'Acceso a todos los cursos',
-        'Certificados descargables',
-        'Soporte prioritario',
-        'Contenido exclusivo',
-        'Dos meses gratis',
-        'Acceso a eventos exclusivos'
-      ],
-      ahorro: '17% de descuento',
+      noIncluido: [],
       popular: true,
-      color: 'from-pink-500 to-purple-700'
+      color: 'from-purple-600 to-pink-600',
+      icono: FaGem
     },
     {
-      id: 'equipo',
-      nombre: 'Premium Equipo',
-      precio: 49.99,
-      intervalo: 'mensual (por usuario)',
-      minUsuarios: 3,
+      id: 'enterprise',
+      nombre: 'Plan Enterprise',
+      precio: 99.99,
+      intervalo: 'mensual',
       caracteristicas: [
-        'Todo lo de Premium Mensual',
-        'Panel de administración de equipo',
-        'Informes de progreso',
-        'Facturación unificada',
-        'Soporte dedicado'
+        'Todo del Plan Pro',
+        'Formación para equipos',
+        'Panel de administración',
+        'API personalizada',
+        'Soporte dedicado',
+        'Implementación guiada',
+        'Análisis de progreso',
+        'Personalización total'
       ],
+      noIncluido: [],
       popular: false,
-      color: 'from-blue-500 to-purple-700'
+      color: 'from-pink-600 to-purple-400',
+      icono: FaBuilding
     }
   ];
 
