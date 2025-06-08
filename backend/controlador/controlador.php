@@ -819,6 +819,35 @@
         echo json_encode($datos);
     }
     
+    // Función para verificar si el usuario ha aceptado las cookies
+    function checkCookieConsent() {
+        require_once("../modelo/cookies.php");
+        $cookiesManager = new CookiesManager();
+        
+        $hasConsent = $cookiesManager->verificarConsentimiento();
+        
+        echo json_encode(["hasConsent" => $hasConsent]);
+    }
+    
+    // Función para establecer el consentimiento de cookies
+    function setCookieConsent() {
+        // Obtener datos del POST en formato JSON
+        $inputJSON = file_get_contents('php://input');
+        $input = json_decode($inputJSON, TRUE);
+        
+        if (!isset($input['consent'])) {
+            echo json_encode(["error" => "Falta el parámetro de consentimiento"]);
+            return;
+        }
+        
+        require_once("../modelo/cookies.php");
+        $cookiesManager = new CookiesManager();
+        
+        $result = $cookiesManager->establecerConsentimiento($input['consent']);
+        
+        echo json_encode(["success" => $result]);
+    }
+
     // Función para obtener lista de usuarios para filtro en panel de estadísticas
     function obtenerUsuariosFiltro() {
         // Verificar autenticación del usuario
