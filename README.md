@@ -1,5 +1,4 @@
 <div align="center">
-  <img src="frontend/public/logo-learnIA.png" alt="LearnIA Logo" width="200"/>
   <h1>LearnIA - Plataforma de Aprendizaje de IA</h1>
   <p>Una plataforma educativa moderna para el aprendizaje de Inteligencia Artificial y tecnologías relacionadas</p>
 
