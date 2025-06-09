@@ -66,7 +66,7 @@ const Banner = () => {
       
       // Regenerar solo los meteoros para las dimensiones de referencia
       meteoros = [];
-      crearMeteoros(20);
+      // crearMeteoros(20);
     };
 
     // Configuración inicial con tamaño fijo que no se reducirá
@@ -106,7 +106,7 @@ const Banner = () => {
       }
     };
 
-    crearMeteoros(5);
+    crearMeteoros(3);
 
     const dibujarMeteoros = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);

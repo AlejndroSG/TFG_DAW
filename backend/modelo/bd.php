@@ -51,15 +51,42 @@
         
         // Comprobamos si las credenciales son correctas
         public function compCredenciales(String $nom, String $psw){
-            $sentencia = "SELECT id_usuario, nombre, tipo_usuario FROM usuarios WHERE nombre = ? AND contraseña = ?"; 
+            // Depuración
+            error_log("Intentando iniciar sesión para usuario: " . $nom);
+            
+            $sentencia = "SELECT id_usuario, nombre, tipo_usuario, contraseña FROM usuarios WHERE nombre = ?"; 
             $consulta = $this->conn->prepare($sentencia);
-            $consulta->bind_param("ss", $nom, $psw);
-            $consulta->bind_result($id, $nombre, $tipo_usuario);
+            $consulta->bind_param("s", $nom);
             $consulta->execute();
+            $consulta->store_result();
+            
+            // Verificar si se encontró el usuario
+            if ($consulta->num_rows == 0) {
+                error_log("Usuario no encontrado: " . $nom);
+                $consulta->close();
+                return array();
+            }
+            
+            $consulta->bind_result($id, $nombre, $tipo_usuario, $password_bd);
             $consulta->fetch();
-            $comprobar = array("id" => $id, "nombre" => $nombre, "tipo_usuario" => $tipo_usuario);
             $consulta->close();
-            return $comprobar;
+            
+            error_log("Contraseña almacenada: " . substr($password_bd, 0, 10) . "...");
+            
+            // Intentar verificar con password_verify (para contraseñas hasheadas)
+            if (password_verify($psw, $password_bd)) {
+                error_log("Verificación con hash exitosa para: " . $nom);
+                return array("id" => $id, "nombre" => $nombre, "tipo_usuario" => $tipo_usuario);
+            }
+            
+            // Si no funciona con password_verify, comprobar si coincide exactamente (para contraseñas en texto plano)
+            if ($psw === $password_bd) {
+                error_log("Verificación con texto plano exitosa para: " . $nom);
+                return array("id" => $id, "nombre" => $nombre, "tipo_usuario" => $tipo_usuario);
+            }
+            
+            error_log("Credenciales incorrectas para: " . $nom);
+            return array();
         }
         
         // Registrar un nuevo usuario
@@ -77,11 +104,14 @@
                 return ["error" => "El nombre de usuario o email ya está en uso"];
             }
             
+            // Encriptar la contraseña
+            $hash_password = password_hash($password, PASSWORD_DEFAULT);
+            
             // Si no existe, procedemos a registrar el usuario
-            $tipo_usuario = "usuario"; // Por defecto, todos los nuevos registros son de tipo 'usuario'
+            $tipo_usuario = "Estudiante"; // Por defecto, todos los nuevos registros son de tipo 'Estudiante'
             $sentencia = "INSERT INTO usuarios (nombre, email, contraseña, tipo_usuario) VALUES (?, ?, ?, ?)";
             $consulta = $this->conn->prepare($sentencia);
-            $consulta->bind_param("ssss", $nombre, $email, $password, $tipo_usuario);
+            $consulta->bind_param("ssss", $nombre, $email, $hash_password, $tipo_usuario);
             
             if ($consulta->execute()) {
                 $id = $this->conn->insert_id;
@@ -152,10 +182,13 @@
                 return ["error" => "El nombre de usuario o email ya está en uso"];
             }
             
+            // Encriptar la contraseña
+            $hash_password = password_hash($datos['password'], PASSWORD_DEFAULT);
+            
             // Crear el usuario
             $sentencia = "INSERT INTO usuarios (nombre, email, contraseña, tipo_usuario) VALUES (?, ?, ?, ?)";
             $consulta = $this->conn->prepare($sentencia);
-            $consulta->bind_param("ssss", $datos['nombre'], $datos['email'], $datos['password'], $datos['tipo_usuario']);
+            $consulta->bind_param("ssss", $datos['nombre'], $datos['email'], $hash_password, $datos['tipo_usuario']);
             
             if ($consulta->execute()) {
                 $id = $this->conn->insert_id;
@@ -233,6 +266,48 @@
                     "id" => $id_usuario
                 ];
             }
+        }
+        
+        // Función para encriptar todas las contraseñas existentes en la BD
+        public function encriptarContrasenasBD() {
+            // Primero obtenemos todos los usuarios con sus contraseñas actuales
+            $sentencia = "SELECT id_usuario, contraseña FROM usuarios";
+            $resultado = $this->conn->query($sentencia);
+            
+            $usuarios_actualizados = 0;
+            $errores = 0;
+            
+            if ($resultado && $resultado->num_rows > 0) {
+                while ($fila = $resultado->fetch_assoc()) {
+                    $id_usuario = $fila['id_usuario'];
+                    $password_actual = $fila['contraseña'];
+                    
+                    // Verificamos si la contraseña ya está hasheada
+                    if (password_get_info($password_actual)['algo'] === 0) {
+                        // Si la contraseña no está hasheada, la encriptamos
+                        $hash_password = password_hash($password_actual, PASSWORD_DEFAULT);
+                        
+                        // Actualizamos la contraseña en la BD
+                        $sentencia_update = "UPDATE usuarios SET contraseña = ? WHERE id_usuario = ?";
+                        $consulta = $this->conn->prepare($sentencia_update);
+                        $consulta->bind_param("si", $hash_password, $id_usuario);
+                        
+                        if ($consulta->execute()) {
+                            $usuarios_actualizados++;
+                        } else {
+                            $errores++;
+                        }
+                        $consulta->close();
+                    }
+                }
+            }
+            
+            return [
+                "success" => true,
+                "usuarios_actualizados" => $usuarios_actualizados,
+                "errores" => $errores,
+                "mensaje" => "Se han encriptado $usuarios_actualizados contraseñas. Errores: $errores"
+            ];
         }
     }
 ?>

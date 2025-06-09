@@ -905,6 +905,31 @@
         echo json_encode($usuarios);
     }
 
+    // Función para encriptar todas las contraseñas de la base de datos
+    function encriptarTodasContrasenas() {
+        // Verificar si el usuario tiene permisos de administrador
+        if (!isset($_SESSION['tipo_usuario'])) {
+            echo json_encode([
+                'error' => 'No hay sesión activa'
+            ]);
+            exit;
+        }
+        
+        $tipo = strtolower($_SESSION['tipo_usuario']);
+        if ($tipo !== 'administrador' && $tipo !== 'admin') {
+            echo json_encode([
+                'error' => 'No tienes permiso para realizar esta acción'
+            ]);
+            exit;
+        }
+        
+        require_once("../modelo/bd.php");
+        $modelo = new db();
+        $resultado = $modelo->encriptarContrasenasBD();
+        
+        echo json_encode($resultado);
+    }
+
     // Si no ha sido iniciado el action
     if(isset($_REQUEST["action"])){
         $action = $_GET["action"];

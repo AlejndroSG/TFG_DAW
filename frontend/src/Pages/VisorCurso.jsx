@@ -72,6 +72,12 @@ const VisorCurso = () => {
   const [videoActualUrl, setVideoActualUrl] = useState(null);
   const [esCursoIA, setEsCursoIA] = useState(false);
   
+  // Función para abrir el modal de inicio de sesión
+  const abrirModalLogin = () => {
+    // Disparar evento personalizado para que Header.jsx abra el modal de login
+    window.dispatchEvent(new Event('openLogin'));
+  };
+  
   useEffect(() => {
     comprobarSesion();
     obtenerDatosCurso();
@@ -695,9 +701,8 @@ const VisorCurso = () => {
                 </div>
               </div>
               
-              <Link 
-                to="/login" 
-                state={{ returnUrl: `/curso-visor/${cursoId}` }}
+              <button 
+                onClick={abrirModalLogin}
                 className="flex-shrink-0 group relative"
               >
                 <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl opacity-75 blur-sm group-hover:opacity-100 transition duration-200"></div>
@@ -705,7 +710,7 @@ const VisorCurso = () => {
                   <span className="mr-2">Desbloquear Ahora</span>
                   <FaLock className="text-pink-400 group-hover:text-pink-300" />
                 </div>
-              </Link>
+              </button>
             </div>
           </div>
         </motion.div>
@@ -772,9 +777,8 @@ const VisorCurso = () => {
                       </motion.p>
                       
                       {modoVistaPreviaSinLogin ? (
-                        <Link 
-                          to="/login" 
-                          state={{ returnUrl: `/curso-visor/${cursoId}` }}
+                        <button 
+                          onClick={abrirModalLogin}
                           className="group relative"
                         >
                           <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl opacity-70 blur group-hover:opacity-100 transition duration-200"></div>
@@ -787,7 +791,7 @@ const VisorCurso = () => {
                               <FaLock className="text-pink-400" />
                             </motion.div>
                           </div>
-                        </Link>
+                        </button>
                       ) : (
                         <motion.button
                           whileHover={{ scale: 1.05 }}
