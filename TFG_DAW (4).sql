@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 08-06-2025 a las 21:02:04
+-- Tiempo de generación: 09-06-2025 a las 03:27:55
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.0.30
 
@@ -48,7 +48,7 @@ INSERT INTO `cursos` (`id_curso`, `titulo`, `descripcion`, `precio`, `duracion`,
 (1, 'Introducción a la IA', 'Curso básico sobre inteligencia artificial', 49.99, 20, 3, 'Básico', './src/img/imgCursos/IA.jpg', 1, 1),
 (2, 'Machine Learning Avanzado', 'Técnicas avanzadas de aprendizaje automático', 99.99, 40, 3, 'Avanzado', './src/img/imgCursos/MachineLearning.jpg', 1, 0),
 (3, 'Desarrollo Web con Python', 'Creación de aplicaciones web con Flask y Django', 79.99, 30, 3, 'Intermedio', './src/img/imgCursos/django.png', 1, 0),
-(7, 'Salvador', '', 300.00, 0, 3, 'Básico', '/src/img/imgCursos/curso_683f7eb5438eb.png', 1, 0);
+(8, 'werewrwer', 'werwerwerw', 10000.00, 0, 3, 'Básico', '/src/img/imgCursos/curso_6845e36ba083f.jpg', 1, 0);
 
 -- --------------------------------------------------------
 
@@ -71,10 +71,9 @@ CREATE TABLE `inscripciones` (
 --
 
 INSERT INTO `inscripciones` (`id_inscripcion`, `id_usuario`, `id_curso`, `fecha_inscripcion`, `estado`, `progreso`, `completado`) VALUES
-(25, 5, 2, '2025-06-07', 'activo', 0, 0),
 (26, 5, 3, '2025-06-07', 'activo', 0, 0),
 (27, 1, 1, '2025-06-07', 'activo', 0, 0),
-(28, 5, 1, '2025-06-08', 'activo', 0, 0);
+(31, 5, 1, '2025-06-09', 'activo', 0, 0);
 
 -- --------------------------------------------------------
 
@@ -107,7 +106,10 @@ INSERT INTO `pagos` (`id_pago`, `id_usuario`, `id_curso`, `monto`, `fecha_pago`,
 (7, 5, 2, 99.99, '2025-06-07', 'Tarjeta', 'completado', 'INV-2025-5842'),
 (8, 5, 3, 79.99, '2025-06-07', 'Tarjeta', 'completado', 'INV-2025-6559'),
 (9, 1, 1, 49.99, '2025-06-07', 'Tarjeta', 'completado', 'INV-2025-1969'),
-(10, 5, 1, 49.99, '2025-06-08', 'Tarjeta', 'completado', 'INV-2025-2105');
+(10, 5, 1, 49.99, '2025-06-08', 'Tarjeta', 'completado', 'INV-2025-2105'),
+(11, 5, 2, 99.99, '2025-06-08', 'Tarjeta', 'completado', 'INV-2025-0348'),
+(12, 5, 8, 10000.00, '2025-06-08', 'Tarjeta', 'completado', 'INV-2025-7887'),
+(13, 5, 1, 49.99, '2025-06-09', 'Tarjeta', 'completado', 'INV-2025-8646');
 
 -- --------------------------------------------------------
 
@@ -206,19 +208,19 @@ ALTER TABLE `usuarios`
 -- AUTO_INCREMENT de la tabla `cursos`
 --
 ALTER TABLE `cursos`
-  MODIFY `id_curso` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id_curso` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT de la tabla `inscripciones`
 --
 ALTER TABLE `inscripciones`
-  MODIFY `id_inscripcion` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=29;
+  MODIFY `id_inscripcion` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=32;
 
 --
 -- AUTO_INCREMENT de la tabla `pagos`
 --
 ALTER TABLE `pagos`
-  MODIFY `id_pago` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `id_pago` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
 -- AUTO_INCREMENT de la tabla `planes`
