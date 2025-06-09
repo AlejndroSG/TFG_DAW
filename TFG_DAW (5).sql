@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 09-06-2025 a las 03:27:55
+-- Tiempo de generación: 09-06-2025 a las 12:01:12
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.0.30
 
@@ -73,7 +73,9 @@ CREATE TABLE `inscripciones` (
 INSERT INTO `inscripciones` (`id_inscripcion`, `id_usuario`, `id_curso`, `fecha_inscripcion`, `estado`, `progreso`, `completado`) VALUES
 (26, 5, 3, '2025-06-07', 'activo', 0, 0),
 (27, 1, 1, '2025-06-07', 'activo', 0, 0),
-(31, 5, 1, '2025-06-09', 'activo', 0, 0);
+(31, 5, 1, '2025-06-09', 'activo', 0, 0),
+(32, 5, 8, '2025-06-09', 'activo', 0, 0),
+(33, 9, 8, '2025-06-09', 'activo', 0, 0);
 
 -- --------------------------------------------------------
 
@@ -109,7 +111,9 @@ INSERT INTO `pagos` (`id_pago`, `id_usuario`, `id_curso`, `monto`, `fecha_pago`,
 (10, 5, 1, 49.99, '2025-06-08', 'Tarjeta', 'completado', 'INV-2025-2105'),
 (11, 5, 2, 99.99, '2025-06-08', 'Tarjeta', 'completado', 'INV-2025-0348'),
 (12, 5, 8, 10000.00, '2025-06-08', 'Tarjeta', 'completado', 'INV-2025-7887'),
-(13, 5, 1, 49.99, '2025-06-09', 'Tarjeta', 'completado', 'INV-2025-8646');
+(13, 5, 1, 49.99, '2025-06-09', 'Tarjeta', 'completado', 'INV-2025-8646'),
+(14, 5, 8, 10000.00, '2025-06-09', 'Tarjeta', 'completado', 'INV-2025-2098'),
+(15, 9, 8, 10000.00, '2025-06-09', 'Tarjeta', 'completado', 'INV-2025-2295');
 
 -- --------------------------------------------------------
 
@@ -154,11 +158,13 @@ CREATE TABLE `usuarios` (
 --
 
 INSERT INTO `usuarios` (`id_usuario`, `nombre`, `email`, `contraseña`, `tipo_usuario`, `id_plan`, `cookie_consent`) VALUES
-(0, 'admin', 'admin@example.com', 'admin', 'Administrador', NULL, 0),
-(1, 'Juan Pérez', 'juan@example.com', 'juan123', 'Estudiante', 1, 0),
-(2, 'María López', 'maria@example.com', 'segura456', 'Estudiante', 2, 0),
-(3, 'Carlos Sánchez', 'carlos@example.com', 'profesor789', 'Profesor', NULL, 0),
-(5, 'alejandro', 'alejandro@gmail.com', 'alejandro', 'Estudiante', NULL, 0);
+(0, 'admin', 'admin@example.com', '$2y$10$mQ8msFtdNrNvQE1wZptT0uDvDuxSVefaqend5vFWZ6dacvKbMC0gK', 'Administrador', NULL, 0),
+(1, 'Juan Pérez', 'juan@example.com', '$2y$10$lEx0hEGcVJb0tF5nQZB1LemkvxlcG5q8MxFzjuaD35mozMJ3fROYC', 'Estudiante', 1, 0),
+(2, 'María López', 'maria@example.com', '$2y$10$lpBnuwNVD//sldWB15V7Duo7zb7gZ8TL1WZq8mwqLEdymkcyiYf3G', 'Estudiante', 2, 0),
+(3, 'Carlos Sánchez', 'carlos@example.com', '$2y$10$OWwZ0nL.4/rawKd98mXWKeNNj1FCT1pDVK9q5KQENkY/WAcPYOHES', 'Profesor', NULL, 0),
+(5, 'alejandro', 'alejandro@gmail.com', '$2y$10$B2V7c7VrSBQQ1FQb53wku.NbuP6fIvrep7SEtnav1ymNpij2JXmb.', 'Estudiante', NULL, 0),
+(7, 'Juande', 'juande@gmail.com', '$2y$10$r4kBFqy8C0cDeerbF./Vw.nxGFKeY5V./FADa/Obj1kOZqooy0DIG', 'Estudiante', NULL, 0),
+(9, 'Juanca', 'juanca@gmail.com', '$2y$10$BpBjlQvoJxxmz.Lud43DGuXZIyWLV/3dXzY9/9QXU7cAJQbgRYAde', 'Estudiante', NULL, 0);
 
 --
 -- Índices para tablas volcadas
@@ -214,13 +220,13 @@ ALTER TABLE `cursos`
 -- AUTO_INCREMENT de la tabla `inscripciones`
 --
 ALTER TABLE `inscripciones`
-  MODIFY `id_inscripcion` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=32;
+  MODIFY `id_inscripcion` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=34;
 
 --
 -- AUTO_INCREMENT de la tabla `pagos`
 --
 ALTER TABLE `pagos`
-  MODIFY `id_pago` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
+  MODIFY `id_pago` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
 
 --
 -- AUTO_INCREMENT de la tabla `planes`
@@ -232,7 +238,7 @@ ALTER TABLE `planes`
 -- AUTO_INCREMENT de la tabla `usuarios`
 --
 ALTER TABLE `usuarios`
-  MODIFY `id_usuario` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id_usuario` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- Restricciones para tablas volcadas
