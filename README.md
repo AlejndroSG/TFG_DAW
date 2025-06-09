@@ -1,5 +1,4 @@
 <div align="center">
-  <img src="frontend/public/logo-learnIA.png" alt="LearnIA Logo" width="200"/>
   <h1>LearnIA - Plataforma de Aprendizaje de IA</h1>
   <p>Una plataforma educativa moderna para el aprendizaje de Inteligencia Artificial y tecnologías relacionadas</p>
 
@@ -112,23 +111,6 @@ TFG_DAW/
 │       └── assets/         # Recursos estáticos
 └── docs/                   # Documentación
 ```
-
----
-
-## 📸 Capturas de Pantalla
-
-<div align="center">
-  <img src="docs/screenshots/homepage.png" alt="Página de Inicio" width="400"/>
-  <p><i>Página de inicio con destacados y planes de suscripción</i></p>
-  <br/>
-  <img src="docs/screenshots/curso.png" alt="Página de Curso" width="400"/>
-  <p><i>Vista detallada de un curso</i></p>
-  <br/>
-  <img src="docs/screenshots/admin-panel.png" alt="Panel de Administración" width="400"/>
-  <p><i>Panel de administración para gestión de contenido</i></p>
-</div>
-
----
 
 ## 🚀 Instalación y Configuración
 
