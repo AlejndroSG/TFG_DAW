@@ -541,9 +541,8 @@ const VisorCurso = () => {
               className="relative group"
             >
               <div className="absolute -inset-0.5 bg-gradient-to-r from-pink-500 to-purple-600 rounded-xl blur-sm opacity-75 group-hover:opacity-100 transition duration-300"></div>
-              <Link 
-                to="/login" 
-                state={{ returnUrl: `/curso-visor/${cursoId}` }} 
+              <button 
+                onClick={abrirModalLogin}
                 className="relative flex items-center px-6 py-3 bg-gray-900 rounded-xl text-white font-bold hover:bg-gray-800 transition-all"
               >
                 <span className="mr-2">Desbloquear Curso</span>
@@ -553,7 +552,7 @@ const VisorCurso = () => {
                 >
                   <FaLock className="text-pink-400" />
                 </motion.div>
-              </Link>
+              </button>
             </motion.div>
           </div>
         </motion.div>
@@ -590,7 +589,7 @@ const VisorCurso = () => {
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                onClick={() => navigate('/login', { state: { returnUrl: `/curso-visor/${cursoId}` } })}
+                onClick={abrirModalLogin}
                 className="flex items-center px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold text-sm hover:shadow-lg hover:shadow-purple-500/20 transition-all"
               >
                 <FaLock className="mr-2" size={14} /> Iniciar sesión
